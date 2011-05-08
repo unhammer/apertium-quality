@@ -9,11 +9,14 @@ import xml.sax
 import xml.sax.handler
 from xml.sax import SAXException
 from cStringIO import StringIO
-import nltk.data
+#import nltk.data
 
 from multiprocessing import Process, Pool, Queue, cpu_count
 from Queue import Empty
 import multiprocessing
+
+from wpparser import *
+from wputils import *
 
 class CorpusGenerator(object):
 	class Handler(xml.sax.handler.ContentHandler):
@@ -29,6 +32,7 @@ class CorpusGenerator(object):
 			
 			self.badText = False
 			self.text = StringIO()
+			self.curTitle = ""
 		
 		def startElement(self, name, attrs):
 			if name == "mediawiki":
@@ -44,8 +48,7 @@ class CorpusGenerator(object):
 			elif name == "redirect":
 				self.inRedirect = True
 			elif not self.inMediawiki:
-				print "Not a valid wikipedia dump."
-				#raise here
+				raise IOError("Not a valid wikipedia dump.")
 	
 		def characters(self, ch):
 			if self.inId and not self.firstId:
@@ -57,6 +60,8 @@ class CorpusGenerator(object):
 			elif self.inTitle:
 				if ":" in ch or "Wikipedia" in ch or "Page" in ch:
 					self.badText = True
+				else:
+					self.curTitle = special_char(ch)
 	
 			elif self.inText:
 				self.text.write(ch)
@@ -74,14 +79,14 @@ class CorpusGenerator(object):
 				self.inTitle = False
 			elif name == "text" and self.inRedirect == False and self.badText == False:
 				if (len(self.text.getvalue()) > 8):
-					self.inq.put(self.text.getvalue())
+					self.inq.put((self.text.getvalue(), self.curTitle))
 			elif name == "mediawiki":
 				self.inMediawiki = False
 	
 	def __init__(self):
 		self.inq = Queue()
 		self.outq = Queue()
-		self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+		#self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
 	def generate(self, fin, fout, maxsentences=None):
 		self._make_processes(fin, fout, maxsentences)
@@ -116,7 +121,7 @@ class CorpusGenerator(object):
 		print "%d parser done, exiting" % pid
 
 	
-	def _heuristics(self, input, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
+	def heuristics(self, input, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
 		if '\n' in input:
 			return False
@@ -142,12 +147,16 @@ class CorpusGenerator(object):
 		pid = os.getpid()
 		try:		
 			while True:
-				ch = self.inq.get(block=True)
-				stripped = StringIO()
-				self.parseWiki(StringIO(ch), stripped)
-				stripped.seek(0)
-				parsed = self.tokenizer.tokenize(stripped.getvalue())
-				self.outq.put(parsed)
+				ch, title = self.inq.get(block=True)
+				if ch.strip() == "":
+					continue
+				#ch = preprocess(ch)
+				article = Article(ch, title)
+				#stripped = StringIO()
+				#self.parseWiki(StringIO(ch), stripped)
+				#stripped.seek(0)
+				#parsed = self.tokenizer.tokenize(stripped.getvalue())
+				self.outq.put(str(article))
 		except Empty:
 			print "%d done, exiting" % pid
 	
@@ -157,92 +166,25 @@ class CorpusGenerator(object):
 			f = open(fn, 'w')
 			count = 0
 			while True:
+				sl = self.outq.get(block=True, timeout=5)
+				f.write(sl)
+				if maxsentences and count < maxsentences:
+					count += 1
+				if count == maxsentences: break
+				'''
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
-					if(self._heuristics(s.strip())):
+					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
 						if maxsentences and count < maxsentences:
 							count += 1
 					if count == maxsentences: break
 				if count == maxsentences: break
+				'''
+			f.close()
 		except Empty:
 			print "%d output worker done, exiting" % pid
-		finally:
-			f.close()
-					
-	def parseWiki(self, stdin, stdout):
-		stdin.seek(0)
-		lines = stdin.readlines()
-		no = {'tbl': False, 'tbl2': False, 'title': False}
-		for line in lines:
-			if '{reflist}' in line:
-				return # bail!
-			if '{|' in line or 'table-html' in line:
-				no['tbl'] = True
-			if 'table-html' in line:
-				no['tbl2'] = True
-			if (line[0] in ("=", "|", "*", ":") or 
-				line[:3] in ("<!-",) or 
-				line[:2] in (":#", "#.")):
-				no['title'] = True	
-			if '{{Info' in line:
-				no['info'] = True
-
-			if not (True in no.values()):
-				m = re.findall('\[\[[^]]*\]\]',line)
-				for wlink in m:
-					wlink1 = wlink[2:]
-					wlink2 = wlink1[:-2]
-					if '|' in wlink2:
-						nwords = wlink2.split('|')
-						nword = nwords[-1:][0]
-						line = line.replace(wlink2,nword)
-					#if ':' in wlink2:
-					#	nwords = wlink2.split(':')
-					#	nword = nwords[-1:][0]
-					#	line = line.replace(wlink2,nword)
-				if "<ref" in line:
-					x, y = line.find("<ref"), line.find("/>")
-					line.replace(line[x:y], '')
-					#TEST
-				line = line.replace('[[','')
-				line = line.replace(']]','')						
-
-				m = re.findall('\{\{[^}]*\}\}',line)
-				for wlink in m:
-					wlink1 = wlink[2:]
-					wlink2 = wlink1[:-2]
-					if '|' in wlink2:
-						nwords = wlink2.split('|')
-						nword = nwords[-1:][0]
-						line = line.replace(wlink2,nword)
-					if ':' in wlink2:
-						nwords = wlink2.split(':')
-						nword = nwords[-1:][0]
-						line = line.replace(wlink2,nword)
-				m = re.findall('&lt[^&]*&gt',line)
-				for wlink in m:
-					line = line.replace(wlink,'')
-				line = line.replace('&amp;nbsp;',' ')
-				line = line.replace('&nbsp;',' ')
-				line = line.replace('{{','')
-				line = line.replace('}}','')
-				line = line.replace('\'\'\'','')
-				line = line.replace('&quot;','"')
-				line = line.replace('&amp;ndash;','-')
-				line = line.replace('&amp;','&')
-				line = line.replace('	  ','')
-				line = line.replace('  ',' ')
-				line = line.replace('\n', ' ')
-				line = line.lstrip()
-				stdout.write(line)
-			if '--' in line or '\}' in line or '|}' in line:
-				no['tbl'] = False
-			if 'table&' in line:
-				no['tbl2'] = False
-			no['title'] = False
-			no['info'] = False
-		
+	
 if __name__ == '__main__':
 	if len(sys.argv) == 3:
 		CorpusGenerator().generate(sys.argv[1], sys.argv[2]) #maxpages
