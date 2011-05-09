@@ -11,7 +11,8 @@ To install traditionally to the Python library directory on your system:
 
 To install in a rootless environment, you can create your own personal "system root". A sysroot at a minimum contains a bin/ and lib/ directory, so you may use your $HOME directory for this (and it will be used in this example.) To setup a root in your home:
 
-$ export PYTHONPATH=$PYTHONPATH:$HOME
+$ mkdir $HOME/lib/python2.x/site-packages # where 2.x == your python version
+$ export PYTHONPATH=$PYTHONPATH:$HOME/lib/python2.x/site-packages
 $ export PATH=$PATH:$HOME/bin
 $ python setup.py install --prefix=$HOME
 
