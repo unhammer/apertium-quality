@@ -26,7 +26,7 @@ class ApertiumRegressionTest(object):
 		self.tree = etree.parse(urllib.urlopen(url))
 		self.passes = 0
 		self.total = 0
-		for e in self.tree.getroot().iter():
+		for e in self.tree.getroot().getiterator():
 			if e.tag == self.ns + "title":
 				self.title = e.text
 			if e.tag == self.ns + "revision":
