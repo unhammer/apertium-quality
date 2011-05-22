@@ -1,23 +1,28 @@
 ================================================================================
-|                  ApertiumQA - Quality Assurance Framework                    |
+|               apertium-quality - Quality Assurance Framework                 |
 ================================================================================
 
-DESCRIPTION GOES HERE.
-
 == Setup ==
-To install traditionally to the Python library directory on your system:
+Installation is very, very easy.
 
-# python setup.py install
+To install by default to your main Python site-packages (in /usr), as root:
+# ./autogen.sh
 
-To install in a rootless environment, you can create your own personal "system root". A sysroot at a minimum contains a bin/ and lib/ directory, so you may use your $HOME directory for this (and it will be used in this example.) To setup a root in your home:
+That's it!
 
-$ mkdir $HOME/lib/python2.x/site-packages # where 2.x == your python version
-$ export PYTHONPATH=$PYTHONPATH:$HOME/lib/python2.x/site-packages
-$ export PATH=$PATH:$HOME/bin
-$ python setup.py install --prefix=$HOME
+=== Prefixed (Rootless) Installation === 
+For a rootless, prefixed installation:
+$ ./autogen.sh PREFIX=/path/to/prefix prefixed
 
-You may also add the export lines to your ~/.bashrc so that it is automatically set when you enter your shell.
+=== Standalone scripts ===
+If you wish to generate scripts for use elsewhere without using the libraries, then:
+$ ./autogen.sh standalone
 
-You may also create a Python egg. If you don't know what this is, you don't need to know.
+This will create a dist/ directory containing the scripts.
 
-$ python setup.py bdist_egg
+### THIS IS NOT CURRENTLY IMPLEMENTED ###
+
+== Extra Options ==
+PREFIX: sets the prefix to be installed to
+PYTHON: the Python binary to use for installation
+
