@@ -76,7 +76,9 @@ _install_prefixed() {
 	fi
 	echo "[*] Installing..."
 	$PYTHON setup.py install --prefix=${PREFIX} >/dev/null
-	echo "[-] It is recommended that you add ${PREFIX}/bin to your PATH variable, and ${PYTHONPATH} to your PYTHONPATH variable."
+	echo "[-] It is recommended that you add the following lines to your .bashrc:"
+	echo "export PATH=$PATH:${PREFIX}/bin"
+	echo "export PYTHONPATH=${PYTHONPATH}"
 }
 
 _install() {
