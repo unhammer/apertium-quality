@@ -33,19 +33,22 @@ class RegressionTest(object):
 		for i in self.text.split('\n'):
 			if i[:4] == "* {{":
 				x = i.strip("{}* ").split('|')
-				self.tests[x[1]][x[2]] = x[3]
+				y = x[2].strip()
+				self.tests[x[1]][y if y[-1] == '.' else y+'[].'] = x[3].strip()
 		self.out = StringIO()
 	
 	def run(self):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
-			tmp = NamedTemporaryFile(delete=False)
-			args = '<br>' + '<br>'.join(self.tests[side].keys()).encode('utf-8')
-			tmp.write(args)
-			app = Popen([self.program, '-t', 'html', '-d', self.directory, self.mode, tmp.name], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-			tmp.close()
+			#tmp = NamedTemporaryFile(delete=False)
+			args = '\n'.join(self.tests[side].keys()).encode('utf-8')
+			#tmp.write(args)
+			#tmp.close()
+			print args
+			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			app.stdin.write(args)
 			#tmp = open('derp.txt', 'w'); tmp.write(args); tmp.close()
-			self.results = app.communicate()[0].decode('utf-8').split('<br>')
+			self.results = app.communicate()[0].decode('utf-8').split('\n')
 			
 			print self.results
 			print "Rst:",len(self.results),"Tst:",len(self.tests[side])
@@ -64,4 +67,4 @@ class RegressionTest(object):
 
 	def get_output(self):
 		print self.out.getvalue()
-		print "%d/%d %d%" % (self.passes, self.total, self.passes / self.total * 100)
+		print "%d/%d %d%%" % (self.passes, self.total, self.passes / self.total * 100)
