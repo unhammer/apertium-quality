@@ -34,6 +34,7 @@ class UI(object):
 			rev = page.find(ns + 'revision').find(ns + 'id').text
 			title = page.find(ns + 'title').text
 			stats.add_regression(title, rev, self.test.passes, self.test.total)
+			stats.write()
 		
 if __name__ == "__main__":
 	try:
