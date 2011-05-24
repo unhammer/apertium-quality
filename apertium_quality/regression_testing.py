@@ -54,7 +54,8 @@ class RegressionTest(object):
 			print "Rst:",len(self.results),"Tst:",len(self.tests[side])
 			for n, test in enumerate(self.tests[side].items()):
 				self.out.write("%s\t  %s\n" % (self.mode, test[0].encode('utf-8')))
-				if self.results[n].strip() == test[1].strip():
+				res = self.results[n].split("[]")[0]
+				if res == test[1].strip():
 					self.out.write("WORKS\t  %s\n" % self.results[n].encode('utf-8'))
 					self.passes += 1
 				else:
