@@ -17,8 +17,9 @@ class UI(object):
 			help="Colours the output")
 		ap.add_argument("-d", "--dict", default=["."], dest="dictdir", nargs=1,
 			help="Directory of dictionary (Default: current directory)")
-		ap.add_argument("-s", "--statistics", default=[], dest="statfile", 
-			nargs=1, help="XML file that statistics are to be stored in")
+		ap.add_argument("-s", "--statistics", default=['quality-stats.xml'], 
+			dest="statfile", nargs=1, 
+			help="XML file that statistics are to be stored in")
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
 		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")
 		self.args = args = ap.parse_args()
