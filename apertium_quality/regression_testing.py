@@ -46,7 +46,7 @@ class RegressionTest(object):
 			self.results = app.communicate()[0].decode('utf-8').split('\n')
 			
 			for n, test in enumerate(self.tests[side].items()):
-				res = self.results[n].split("[_]")[0].encode('utf-8')
+				res = self.results[n].split("[_]")[0].strip().encode('utf-8')
 				tes = test[1].strip().encode('utf-8')
 				self.out.write("%s\t  %s\n" % (self.mode, tes))
 				if res == tes:
