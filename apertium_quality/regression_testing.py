@@ -40,27 +40,21 @@ class RegressionTest(object):
 	def run(self):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
-			#tmp = NamedTemporaryFile(delete=False)
 			args = '\n'.join(self.tests[side].keys()).encode('utf-8')
-			#tmp.write(args)
-			#tmp.close()
-			print args
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			app.stdin.write(args)
-			#tmp = open('derp.txt', 'w'); tmp.write(args); tmp.close()
 			self.results = app.communicate()[0].decode('utf-8').split('\n')
 			
-			print self.results
-			print "Rst:",len(self.results),"Tst:",len(self.tests[side])
 			for n, test in enumerate(self.tests[side].items()):
 				self.out.write("%s\t  %s\n" % (self.mode, test[0].encode('utf-8')))
-				res = self.results[n].split("[]")[0]
-				if res == test[1].strip():
-					self.out.write("WORKS\t  %s\n" % self.results[n].encode('utf-8'))
+				res = self.results[n].split("[]")[0].encode('utf-8')
+				tes = test[1].strip().encode('utf-8')
+				if res == tes:
+					self.out.write("WORKS\t  %s\n" % res
 					self.passes += 1
 				else:
-					self.out.write("\t- %s\n" % test[1].encode('utf-8'))
-					self.out.write("\t+ %s\n" % self.results[n].encode('utf-8'))
+					self.out.write("\t- %s\n" % tes)
+					self.out.write("\t+ %s\n" % res)
 				self.total += 1
 
 	def start(self):
