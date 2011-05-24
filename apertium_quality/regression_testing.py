@@ -63,4 +63,4 @@ class RegressionTest(object):
 
 	def get_output(self):
 		print self.out.getvalue()
-		print "Passes: %d/%d, Success rate: %d%%" % (self.passes, self.total, self.passes / self.total * 100)
+		print "Passes: %d/%d, Success rate: %d%%" % (self.passes, self.total, (float(self.passes) / float(self.total) * 100))
