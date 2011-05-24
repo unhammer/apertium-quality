@@ -50,7 +50,7 @@ class RegressionTest(object):
 				res = self.results[n].split("[]")[0].encode('utf-8')
 				tes = test[1].strip().encode('utf-8')
 				if res == tes:
-					self.out.write("WORKS\t  %s\n" % res
+					self.out.write("WORKS\t  %s\n" % res)
 					self.passes += 1
 				else:
 					self.out.write("\t- %s\n" % tes)
