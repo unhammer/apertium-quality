@@ -40,12 +40,12 @@ class RegressionTest(object):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
 			tmp = NamedTemporaryFile(delete=False)
-			args = '.\n'.join(self.tests[side].keys()).encode('utf-8') + '.\n'
+			args = '<br>' + '<br>'.join(self.tests[side].keys()).encode('utf-8')
 			tmp.write(args)
-			app = Popen([self.program, '-d', self.directory, self.mode, tmp.name],
-				stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			app = Popen([self.program, '-t', 'html', '-d', self.directory, self.mode, tmp.name], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			tmp.close()
 			#tmp = open('derp.txt', 'w'); tmp.write(args); tmp.close()
-			self.results = app.communicate()[0].decode('utf-8').split('\n')
+			self.results = app.communicate()[0].decode('utf-8').split('<br>')
 			
 			print self.results
 			print "Rst:",len(self.results),"Tst:",len(self.tests[side])
