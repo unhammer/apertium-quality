@@ -7,6 +7,7 @@ except:
 	raise ImportError("Please install argparse module.")
 
 from apertium_quality.regression_testing import RegressionTest
+from apertium_quality.core import Statistics
 
 class UI(object):
 	def __init__(self):
@@ -16,15 +17,23 @@ class UI(object):
 			help="Colours the output")
 		ap.add_argument("-d", "--dict", default=["."], dest="dictdir", nargs=1,
 			help="Directory of dictionary (Default: current directory)")
+		ap.add_argument("-s", "--statistics", default=[], dest="statfile", 
+			nargs=1, help="XML file that statistics are to be stored in")
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
 		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")
-		args = ap.parse_args()
+		self.args = args = ap.parse_args()
 		self.test = RegressionTest(args.wikiurl[0], args.mode[0], args.dictdir[0])
 	
 	def start(self):
 		self.test.run()
 		self.test.get_output()
-
+		if self.args.statfile != []:
+			stats = Statistics(self.args.statfile[0])
+			page = self.test.tree.getroot().find('page')
+			rev = page.find('revision').find('id').text
+			title = page.find('title').text
+			stats.add_regression(title, rev, self.test.passes, (self.test.total - self.test.passes), self.test.total)
+		
 if __name__ == "__main__":
 	try:
 		ui = UI()
