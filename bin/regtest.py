@@ -29,9 +29,10 @@ class UI(object):
 		self.test.get_output()
 		if self.args.statfile != []:
 			stats = Statistics(self.args.statfile[0])
-			page = self.test.tree.getroot().find('page')
-			rev = page.find('revision').find('id').text
-			title = page.find('title').text
+			ns = "{http://www.mediawiki.org/xml/export-0.3/}"
+			page = self.test.tree.getroot().find(ns + 'page')
+			rev = page.find(ns + 'revision').find(ns + 'id').text
+			title = page.find(ns + 'title').text
 			stats.add_regression(title, rev, self.test.passes, (self.test.total - self.test.passes), self.test.total)
 		
 if __name__ == "__main__":
