@@ -1,9 +1,11 @@
 import xml.etree.cElementTree as etree
-from xml.etree.cElementTree import ParseError
 import os, os.path
 from hashlib import sha1
 from datetime import datetime
 #import logging
+
+class ParseError(Exception):
+	pass
 
 def checksum(data):
 	return str(sha1(data).hexdigest())

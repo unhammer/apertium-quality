@@ -1,5 +1,5 @@
-#!/bin/sh
-if [ `id -u` == 0 ] ; then
+#!/bin/bash
+if [ `id -u` = 0 ] ; then
 	_PREFIXED=0
 else
 	_PREFIXED=1
@@ -19,29 +19,29 @@ prefixed() {
 eval $*
 
 # BEGIN CONFIG
-if [ 'x'$PREFIX == 'x' ] ; then
+if [ 'x'$PREFIX = 'x' ] ; then
 	_PREFIXED=0
 fi
 
-if [ 'x'$PYTHON == 'x' ] ; then
+if [ 'x'$PYTHON = 'x' ] ; then
 	PYTHON=`type -P python`
 else
 	PYTHON=`type -P $PYTHON`
 fi
 
-if [ 'x'$PYTHON == 'x' ] ; then 
+if [ 'x'$PYTHON = 'x' ] ; then 
 	echo "[!] Python not found. If not in \$PATH, set PYTHON variable." >&2
 	exit 1
 fi
 echo "[*] Python binary: $PYTHON"
 
-if [ 'x'$VERSION == 'x' ] ; then
+if [ 'x'$VERSION = 'x' ] ; then
 	VERSION=`python -c "import sys; print sys.version[:3]"`
 fi
 
 echo "[*] Python version: $VERSION"
 
-if [ 'x'$PREFIX == 'x' ] ; then
+if [ 'x'$PREFIX = 'x' ] ; then
 	_pkgdir=`python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
 else
 	_pkgdir="${PREFIX}/lib/python${VERSION}/site-packages"
@@ -54,10 +54,10 @@ if [ $_PREFIXED -gt 0 ] ; then
 else
 	echo "[*] Attempting a normal installation (may require root)"
 fi
-echo "Ready to install [y/N]? \c"
+echo -n "Ready to install [y/N]? "
 read _ready
 
-if [ ! 'x'$_ready == 'xy' ] ; then
+if [ ! 'x'$_ready = 'xy' ] ; then
 	echo "Aborting."
 	exit 1
 fi

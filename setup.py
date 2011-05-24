@@ -9,7 +9,7 @@ setup(
 	version = "0.0",
 	packages = find_packages(),
 	scripts = [ "bin/" + i for i in listdir("bin") if i[0] != '.' ],
-	install_requires = ['pyyaml>=3.0'],
+	install_requires = ['pyyaml>=3.0', 'argparse'],
 
 	author = "Brendan Molloy",
 	author_email = "brendan@bbqsrc.net",
