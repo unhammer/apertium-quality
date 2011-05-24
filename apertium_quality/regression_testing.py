@@ -42,9 +42,11 @@ class RegressionTest(object):
 			app = Popen([self.program, '-d', self.directory, self.mode],
 				stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(self.tests[side].keys()) + '\n'
+			
 			app.stdin.write(args.encode('utf-8'))
 			self.results = app.communicate()[0].decode('utf-8').split('\n')
-			
+			print self.results
+
 			for n, test in enumerate(self.tests[side].items()):
 				self.out.write("%s\t  %s\n" % (self.mode, test[0].encode('utf-8')))
 				print self.results[n].strip(), test
