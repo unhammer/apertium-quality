@@ -41,7 +41,10 @@ class Statistics(object):
 			except:
 				raise
 		else:
-			xml = '<statistics type="%s" version="%s" />' % ("apertium", Statistics.file_version)
+			xml = """<statistics type="%s" version="%s">
+				<regressions/>
+			</statistics>
+			""" % ("apertium", Statistics.file_version)
 			try:
 				self.root = etree.fromstring(xml)
 				self.tree = etree.ElementTree(self.root)
