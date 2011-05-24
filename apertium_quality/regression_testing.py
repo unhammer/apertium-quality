@@ -34,7 +34,7 @@ class RegressionTest(object):
 			if i[:4] == "* {{":
 				x = i.strip("{}* ").split('|')
 				y = x[2].strip()
-				self.tests[x[1]][y if y[-1] == '.' else y+'[].'] = x[3].strip()
+				self.tests[x[1]][y if y[-1] == '.' else y+'[_].'] = x[3].strip()
 		self.out = StringIO()
 	
 	def run(self):
@@ -46,9 +46,9 @@ class RegressionTest(object):
 			self.results = app.communicate()[0].decode('utf-8').split('\n')
 			
 			for n, test in enumerate(self.tests[side].items()):
-				self.out.write("%s\t  %s\n" % (self.mode, test[0].encode('utf-8')))
-				res = self.results[n].split("[]")[0].encode('utf-8')
+				res = self.results[n].split("[_]")[0].encode('utf-8')
 				tes = test[1].strip().encode('utf-8')
+				self.out.write("%s\t  %s\n" % (self.mode, tes))
 				if res == tes:
 					self.out.write("WORKS\t  %s\n" % res)
 					self.passes += 1
@@ -56,10 +56,11 @@ class RegressionTest(object):
 					self.out.write("\t- %s\n" % tes)
 					self.out.write("\t+ %s\n" % res)
 				self.total += 1
+				self.out.write('\n')
 
 	def start(self):
 		self.run()
 
 	def get_output(self):
 		print self.out.getvalue()
-		print "%d/%d %d%%" % (self.passes, self.total, self.passes / self.total * 100)
+		print "Passes: %d/%d, Success rate: %d%%" % (self.passes, self.total, self.passes / self.total * 100)
