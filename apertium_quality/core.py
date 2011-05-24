@@ -2,6 +2,7 @@ import xml.etree.cElementTree as etree
 import os, os.path
 from hashlib import sha1
 from datetime import datetime
+from textwrap import dedent
 #import logging
 
 class ParseError(Exception):
@@ -41,10 +42,11 @@ class Statistics(object):
 			except:
 				raise
 		else:
-			xml = """<statistics type="%s" version="%s">
+			xml = dedent("""
+			<statistics type="%s" version="%s">
 				<regressions/>
 			</statistics>
-			""" % ("apertium", Statistics.file_version)
+			""" % ("apertium", Statistics.file_version))
 			try:
 				self.root = etree.fromstring(xml)
 				self.tree = etree.ElementTree(self.root)
