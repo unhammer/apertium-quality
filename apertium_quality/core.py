@@ -59,7 +59,7 @@ class Statistics(object):
 	def add_regression(self, title, revision, passes, total):
 		root = self.root.find('regressions')
 		r = etree.SubElement(root, 'regression', timestamp=datetime.now().isoformat())
-		etree.SubElement(r, 'title').text = str(title)
+		etree.SubElement(r, 'title').text = unicode(title.encode('utf-8'))
 		etree.SubElement(r, 'revision').text = str(revision)
 		etree.SubElement(r, 'passes').text = str(passes)
 		etree.SubElement(r, 'fails').text = str(total - passes)
