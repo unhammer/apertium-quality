@@ -6,7 +6,7 @@ import re
 
 class CoverageTest(object):
 	def __init__(self, f, dct):
-		for app in ("lt-proc"):#, "apertium-destxt", "apertium-retxt"):
+		for app in (("lt-proc",)):#, "apertium-destxt", "apertium-retxt"):
 			if not whereis(app):
 				raise IOError("Cannot find `%s`. Check $PATH." % app)
 		self.fn = f #TODO: make sure file exists
