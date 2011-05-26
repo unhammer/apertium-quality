@@ -1,4 +1,4 @@
-default namespace = "http://bbqsrc.net/apertium/statistics"
+default namespace = "http://apertium.org/xml/statistics"
 element statistics {
 	attribute type { xsd:string },
 	attribute version { xsd:float },
@@ -7,10 +7,35 @@ element statistics {
 			attribute timestamp { xsd:dateTime },
 			element title { xsd:string },
 			element revision { xsd:positiveInteger },
+			element total { xsd:positiveInteger },
 			element passes { xsd:positiveInteger },
-			element fails { xsd:positiveInteger },
-			element total { xsd:positiveInteger }
-		}+
+			element fails { xsd:positiveInteger }
+		}*
+	},
+	element coverages {
+		element coverage {
+			attribute timestamp { xsd:dateTime },
+			element corpus {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element dictionary {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element percent { xsd:float },
+			element words {
+				element total { xsd:positiveInteger },
+				element known { xsd:positiveInteger },
+				element unknown { xsd:positiveInteger }
+			},
+			element top {
+				element word {
+					xsd:string,
+					attribute count { xsd:positiveInteger }
+				}*
+			}
+		}*
 	}
 }
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element name="statistics" ns="http://apertium.org/xml/statistics" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <attribute name="type">
+    <data type="string"/>
+  </attribute>
+  <attribute name="version">
+    <data type="float"/>
+  </attribute>
+  <element name="regressions">
+    <zeroOrMore>
+      <element name="regression">
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+        <element name="title">
+          <data type="string"/>
+        </element>
+        <element name="revision">
+          <data type="positiveInteger"/>
+        </element>
+        <element name="total">
+          <data type="positiveInteger"/>
+        </element>
+        <element name="passes">
+          <data type="positiveInteger"/>
+        </element>
+        <element name="fails">
+          <data type="positiveInteger"/>
+        </element>
+      </element>
+    </zeroOrMore>
+  </element>
+  <element name="coverages">
+    <zeroOrMore>
+      <element name="coverage">
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+        <element name="corpus">
+          <data type="string"/>
+          <attribute name="checksum">
+            <data type="string"/>
+          </attribute>
+        </element>
+        <element name="dictionary">
+          <data type="string"/>
+          <attribute name="checksum">
+            <data type="string"/>
+          </attribute>
+        </element>
+        <element name="percent">
+          <data type="float"/>
+        </element>
+        <element name="words">
+          <element name="total">
+            <data type="positiveInteger"/>
+          </element>
+          <element name="known">
+            <data type="positiveInteger"/>
+          </element>
+          <element name="unknown">
+            <data type="positiveInteger"/>
+          </element>
+        </element>
+        <element name="top">
+          <zeroOrMore>
+            <element name="word">
+              <data type="string"/>
+              <attribute name="count">
+                <data type="positiveInteger"/>
+              </attribute>
+            </element>
+          </zeroOrMore>
+        </element>
+      </element>
+    </zeroOrMore>
+  </element>
+</element>
