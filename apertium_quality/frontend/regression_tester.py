@@ -5,7 +5,7 @@ except:
 	raise ImportError("Please install argparse module.")
 
 from apertium_quality.regression_testing import RegressionTest
-from apertium_quality.core import Statistics
+from apertium_quality import Statistics
 
 class UI(object):
 	def __init__(self):
