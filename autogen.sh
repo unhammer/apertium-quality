@@ -16,6 +16,12 @@ prefixed() {
 	_PREFIXED=1	
 }
 
+clean() {
+	echo "rm -rf *.pyc distribute-*{egg,tar.gz} *.egg-info build dist"
+	rm -rf *.pyc distribute-*{egg,tar.gz} *.egg-info build dist
+	exit 0
+}
+
 eval $*
 
 # BEGIN CONFIG

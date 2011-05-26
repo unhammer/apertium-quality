@@ -1,6 +1,6 @@
 import xml.etree.cElementTree as etree
 from cStringIO import StringIO
-from apertium_quality.core import whereis
+from apertium_quality import whereis
 from collections import defaultdict
 from subprocess import *
 from tempfile import NamedTemporaryFile

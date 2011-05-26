@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import sys
 try:
 	import argparse	
@@ -36,10 +34,13 @@ class UI(object):
 			title = page.find(ns + 'title').text
 			stats.add_regression(title, rev, self.test.passes, self.test.total)
 			stats.write()
-		
-if __name__ == "__main__":
+
+def main():
 	try:
 		ui = UI()
 		ui.start()
 	except KeyboardInterrupt:
 		pass
+
+if __name__ == "__main__":
+	main()

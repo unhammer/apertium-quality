@@ -1,0 +1,16 @@
+default namespace = "http://bbqsrc.net/apertium/statistics"
+element statistics {
+	attribute type { xsd:string },
+	attribute version { xsd:float },
+	element regressions {
+		element regression {
+			attribute timestamp { xsd:dateTime },
+			element title { xsd:string },
+			element revision { xsd:positiveInteger },
+			element passes { xsd:positiveInteger },
+			element fails { xsd:positiveInteger },
+			element total { xsd:positiveInteger }
+		}+
+	}
+}
+
