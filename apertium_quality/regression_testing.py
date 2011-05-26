@@ -47,7 +47,7 @@ class RegressionTest(object):
 			
 			for n, test in enumerate(self.tests[side].items()):
 				res = self.results[n].split("[_]")[0].strip().encode('utf-8')
-				orig = test[0].strip().encode('utf-8')
+				orig = test[0].split("[_]")[0].strip().encode('utf-8')
 				targ = test[1].strip().encode('utf-8')
 				self.out.write("%s\t  %s\n" % (self.mode, orig))
 				if res == targ:
