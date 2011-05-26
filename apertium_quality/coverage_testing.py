@@ -6,22 +6,15 @@ import re
 
 class CoverageTest(object):
 	def __init__(self, f, dct):
-		for app in ("lt-proc", "apertium-destxt", "apertium-retxt"):
+		for app in ("lt-proc"):#, "apertium-destxt", "apertium-retxt"):
 			if not whereis(app):
 				raise IOError("Cannot find `%s`. Check $PATH." % app)
-		self.fn = f
+		self.fn = f #TODO: make sure file exists
 		self.f = open(f, 'r')
 		self.dct = dct
 		self.result = None
 		
 	def run(self):
-		def backslash(matchobj):
-			return "\\"+matchobj.group(0)
-
-		def space(matchobj):
-			return " "
-
-		
 		if not self.result:
 			delim = re.compile(r"\$[^^]*\^")
 			destxt_escape = re.compile(r"[\]\[\\/@<>^${}]")
@@ -29,16 +22,16 @@ class CoverageTest(object):
 			retxt_escape = re.compile(r"\\.")
 			retxt_space = re.compile(r"[\]\[]")
 			
-			output = destxt_escape.sub(backslash, self.f.read())
-			output = destxt_space.sub(space, output)
-			print 0	
-			p1 = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
-			#p2 = Popen(['apertium-retxt'], stdin=p1.stdout, stdout=PIPE)
-			output = p1.communicate(output)[0]
-			print 1
+			f = self.f.read()
+			output = destxt_escape.sub(lambda x: "\\"+matchobj.group(0), f)
+			output = destxt_space.sub(lambda x: " ", output)
+			
+			proc = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
+			output = proc.communicate(output)[0]
+			
 			output = retxt_escape.sub(lambda o: o.group(0)[-1], output)
 			output = retxt_space.sub('', output)
-			print 2
+			
 			output = delim.sub("$\n^", output)
 			self.result = output.split('\n')
 
