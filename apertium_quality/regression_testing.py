@@ -63,5 +63,5 @@ class RegressionTest(object):
 		print self.out.getvalue()
 		percent = 0
 		if self.total > 0:
-			percent = float(self.passes) / float(self.total) * 100)
+			percent = float(self.passes) / float(self.total) * 100
 		print "Passes: %d/%d, Success rate: %.2f%%" % (self.passes, self.total, percent)

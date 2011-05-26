@@ -23,6 +23,8 @@ class CoverageTest(object):
 			retxt_space = re.compile(r"[\]\[]")
 			
 			f = self.f.read()
+			self.f.seek(0)
+
 			output = destxt_escape.sub(lambda o: "\\"+o.group(0), f)
 			output = destxt_space.sub(lambda o: " ", output)
 			

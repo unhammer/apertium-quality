@@ -7,16 +7,19 @@ except:
 from apertium_quality.regression_testing import RegressionTest
 from apertium_quality import Statistics
 
+#TODO add piping for great interfacing
+
 class UI(object):
 	def __init__(self):
 		ap = argparse.ArgumentParser(
 			description="Test for regressions directly from Apertium wiki.")
 		ap.add_argument("-c", "--colour", dest="colour", action="store_true",
 			help="Colours the output")
-		ap.add_argument("-d", "--dict", default=["."], dest="dictdir", nargs=1,
+		ap.add_argument("-d", "--dict", dest="dictdir", nargs='?',
+			const=['.'], default=['.'],
 			help="Directory of dictionary (Default: current directory)")
-		ap.add_argument("-s", "--statistics", default=['quality-stats.xml'], 
-			dest="statfile", nargs=1, 
+		ap.add_argument("-s", "--statistics", dest="statfile",
+			nargs='?', const=['quality-stats.xml'], default=[],
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
 		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")

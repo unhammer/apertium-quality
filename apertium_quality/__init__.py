@@ -121,6 +121,7 @@ class Dictionary(object):
 
 class Statistics(object):
 	file_version = "1.0"
+	file_type = "apertium"
 
 	def __init__(self, f):
 		self.f = f
@@ -143,11 +144,8 @@ class Statistics(object):
 			except:
 				raise
 		else:
-			xml = dedent("""
-			<statistics type="%s" version="%s">
-			<regressions/>
-			</statistics>
-			""" % ("apertium", Statistics.file_version))
+			xml = '<statistics type="%s" version="%s"/>' % \
+				(Statistics.file_type, Statistics.file_version)
 			try:
 				self.root = etree.fromstring(xml)
 				self.tree = etree.ElementTree(self.root)
@@ -159,9 +157,32 @@ class Statistics(object):
 
 	def add_regression(self, title, revision, passes, total):
 		root = self.root.find('regressions')
+		if not root:
+			root = etree.SubElement(self.root, 'regressions')
 		r = etree.SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
 		etree.SubElement(r, 'title').text = unicode(title.encode('utf-8'))
 		etree.SubElement(r, 'revision').text = str(revision)
 		etree.SubElement(r, 'passes').text = str(passes)
 		etree.SubElement(r, 'fails').text = str(total - passes)
-		etree.SubElement(r, 'total').text = str(total)	
+		etree.SubElement(r, 'total').text = str(total)
+	
+	def add_coverage(self, f, df, fck, dck, cov, words, kwords, ukwords, topuw):
+		root = self.root.find('coverages')
+		if not root:
+			root = etree.SubElement(self.root, 'coverages')
+		r = etree.SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
+		s = etree.SubElement(r, 'corpus')
+		s.text = unicode(f.encode('utf-8'))
+		s.attrib["checksum"] = str(fck)
+		s = etree.SubElement(r, 'dictionary')
+		s.text = unicode(df.encode('utf-8'))
+		s.attrib["checksum"] = str(dck)
+		etree.SubElement(r, 'percent').text = str(cov)
+		s = etree.SubElement(r, 'words')
+		etree.SubElement(s, 'total').text = str(words)
+		etree.SubElement(s, 'known').text = str(kwords)
+		etree.SubElement(s, 'unknown').text = str(ukwords)
+		s = etree.SubElement(r, 'top')
+		for mot, num in topuw:
+			etree.SubElement(s, 'word', count=str(num)).text = unicode(mot.encode('utf-8'))
+		
