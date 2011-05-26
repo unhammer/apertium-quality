@@ -23,8 +23,8 @@ class CoverageTest(object):
 			retxt_space = re.compile(r"[\]\[]")
 			
 			f = self.f.read()
-			output = destxt_escape.sub(lambda x: "\\"+matchobj.group(0), f)
-			output = destxt_space.sub(lambda x: " ", output)
+			output = destxt_escape.sub(lambda o: "\\"+o.group(0), f)
+			output = destxt_space.sub(lambda o: " ", output)
 			
 			proc = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
 			output = proc.communicate(output)[0]
