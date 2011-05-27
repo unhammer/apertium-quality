@@ -1,9 +1,11 @@
 import xml.etree.cElementTree as etree
 import os, os.path
 
+from cStringIO import StringIO
 from collections import OrderedDict, defaultdict
 from os.path import abspath, dirname, basename
 from os import listdir
+from xml.etree.cElementTree import Element, SubElement
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 from hashlib import sha1
@@ -119,6 +121,67 @@ class Dictionary(object):
 					c += len(jv)
 		return c
 
+class Webpage(object):
+	#ns = "{http://www.w3.org/1999/xhtml}"
+	ns = ""
+	base_xhtml = dedent("""
+	<!DOCTYPE html>
+	<html> <!--xmlns="http://www.w3.org/1999/xhtml" lang="en">-->
+		<head>
+			<meta name="title" content="%s" />
+			<title>%s</title>
+			<style type="text/css">
+				* {
+					margin: 0;
+					padding: 0;
+				}
+			</style>
+		</head>
+		<body>
+			<h1>Apertium Statistics - %s</h1>
+			<div id="container"/>
+		</body>
+	</html>
+	""")
+	
+	def __init__(self, stats, fn):
+		#if not isinstance(stats, Statistics):
+		#	raise TypeError("Input must be Statistics object.")
+		self.stats = stats
+		self.fn = fn
+
+	def generate(self):
+		tree = etree.ElementTree()
+		title = "Apertium Statistics"
+		date = datetime.strftime(datetime.now(), "%X %x")
+		root = tree.parse(StringIO(self.base_xhtml % (title, title, date)))
+		div = root.find(self.ns + "body").find(self.ns + "div")
+		div.append(self.generate_regressions())
+		div.append(self.generate_coverages())
+		tree.write(self.fn, "utf-8", True)#, "html")
+
+	def generate_regressions(self):
+		ns = self.ns
+		out = Element(ns + "div", id="regressions")
+		root = self.stats.root.find('regressions')
+		if not root:
+			SubElement(out, ns + 'h2').text = "Not found."
+			return out
+		for i in root.getiterator("regression"):
+			r = SubElement(out, ns + 'div', {"class":"regression"})
+			title = SubElement(r, ns + 'h2')
+			title.text = "%s - %s" % (i.find("title").text, i.attrib["timestamp"])
+			SubElement(r, ns + 'h3').text = "Revision: %s" % i.find("title").attrib["revision"]
+			SubElement(r, ns + 'p').text = "Total: %s" % i.find("total").text
+			SubElement(r, ns + 'p').text = "Passes: %s" % i.find("passes").text
+			SubElement(r, ns + 'p').text = "Fails: %s" % i.find("fails").text
+		return out
+			
+	def generate_coverages(self):
+		#stub
+		return Element("div", id="coverages")
+
+
 class Statistics(object):
 	file_version = "1.0"
 	file_type = "apertium"
@@ -158,31 +221,31 @@ class Statistics(object):
 	def add_regression(self, title, revision, passes, total):
 		root = self.root.find('regressions')
 		if not root:
-			root = etree.SubElement(self.root, 'regressions')
-		r = etree.SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
-		etree.SubElement(r, 'title').text = unicode(title.encode('utf-8'))
-		etree.SubElement(r, 'revision').text = str(revision)
-		etree.SubElement(r, 'passes').text = str(passes)
-		etree.SubElement(r, 'fails').text = str(total - passes)
-		etree.SubElement(r, 'total').text = str(total)
+			root = SubElement(self.root, 'regressions')
+		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
+		SubElement(r, 'title').text = unicode(title.encode('utf-8'))
+		SubElement(r, 'revision').text = str(revision)
+		SubElement(r, 'passes').text = str(passes)
+		SubElement(r, 'fails').text = str(total - passes)
+		SubElement(r, 'total').text = str(total)
 	
 	def add_coverage(self, f, df, fck, dck, cov, words, kwords, ukwords, topuw):
 		root = self.root.find('coverages')
 		if not root:
-			root = etree.SubElement(self.root, 'coverages')
-		r = etree.SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
-		s = etree.SubElement(r, 'corpus')
+			root = SubElement(self.root, 'coverages')
+		r = SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
+		s = SubElement(r, 'corpus')
 		s.text = unicode(f.encode('utf-8'))
 		s.attrib["checksum"] = str(fck)
-		s = etree.SubElement(r, 'dictionary')
+		s = SubElement(r, 'dictionary')
 		s.text = unicode(df.encode('utf-8'))
 		s.attrib["checksum"] = str(dck)
-		etree.SubElement(r, 'percent').text = str(cov)
-		s = etree.SubElement(r, 'words')
-		etree.SubElement(s, 'total').text = str(words)
-		etree.SubElement(s, 'known').text = str(kwords)
-		etree.SubElement(s, 'unknown').text = str(ukwords)
-		s = etree.SubElement(r, 'top')
+		SubElement(r, 'percent').text = str(cov)
+		s = SubElement(r, 'words')
+		SubElement(s, 'total').text = str(words)
+		SubElement(s, 'known').text = str(kwords)
+		SubElement(s, 'unknown').text = str(ukwords)
+		s = SubElement(r, 'top')
 		for mot, num in topuw:
-			etree.SubElement(s, 'word', count=str(num)).text = unicode(mot.encode('utf-8'))
+			SubElement(s, 'word', count=str(num)).text = unicode(mot.encode('utf-8'))
 		
