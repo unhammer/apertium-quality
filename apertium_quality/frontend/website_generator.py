@@ -10,13 +10,12 @@ from apertium_quality import Webpage, Statistics
 
 class UI(object):
 	def __init__(self):
-		ap = argparse.ArgumentParser(
-			description="Test coverage.")
+		ap = argparse.ArgumentParser(description="Generate webpage and related files.")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
-		ap.add_argument("outfile", nargs=1, help="Output HTML file")
+		ap.add_argument("outdir", nargs=1, help="Output directory")
 		self.args = args = ap.parse_args()
 		self.stats = Statistics(args.statistics[0])
-		self.web = Webpage(self.stats, args.outfile[0])
+		self.web = Webpage(self.stats, args.outdir[0])
 	
 	def start(self):
 		self.web.generate()

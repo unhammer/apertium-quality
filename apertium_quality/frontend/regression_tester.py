@@ -35,7 +35,7 @@ class UI(object):
 			page = self.test.tree.getroot().find(ns + 'page')
 			rev = page.find(ns + 'revision').find(ns + 'id').text
 			title = page.find(ns + 'title').text
-			stats.add_regression(title, rev, self.test.passes, self.test.total)
+			stats.add_regression(title, rev, self.test.passes, self.test.total, self.test.get_total_percent())
 			stats.write()
 
 def main():

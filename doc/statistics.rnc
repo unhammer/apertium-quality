@@ -5,8 +5,11 @@ element statistics {
 	element regressions {
 		element regression {
 			attribute timestamp { xsd:dateTime },
-			element title { xsd:string },
-			element revision { xsd:positiveInteger },
+			element title { 
+				xsd:string,
+				attribute revision { xsd:positiveInteger }
+			},
+			element percent { xsd:float },
 			element total { xsd:positiveInteger },
 			element passes { xsd:positiveInteger },
 			element fails { xsd:positiveInteger }
@@ -24,11 +27,9 @@ element statistics {
 				attribute checksum { xsd:string }
 			},
 			element percent { xsd:float },
-			element words {
-				element total { xsd:positiveInteger },
-				element known { xsd:positiveInteger },
-				element unknown { xsd:positiveInteger }
-			},
+			element total { xsd:positiveInteger },
+			element known { xsd:positiveInteger },
+			element unknown { xsd:positiveInteger },
 			element top {
 				element word {
 					xsd:string,

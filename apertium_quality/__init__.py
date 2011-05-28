@@ -1,5 +1,8 @@
 import xml.etree.cElementTree as etree
-import os, os.path
+import os, os.path, re 
+import matplotlib
+matplotlib.use('Agg') # stops it from using X11 and breaking
+import matplotlib.pyplot as plt
 
 from cStringIO import StringIO
 from collections import OrderedDict, defaultdict
@@ -18,6 +21,9 @@ class ParseError(Exception):
 
 def checksum(data):
 	return str(sha1(data).hexdigest())
+
+def from_isoformat(t):
+	return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
 
 def whereis(program):
 	for path in os.environ.get('PATH', '').split(':'):
@@ -128,37 +134,43 @@ class Webpage(object):
 	<!DOCTYPE html>
 	<html> <!--xmlns="http://www.w3.org/1999/xhtml" lang="en">-->
 		<head>
-			<meta name="title" content="%s" />
-			<title>%s</title>
+			<meta charset="UTF-8" />
+			<meta name="title" content="{0}" />
+			<title>{0}</title>
 			<style type="text/css">
-				* {
-					margin: 0;
-					padding: 0;
-				}
+				{2}
 			</style>
 		</head>
 		<body>
-			<h1>Apertium Statistics - %s</h1>
+			<h1>{0} - {1}</h1>
 			<div id="container"/>
 		</body>
 	</html>
 	""")
 	
-	def __init__(self, stats, fn):
+	base_css = dedent("""
+	* {
+		margin: 0;
+		padding: 0;
+	}
+	""")	
+
+	def __init__(self, stats, fdir):
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats
-		self.fn = fn
+		self.fdir = fdir
 
 	def generate(self):
 		tree = etree.ElementTree()
 		title = "Apertium Statistics"
-		date = datetime.strftime(datetime.now(), "%X %x")
-		root = tree.parse(StringIO(self.base_xhtml % (title, title, date)))
+		date = datetime.strftime(datetime.utcnow(), "%Y-%m-%d %H:%M")
+		xhtml = self.base_xhtml.format(title, date, self.base_css)
+		root = tree.parse(StringIO(xhtml))
 		div = root.find(self.ns + "body").find(self.ns + "div")
 		div.append(self.generate_regressions())
 		div.append(self.generate_coverages())
-		tree.write(self.fn, "utf-8", True)#, "html")
+		tree.write(os.path.join(self.fdir, "index.html"), "utf-8", True)#, "html")
 
 	def generate_regressions(self):
 		ns = self.ns
@@ -167,6 +179,13 @@ class Webpage(object):
 		if not root:
 			SubElement(out, ns + 'h2').text = "Not found."
 			return out
+		
+		files = self.plot_regressions()
+		st = SubElement(out, ns + 'div', {"class":"statistics"})
+		for f in files:
+			SubElement(st, ns + 'img', src=f)
+			SubElement(st, ns + 'br')
+
 		for i in root.getiterator("regression"):
 			r = SubElement(out, ns + 'div', {"class":"regression"})
 			title = SubElement(r, ns + 'h2')
@@ -180,6 +199,42 @@ class Webpage(object):
 	def generate_coverages(self):
 		#stub
 		return Element("div", id="coverages")
+
+	def plot_regressions(self):
+		out = []
+		space = re.compile('[ /]')
+		regs = self.stats.get_regressions()
+		for title, reg in regs.items():
+			t = "%s - %s" % (title, "Passes")
+			plt.title(t)
+			plt.xlabel('Test ID')
+			plt.ylabel('Passes (%)')
+			
+			x = range(len(reg))
+			y = [[], [], [], []]
+			
+			for ts, vals in reg.items():
+				y[0].append(vals['percent'])
+				y[1].append(vals['total'])
+				y[2].append(vals['passes'])
+				y[3].append(vals['fails'])
+
+			plt.plot(x, y[0])
+			png = "%s.png" % space.sub('_', t)
+			plt.savefig(os.path.join(self.fdir, png))
+			out.append(png)
+			plt.clf()
+
+			t = "%s - %s" % (title, "Statistics")
+			plt.title(t)
+			plt.ylabel('Quantity')
+
+			plt.plot(x, y[1], 'b', x, y[2], 'g', x, y[3], 'r')
+			png = "%s.png" % space.sub('_', t)
+			plt.savefig(os.path.join(self.fdir, png))
+			out.append(png)
+			plt.clf()
+		return out
 
 
 class Statistics(object):
@@ -218,16 +273,43 @@ class Statistics(object):
 	def write(self):
 		self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
 
-	def add_regression(self, title, revision, passes, total):
+	def add_regression(self, title, revision, passes, total, percent):
 		root = self.root.find('regressions')
 		if not root:
 			root = SubElement(self.root, 'regressions')
 		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
-		SubElement(r, 'title').text = unicode(title.encode('utf-8'))
-		SubElement(r, 'revision').text = str(revision)
+		s = SubElement(r, 'title')
+		s.text = unicode(title.encode('utf-8'))
+		s['revision'] = str(revision)
+		
+		SubElement(r, 'percent').text = str(percent) 
+		SubElement(r, 'total').text = str(total)
 		SubElement(r, 'passes').text = str(passes)
 		SubElement(r, 'fails').text = str(total - passes)
-		SubElement(r, 'total').text = str(total)
+	
+	def get_regressions(self):
+		r = self.root.find('regressions')
+		if not r:
+			return dict()
+		regressions = defaultdict(dict)
+		
+		for i in r.getiterator("regression"):
+			ts = from_isoformat(i.attrib['timestamp'])
+			t = i.find("title")
+			title = "%s - %s" % (t.text, t.attrib["revision"])
+			regressions[title][ts] = {
+				"percent": i.find("percent").text,
+				"total": i.find("total").text,
+				"passes": i.find("passes").text,
+				"fails": i.find("fails").text
+			}
+
+		out = dict()
+		for k, v in regressions.items():
+			out[k] = OrderedDict(sorted(v.items()))
+
+		return out
+
 	
 	def add_coverage(self, f, df, fck, dck, cov, words, kwords, ukwords, topuw):
 		root = self.root.find('coverages')
@@ -237,14 +319,16 @@ class Statistics(object):
 		s = SubElement(r, 'corpus')
 		s.text = unicode(f.encode('utf-8'))
 		s.attrib["checksum"] = str(fck)
+		
 		s = SubElement(r, 'dictionary')
 		s.text = unicode(df.encode('utf-8'))
 		s.attrib["checksum"] = str(dck)
+		
 		SubElement(r, 'percent').text = str(cov)
-		s = SubElement(r, 'words')
-		SubElement(s, 'total').text = str(words)
-		SubElement(s, 'known').text = str(kwords)
-		SubElement(s, 'unknown').text = str(ukwords)
+		SubElement(r, 'total').text = str(words)
+		SubElement(r, 'known').text = str(kwords)
+		SubElement(r, 'unknown').text = str(ukwords)
+		
 		s = SubElement(r, 'top')
 		for mot, num in topuw:
 			SubElement(s, 'word', count=str(num)).text = unicode(mot.encode('utf-8'))
