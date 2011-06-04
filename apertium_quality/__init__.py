@@ -5,7 +5,11 @@ matplotlib.use('Agg') # stops it from using X11 and breaking
 import matplotlib.pyplot as plt
 
 from cStringIO import StringIO
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
+try:
+	from collections import OrderedDict
+except:
+	from ordereddict import OrderedDict
 from os.path import abspath, dirname, basename
 from os import listdir
 from xml.etree.cElementTree import Element, SubElement
@@ -247,10 +251,10 @@ class Statistics(object):
 			try:
 				self.tree = etree.parse(open(f))
 				if self.tree.getroot().tag == "statistics":
-					if self.tree.getroot().get('version') == "1.0":	
+					#if self.tree.getroot().get('version') == "1.0":	
 						#print "[STUB] Do version specific crap here for 1.0"
-					else:
-						pass
+					#else:
+						#pass
 						#print "[DEBUG] Version incorrect."
 					self.root = self.tree.getroot()
 					#print "[DEBUG] Imported tree."

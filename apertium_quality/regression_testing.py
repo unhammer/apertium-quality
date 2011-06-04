@@ -1,7 +1,11 @@
 import xml.etree.cElementTree as etree
 from cStringIO import StringIO
 from apertium_quality import whereis
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
+try:
+	from collections import OrderedDict
+except:
+	from ordereddict import OrderedDict
 from subprocess import *
 from tempfile import NamedTemporaryFile
 import urllib
