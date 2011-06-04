@@ -170,7 +170,7 @@ class Webpage(object):
 		div = root.find(self.ns + "body").find(self.ns + "div")
 		div.append(self.generate_regressions())
 		div.append(self.generate_coverages())
-		tree.write(os.path.join(self.fdir, "index.html"), "utf-8", True)#, "html")
+		tree.write(os.path.join(self.fdir, "index.html"), "utf-8")#, True)#, "html")
 
 	def generate_regressions(self):
 		ns = self.ns
@@ -248,11 +248,12 @@ class Statistics(object):
 				self.tree = etree.parse(open(f))
 				if self.tree.getroot().tag == "statistics":
 					if self.tree.getroot().get('version') == "1.0":	
-						print "[STUB] Do version specific crap here for 1.0"
+						#print "[STUB] Do version specific crap here for 1.0"
 					else:
-						print "[DEBUG] Version incorrect."
+						pass
+						#print "[DEBUG] Version incorrect."
 					self.root = self.tree.getroot()
-					print "[DEBUG] Imported tree."
+					#print "[DEBUG] Imported tree."
 				else:
 					raise ParseError("File does not seem to be a statistics file.")
 			except IOError:
@@ -271,7 +272,7 @@ class Statistics(object):
 				raise
 	
 	def write(self):
-		self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
+		self.tree.write(self.f, encoding="utf-8")#, xml_declaration=True)
 
 	def add_regression(self, title, revision, passes, total, percent):
 		root = self.root.find('regressions')

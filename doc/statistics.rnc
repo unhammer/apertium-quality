@@ -12,7 +12,10 @@ element statistics {
 			element percent { xsd:float },
 			element total { xsd:positiveInteger },
 			element passes { xsd:positiveInteger },
-			element fails { xsd:positiveInteger }
+			element fails { xsd:positiveInteger },
+			element system {
+				element speed { xsd:float }
+			}
 		}*
 	},
 	element coverages {
@@ -35,6 +38,9 @@ element statistics {
 					xsd:string,
 					attribute count { xsd:positiveInteger }
 				}*
+			},
+			element system {
+				element speed { xsd:float }
 			}
 		}*
 	}

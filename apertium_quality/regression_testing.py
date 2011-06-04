@@ -1,7 +1,7 @@
 import xml.etree.cElementTree as etree
 from cStringIO import StringIO
 from apertium_quality import whereis
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from subprocess import *
 from tempfile import NamedTemporaryFile
 import urllib
@@ -29,9 +29,10 @@ class RegressionTest(object):
 				self.text = e.text
 		if not self.text:
 			raise AttributeError("No text element?")
-		self.tests = defaultdict(defaultdict)
+		
+		self.tests = defaultdict(OrderedDict)
 		for i in self.text.split('\n'):
-			if i[:4] == "* {{":
+			if i[:4] == "* {{": # TODO: make {{test regex here
 				x = i.strip("{}* ").split('|')
 				y = x[2].strip()
 				self.tests[x[1]][y if y[-1] == '.' else y+'[_].'] = x[3].strip()
