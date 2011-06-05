@@ -49,8 +49,11 @@ class RegressionTest(object):
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			app.stdin.write(args)
 			self.results = app.communicate()[0].decode('utf-8').split('\n')
-			
+
 			for n, test in enumerate(self.tests[side].items()):
+				if n >= len(self.results):
+					raise AttributeError("More tests than results.")
+					#continue
 				res = self.results[n].split("[_]")[0].strip().encode('utf-8')
 				orig = test[0].split("[_]")[0].strip().encode('utf-8')
 				targ = test[1].strip().encode('utf-8')

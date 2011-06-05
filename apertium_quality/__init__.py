@@ -285,7 +285,7 @@ class Statistics(object):
 		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
 		s = SubElement(r, 'title')
 		s.text = unicode(title.encode('utf-8'))
-		s['revision'] = str(revision)
+		s.attrib['revision'] = str(revision)
 		
 		SubElement(r, 'percent').text = str(percent) 
 		SubElement(r, 'total').text = str(total)

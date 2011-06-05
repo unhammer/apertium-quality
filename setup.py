@@ -4,7 +4,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml', 'argparse']
+install_requires = ['pyyaml', 'argparse', 'matplotlib']
 try:
 	from collections import OrderedDict
 except:

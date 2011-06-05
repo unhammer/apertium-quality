@@ -19,18 +19,19 @@ class UI(object):
 			const=['.'], default=['.'],
 			help="Directory of dictionary (Default: current directory)")
 		ap.add_argument("-s", "--statistics", dest="statfile",
-			nargs='?', const=['quality-stats.xml'], default=[],
+			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
 		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")
 		self.args = args = ap.parse_args()
+		print args
 		self.test = RegressionTest(args.wikiurl[0], args.mode[0], args.dictdir[0])
 	
 	def start(self):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile != []:
-			stats = Statistics(self.args.statfile[0])
+			stats = Statistics(self.args.statfile)
 			ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 			page = self.test.tree.getroot().find(ns + 'page')
 			rev = page.find(ns + 'revision').find(ns + 'id').text
