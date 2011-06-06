@@ -1,24 +1,39 @@
 import xml.etree.cElementTree as etree
-import os, os.path, re 
-import matplotlib
-matplotlib.use('Agg') # stops it from using X11 and breaking
-import matplotlib.pyplot as plt
+import os, os.path, re, sys 
+try:
+	import matplotlib
+	matplotlib.use('Agg') # stops it from using X11 and breaking
+	import matplotlib.pyplot as plt
+except:
+	matplotlib = None
 
-from cStringIO import StringIO
 from collections import defaultdict
 try:
 	from collections import OrderedDict
 except:
 	from ordereddict import OrderedDict
+
 from os.path import abspath, dirname, basename
 from os import listdir
+
 from xml.etree.cElementTree import Element, SubElement
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+
 from hashlib import sha1
 from datetime import datetime
 from textwrap import dedent
 #import logging
+
+def is_python2():
+	if sys.version[0] == '2':
+		return True
+	return False
+
+if is_python2():
+	from cStringIO import StringIO
+else:
+	from io import StringIO
 
 class ParseError(Exception):
 	pass
@@ -160,6 +175,8 @@ class Webpage(object):
 	""")	
 
 	def __init__(self, stats, fdir):
+		if not matplotlib:
+			raise ImportError("matplotlib not installed.")
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats

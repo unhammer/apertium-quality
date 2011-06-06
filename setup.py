@@ -4,7 +4,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml', 'argparse', 'matplotlib']
+install_requires = ['pyyaml', 'argparse']#, 'numpy', 'matplotlib']
 try:
 	from collections import OrderedDict
 except:
@@ -23,5 +23,5 @@ setup(
 	author_email = "brendan@bbqsrc.net",
 	description = "Apertium Quality Control Framework",
 	license = "CC0",
-	keywords = "apertium nlp quality control framework",
+	keywords = "apertium nlp quality control framework"
 )

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+from apertium_quality import is_python2
 
 import sys, os
 reload(sys)
@@ -8,12 +9,17 @@ import re, logging, string
 import xml.sax
 import xml.sax.handler
 from xml.sax import SAXException
-from cStringIO import StringIO
 #import nltk.data
 
 from multiprocessing import Process, Pool, Queue, cpu_count
-from Queue import Empty
 import multiprocessing
+
+if is_python2():
+	from cStringIO import StringIO
+	from Queue import Empty
+else:
+	from os import StringIO
+	from queue import Empty
 
 from wpparser import *
 from wputils import *
@@ -94,7 +100,7 @@ class CorpusGenerator(object):
 		self._start_processes()
 
 	def _make_processes(self, fin, fout, maxsentences=None):
-		print "Cpus: ", cpu_count()
+		print("Cpus: ", cpu_count())
 		self.parser = Process(target=self._parser, args=(fin,))
 		self.parser.daemon = True
 		self.workers = [Process(target=self.worker) for i in range(cpu_count())]
@@ -118,7 +124,7 @@ class CorpusGenerator(object):
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(self.Handler(self))
 		parser.parse(open(fin))
-		print "%d parser done, exiting" % pid
+		print("%d parser done, exiting" % pid)
 
 	
 	def heuristics(self, input, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
@@ -158,7 +164,7 @@ class CorpusGenerator(object):
 				#parsed = self.tokenizer.tokenize(stripped.getvalue())
 				self.outq.put(str(article))
 		except Empty:
-			print "%d done, exiting" % pid
+			print("%d done, exiting" % pid)
 	
 	def output_worker(self, fn, maxsentences=None):
 		pid = os.getpid()
@@ -183,11 +189,12 @@ class CorpusGenerator(object):
 				'''
 			f.close()
 		except Empty:
-			print "%d output worker done, exiting" % pid
+			print("%d output worker done, exiting" % pid)
 	
 if __name__ == '__main__':
 	if len(sys.argv) == 3:
 		CorpusGenerator().generate(sys.argv[1], sys.argv[2]) #maxpages
 	elif len(sys.argv) == 4:
 		CorpusGenerator().generate(sys.argv[1], sys.argv[2], int(sys.argv[3]))
-	else: print "Fail. %s" % len(sys.argv)
+	else: print("Fail. %s" % len(sys.argv))
+

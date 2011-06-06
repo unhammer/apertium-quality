@@ -1,13 +1,17 @@
 #!/bin/bash
 
 get_opt() {
+	local opts="['prefix=', 'python=', 'version=', 'verbose']"
 	local pythonapp="
 import getopt
 out = ''
-opts, args = getopt.getopt(\"$OPTSIN\".split(), \"\", ['prefix='])
+opts, args = getopt.getopt(\"$OPTSIN\".split(), \"v\", $opts)
 for k, v in opts:
-	if k == '--prefix':
-		out += 'PREFIX=%s ' % v
+	if k in ('-v', '--verbose'):
+		out += 'VERBOSE=1 '
+	elif k.startswith('--'):
+		out += '%s=%s ' % (k[2:].upper(), v)
+	
 out += ' '.join(args)
 print(out)
 "
@@ -48,6 +52,12 @@ get_opt
 eval $GETOPTS
 
 # BEGIN CONFIG
+if [ 'x'$VERBOSE = 'x' ] ; then
+	_VERBOSE=">/dev/null"	
+else
+	unset _VERBOSE
+fi
+
 if [ 'x'$PREFIX = 'x' ] ; then
 	_PREFIXED=0
 fi
@@ -98,7 +108,7 @@ _install_prefixed() {
 		exit 1
 	fi
 	echo "[*] Installing..."
-	$PYTHON setup.py install --prefix=${PREFIX} >/dev/null
+	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
 	echo "[-] It is recommended that you add the following lines to your .bashrc:"
 	echo "export PATH=$PATH:${PREFIX}/bin"
 	echo "export PYTHONPATH=${PYTHONPATH}"
@@ -106,7 +116,7 @@ _install_prefixed() {
 
 _install() {
 	echo "[*] Installing..."
-	$PYTHON setup.py install >/dev/null
+	eval $PYTHON setup.py install ${_VERBOSE}
 }
 
 if [ $_PREFIXED -gt 0 ] ; then

@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
+from apertium_quality import whereis, is_python2
+
 import os, os.path, re
 pjoin = os.path.join
-import urllib
-
 from tempfile import NamedTemporaryFile
-from cStringIO import StringIO
-from StringIO import StringIO as PyStringIO
 
 import xml.etree.cElementTree as etree
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
-import yaml
 
 from collections import defaultdict, Counter
 try:
@@ -21,9 +18,23 @@ except:
 from multiprocessing import Process, Manager
 from subprocess import *
 
-from apertium_quality import whereis
+import yaml
 
-ARROW = u"\u2192"
+# DIRTY HACKS
+ARROW = "\u2192"
+if is_python2():
+	import urllib
+	urllib.request = urllib
+	urllib.parse = urllib
+	urllib.error = urllib
+	from cStringIO import StringIO
+	from StringIO import StringIO as PyStringIO
+	ARROW = ARROW.decode('unicode-escape')
+else:
+	unicode = str
+	import urllib.request, urllib.parse, urllib.error
+	from io import StringIO
+	PyStringIO = StringIO
 
 
 class RegressionTest(object):
@@ -37,7 +48,7 @@ class RegressionTest(object):
 			raise AttributeError("URL did not contain Special:Export.")
 		self.mode = mode
 		self.directory = directory
-		self.tree = etree.parse(urllib.urlopen(url))
+		self.tree = etree.parse(urllib.request.urlopen(url))
 		self.passes = 0
 		self.total = 0
 		for e in self.tree.getroot().getiterator():
@@ -96,7 +107,7 @@ class RegressionTest(object):
 		return "%.2f" % (float(self.passes)/float(self.total)*100)
 
 	def get_output(self):
-		print self.out.getvalue()
+		print(self.out.getvalue())
 		percent = 0
 		if self.total > 0:
 			percent = float(self.passes) / float(self.total) * 100
@@ -166,11 +177,11 @@ class CoverageTest(object):
 		return a / b * 100
 
 	def get_output(self):
-		print "Number of tokenised words in the corpus:",len(self.get_words())
-		print "Number of known words in the corpus:",len(self.get_known_words())
-		print "Coverage: %.2f%%" % self.get_coverage()
-		print "Top unknown words in the corpus:"
-		print self.get_top_unknown_words_string()
+		print("Number of tokenised words in the corpus:",len(self.get_words()))
+		print("Number of known words in the corpus:",len(self.get_known_words()))
+		print("Coverage: %.2f%%" % self.get_coverage())
+		print("Top unknown words in the corpus:")
+		print(self.get_top_unknown_words_string())
 
 
 
@@ -309,7 +320,7 @@ class HfstTest(object):
 		
 		self.tests = f["Tests"]
 		for test in self.tests:
-			for key, val in self.tests[test].iteritems():
+			for key, val in self.tests[test].items():
 				self.tests[test][key] = string_to_list(val)
 
 		if not self.args.colour:
@@ -395,7 +406,7 @@ class HfstTest(object):
 		title = "Test %d: %s (%s)" % (c, input, desc)
 		self.out.title(title)
 
-		for test, forms in tests.iteritems():
+		for test, forms in tests.items():
 			expected_results = set(forms)
 			actual_results = set(self.results[f][test])
 
@@ -464,9 +475,9 @@ def string_to_list(data):
 	if isinstance(data, (str, unicode)): return [data]
 	else: return data
 	
-def invert_dict(input):
+def invert_dict(data):
 		tmp = OrderedDict()
-		for key, val in input.iteritems():
+		for key, val in data.items():
 			for v in string_to_list(val):
 				tmp.setdefault(v, set()).add(key)
 		return tmp 
@@ -518,8 +529,8 @@ class _OrderedDictYAMLLoader(yaml.Loader):
 	def __init__(self, *args, **kwargs):
 		yaml.Loader.__init__(self, *args, **kwargs)
 
-		self.add_constructor(u'tag:yaml.org,2002:map', type(self).construct_yaml_map)
-		self.add_constructor(u'tag:yaml.org,2002:omap', type(self).construct_yaml_map)
+		self.add_constructor(unicode('tag:yaml.org,2002:map'), type(self).construct_yaml_map)
+		self.add_constructor(unicode('tag:yaml.org,2002:omap'), type(self).construct_yaml_map)
 
 	def construct_yaml_map(self, node):
 		data = OrderedDict()
@@ -539,7 +550,7 @@ class _OrderedDictYAMLLoader(yaml.Loader):
 			key = self.construct_object(key_node, deep=deep)
 			try:
 				hash(key)
-			except TypeError, exc:
+			except TypeError as exc:
 				raise yaml.constructor.ConstructorError('while constructing a mapping',
 					node.start_mark, 'found unacceptable key (%s)' % exc, key_node.start_mark)
 			value = self.construct_object(value_node, deep=deep)

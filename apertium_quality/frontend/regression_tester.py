@@ -24,7 +24,6 @@ class UI(object):
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
 		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")
 		self.args = args = ap.parse_args()
-		print args
 		self.test = RegressionTest(args.wikiurl[0], args.mode[0], args.dictdir[0])
 	
 	def start(self):
