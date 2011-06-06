@@ -59,13 +59,13 @@ fi
 echo "[*] Python binary: $PYTHON"
 
 if [ 'x'$VERSION = 'x' ] ; then
-	VERSION=`$PYTHON -c "import sys; print sys.version[:3]"`
+	VERSION=`$PYTHON -c "import sys; print(sys.version[:3])"`
 fi
 
 echo "[*] Python version: $VERSION"
 
 if [ 'x'$PREFIX = 'x' ] ; then
-	_pkgdir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
+	_pkgdir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
 else
 	_pkgdir="${PREFIX}/lib/python${VERSION}/site-packages"
 fi
