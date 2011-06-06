@@ -1,4 +1,19 @@
 #!/bin/bash
+
+get_opt() {
+	local pythonapp="
+import getopt
+out = ''
+opts, args = getopt.getopt(\"$OPTSIN\".split(), \"\", ['prefix='])
+for k, v in opts:
+	if k == '--prefix':
+		out += 'PREFIX=%s ' % v
+out += ' '.join(args)
+print(out)
+"
+	GETOPTS=`$PYTHON -c "$pythonapp"`
+}
+
 if [ `id -u` = 0 ] ; then
 	_PREFIXED=0
 else
@@ -22,17 +37,19 @@ clean() {
 	exit 0
 }
 
-eval $*
-
-# BEGIN CONFIG
-if [ 'x'$PREFIX = 'x' ] ; then
-	_PREFIXED=0
-fi
-
 if [ 'x'$PYTHON = 'x' ] ; then
 	PYTHON=`type -P python`
 else
 	PYTHON=`type -P $PYTHON`
+fi
+
+OPTSIN="$*"
+get_opt
+eval $GETOPTS
+
+# BEGIN CONFIG
+if [ 'x'$PREFIX = 'x' ] ; then
+	_PREFIXED=0
 fi
 
 if [ 'x'$PYTHON = 'x' ] ; then 
