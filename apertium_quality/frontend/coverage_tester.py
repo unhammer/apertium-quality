@@ -4,7 +4,7 @@ try:
 except:
 	raise ImportError("Please install argparse module.")
 
-from apertium_quality.coverage_testing import CoverageTest
+from apertium_quality.testing import CoverageTest
 from apertium_quality import Statistics, checksum
 
 #TODO add piping for great interfacing
@@ -16,7 +16,7 @@ class UI(object):
 		ap.add_argument("-c", "--colour", dest="colour", action="store_true",
 			help="Colours the output")
 		ap.add_argument("-s", "--statistics", dest="statfile", 
-			nargs='?', const=['quality-stats.xml'], default=[],
+			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("corpus", nargs=1, help="Corpus text file")
 		ap.add_argument("dictionary", nargs=1, help="Binary dictionary")
@@ -26,7 +26,7 @@ class UI(object):
 	def start(self):
 		self.test.run()
 		self.test.get_output()
-		if self.args.statfile != []:
+		if self.args.statfile:
 			stats = Statistics(self.args.statfile[0])
 			
 			wrx = re.compile(r"\^(.*)/")

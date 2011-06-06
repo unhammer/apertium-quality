@@ -4,7 +4,7 @@ try:
 except:
 	raise ImportError("Please install argparse module.")
 
-from apertium_quality.regression_testing import RegressionTest
+from apertium_quality.testing import RegressionTest
 from apertium_quality import Statistics
 
 #TODO add piping for great interfacing
@@ -30,7 +30,7 @@ class UI(object):
 	def start(self):
 		self.test.run()
 		self.test.get_output()
-		if self.args.statfile != []:
+		if self.args.statfile:
 			stats = Statistics(self.args.statfile)
 			ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 			page = self.test.tree.getroot().find(ns + 'page')
