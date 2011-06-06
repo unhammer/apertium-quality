@@ -15,7 +15,7 @@ class UI(object):
 			description="Test coverage.")
 		ap.add_argument("-c", "--colour", dest="colour", action="store_true",
 			help="Colours the output")
-		ap.add_argument("-s", "--statistics", dest="statfile", 
+		ap.add_argument("-X", "--statistics", dest="statfile", 
 			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("corpus", nargs=1, help="Corpus text file")
@@ -27,7 +27,7 @@ class UI(object):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile:
-			stats = Statistics(self.args.statfile[0])
+			stats = Statistics(self.args.statfile)
 			
 			wrx = re.compile(r"\^(.*)/")
 

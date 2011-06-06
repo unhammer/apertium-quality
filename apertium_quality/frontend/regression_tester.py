@@ -18,7 +18,7 @@ class UI(object):
 		ap.add_argument("-d", "--dict", dest="dictdir", nargs='?',
 			const=['.'], default=['.'],
 			help="Directory of dictionary (Default: current directory)")
-		ap.add_argument("-s", "--statistics", dest="statfile",
+		ap.add_argument("-X", "--statistics", dest="statfile",
 			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
