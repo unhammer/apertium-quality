@@ -25,6 +25,8 @@ from datetime import datetime
 from textwrap import dedent
 #import logging
 
+
+
 def is_python2():
 	if sys.version[0] == '2':
 		return True
@@ -35,6 +37,8 @@ if is_python2():
 else:
 	from io import StringIO
 
+
+
 class ParseError(Exception):
 	pass
 
@@ -44,12 +48,16 @@ def checksum(data):
 def from_isoformat(t):
 	return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
 
-def whereis(program):
-	for path in os.environ.get('PATH', '').split(':'):
-		if os.path.exists(os.path.join(path, program)) and \
-		   not os.path.isdir(os.path.join(path, program)):
-			return os.path.join(path, program)
-	return None
+def whereis(programs):
+	out = {}
+	for p in programs:
+		for path in os.environ.get('PATH', '').split(':'):
+			if os.path.exists(os.path.join(path, p)) and \
+			   not os.path.isdir(os.path.join(path, p)):
+					out[p] = os.path.join(path, p)
+		if not out.get(p):
+			raise EnvironmentError("Cannot find `%s`. Check $PATH." % p)
+	return out
 
 def split_ext(fn):
 	return tuple(fn.rsplit('.', 1))

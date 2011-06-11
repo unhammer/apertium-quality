@@ -42,8 +42,7 @@ class RegressionTest(object):
 	program = "apertium"
 	
 	def __init__(self, url, mode, directory="."):
-		if not whereis(self.program):
-			raise IOError("Cannot find `%s`. Check $PATH." % self.program)	
+		whereis([self.program])
 		if not "Special:Export" in url:
 			raise AttributeError("URL did not contain Special:Export.")
 		self.mode = mode
@@ -116,9 +115,7 @@ class RegressionTest(object):
 
 class CoverageTest(object):
 	def __init__(self, f, dct):
-		for app in (("lt-proc",)):#, "apertium-destxt", "apertium-retxt"):
-			if not whereis(app):
-				raise IOError("Cannot find `%s`. Check $PATH." % app)
+		whereis(["lt-proc"])#, "apertium-destxt", "apertium-retxt"):
 		self.fn = f #TODO: make sure file exists
 		self.f = open(f, 'r')
 		self.dct = dct
@@ -189,6 +186,7 @@ class VocabularyTest(object):
 	class DIXHandler(ContentHandler):
 		def __init__(self):
 			self.alph = None
+		
 		def startElement(self, tag, attrs):
 			if tag == "alphabet":
 				self.tag == "alphabet"
@@ -225,6 +223,41 @@ class VocabularyTest(object):
 		p = Popen(['lt-expand', self.anadix], stdout=PIPE)
 		dixout = p.communicate()[0]
 
+
+
+class AmbiguityTest(object):
+	delim = re.compile(":[<>]:")
+
+	def __init__(self, f):
+		self.f = f
+		self.program = "lt-expand"
+		whereis([self.program])
+	
+	def get_results(self):
+		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE)
+		self.results = self.delim.sub(":", app.communicate()[0]).split('\n')
+
+	def get_ambiguity(self):
+		self.h = defaultdict(lambda: 0)
+		self.surface_forms = 0
+		self.total = 0
+
+		for line in self.results:
+			row = line.split(":")
+			if not row[0] in self.h:
+				self.surface_forms += 1
+			self.h[row[0]] += 1
+			self.total += 1
+
+	def run(self):
+		self.get_results()
+		self.get_ambiguity()
+
+	def get_output(self):
+		print("Total surface forms: %d" % self.surface_forms)
+		print("Total analyses: %d" % self.total)
+		average = float(self.total) / float(self.surface_forms)
+		print("Average ambiguity: %.2f" % average)
 
 
 class HfstTest(object):
@@ -297,8 +330,7 @@ class HfstTest(object):
 			raise AttributeError("'%s' not found in Config of test file." % section)
 		
 		self.program = f["Config"][section].get("App", "hfst-lookup")
-		if not whereis(self.program):
-			raise IOError("Cannot find `%s`. Check $PATH." % self.program)
+		whereis([self.program])
 
 		self.gen = f["Config"][section].get("Gen", None)
 		self.morph = f["Config"][section].get("Morph", None)
