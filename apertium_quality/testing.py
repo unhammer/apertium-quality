@@ -1,43 +1,27 @@
 # -*- coding: utf-8 -*-
-from apertium_quality import whereis, is_python2
 
-import os, os.path, re
+import os, os.path, re, yaml
 pjoin = os.path.join
+from collections import defaultdict, Counter, OrderedDict
 from tempfile import NamedTemporaryFile
 
 import xml.etree.cElementTree as etree
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
-from collections import defaultdict, Counter
-try:
-	from collections import OrderedDict
-except:
-	from ordereddict import OrderedDict
-
+import urllib.request, urllib.parse, urllib.error
 from multiprocessing import Process, Manager
 from subprocess import *
+from io import StringIO
 
-import yaml
+from apertium_quality import whereis
 
 # DIRTY HACKS
 ARROW = "\u2192"
-if is_python2():
-	import urllib
-	urllib.request = urllib
-	urllib.parse = urllib
-	urllib.error = urllib
-	from cStringIO import StringIO
-	from StringIO import StringIO as PyStringIO
-	ARROW = ARROW.decode('unicode-escape')
-else:
-	unicode = str
-	import urllib.request, urllib.parse, urllib.error
-	from io import StringIO
-	PyStringIO = StringIO
 
 
 class RegressionTest(object):
+	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 	program = "apertium"
 	
@@ -50,39 +34,44 @@ class RegressionTest(object):
 		self.tree = etree.parse(urllib.request.urlopen(url))
 		self.passes = 0
 		self.total = 0
+		text = None
 		for e in self.tree.getroot().getiterator():
 			if e.tag == self.ns + "title":
 				self.title = e.text
 			if e.tag == self.ns + "revision":
 				self.revision = e[0].text # should be <id>
 			if e.tag == self.ns + "text":
-				self.text = e.text
-		if not self.text:
+				text = e.text
+		if not text:
 			raise AttributeError("No text element?")
 		
 		self.tests = defaultdict(OrderedDict)
-		for i in self.text.split('\n'):
-			if i[:4] == "* {{": # TODO: make {{test regex here
-				x = i.strip("{}* ").split('|')
-				y = x[2].strip()
-				self.tests[x[1]][y if y[-1] == '.' else y+'[_].'] = x[3].strip()
+		rtests = text.split('\n')
+		rtests = [self.wrg.search(j) for j in rtests if self.wrg.search(j)]
+		for i in rtests:
+			lang, left, right = i.group(1), i.group(2), i.group(3)
+			if not left.endswith('.'):
+				left += '[_].'
+			self.tests[lang.strip()][left.strip()] = right.strip()
 		self.out = StringIO()
 	
 	def run(self):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
-			args = '\n'.join(self.tests[side].keys()).encode('utf-8')
+			args = '\n'.join(self.tests[side].keys())
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-			app.stdin.write(args)
-			self.results = app.communicate()[0].decode('utf-8').split('\n')
+			app.stdin.write(args.encode('utf-8'))
+			res = str(app.communicate()[0].decode('utf-8'))
+			self.results = res.split('\n')
 
 			for n, test in enumerate(self.tests[side].items()):
 				if n >= len(self.results):
-					raise AttributeError("More tests than results.")
-					#continue
-				res = self.results[n].split("[_]")[0].strip().encode('utf-8')
-				orig = test[0].split("[_]")[0].strip().encode('utf-8')
-				targ = test[1].strip().encode('utf-8')
+					#raise AttributeError("More tests than results.")
+					continue
+				res = self.results[n].split("[_]")[0].strip()
+				print(type(res))
+				orig = test[0].split("[_]")[0].strip()
+				targ = test[1].strip()
 				self.out.write("%s\t  %s\n" % (self.mode, orig))
 				if res == targ:
 					self.out.write("WORKS\t  %s\n" % res)
@@ -261,22 +250,22 @@ class AmbiguityTest(object):
 
 
 class HfstTest(object):
-	class AllOutput(PyStringIO):
+	class AllOutput(StringIO):
 		def get_output(self):
 			return self.getvalue()
 
 		def final_result(self, hfst):
 			text = "Total passes: %d, Total fails: %d, Total: %d\n"
-			self.write(colourise(text % (hfst.passes, hfst.fails, hfst.fails+hfst.passes), 2).encode('utf-8'))
+			self.write(colourise(text % (hfst.passes, hfst.fails, hfst.fails+hfst.passes), 2))
 
 	class NormalOutput(AllOutput):
 		def title(self, text):
-			self.write(colourise("-"*len(text)+'\n', 1).encode('utf-8'))
-			self.write(colourise(text+'\n', 1).encode('utf-8'))
-			self.write(colourise("-"*len(text)+'\n', 1).encode('utf-8'))
+			self.write(colourise("-"*len(text)+'\n', 1))
+			self.write(colourise(text+'\n', 1))
+			self.write(colourise("-"*len(text)+'\n', 1))
 
 		def success(self, l, r):
-			self.write(colourise("[PASS] %s => %s\n" % (l, r)).encode('utf-8'))
+			self.write(colourise("[PASS] %s => %s\n" % (l, r)))
 
 		def failure(self, form, err, errlist):
 			self.write(colourise("[FAIL] %s => %s: %s\n" % (form, err, ", ".join(errlist))))
@@ -285,7 +274,7 @@ class HfstTest(object):
 			p = counts["Pass"]
 			f = counts["Fail"]
 			text = "Test %d - Passes: %d, Fails: %d, Total: %d\n\n"
-			self.write(colourise(text % (test, p, f, p+f), 2).encode('utf-8'))
+			self.write(colourise(text % (test, p, f, p+f), 2))
 
 	class CompactOutput(AllOutput):
 		def title(self, *args):
@@ -359,9 +348,9 @@ class HfstTest(object):
 			colourise = lambda x, y=None: x
 
 		
-		# Assume that the command line input is utf-8, convert it to unicode
-		if self.args.test:
-			self.args.test[0] = self.args.test[0].decode('utf-8')
+		# Assume that the command line input is utf-8, convert it to str
+		#if self.args.test:
+		#	self.args.test[0] = self.args.test[0].decode('utf-8')
 		
 	def run_tests(self, input=None):
 		if self.args.surface == self.args.lexical == False:
@@ -394,8 +383,8 @@ class HfstTest(object):
 			keys = tests.keys()
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
-			app.stdin.write(args.encode('utf-8'))
-			res = app.communicate()[0].decode('utf-8').split('\n\n')
+			app.stdin.write(args)
+			res = app.communicate()[0].split('\n\n')
 			self.results[d] = self.parse_fst_output(res)
 		
 		gen = Process(target=parser, args=(self, "gen", self.gen, tests))
@@ -465,10 +454,10 @@ class HfstTest(object):
 			
 			if not self.args.hide_fail:
 				if len(invalid) > 0:
-					self.out.failure(test.encode('utf-8'), "Invalid test item", invalid)
+					self.out.failure(test, "Invalid test item", invalid)
 					self.count[c]["Fail"] += len(invalid)
 				if len(missing) > 0 and (not self.args.ignore_analyses or not passed):
-					self.out.failure(test.encode('utf-8'), "Unexpected output", missing)
+					self.out.failure(test, "Unexpected output", missing)
 					self.count[c]["Fail"] += len(missing)
 
 		self.out.result(title, c, self.count[c])

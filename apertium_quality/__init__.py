@@ -7,11 +7,7 @@ try:
 except:
 	matplotlib = None
 
-from collections import defaultdict
-try:
-	from collections import OrderedDict
-except:
-	from ordereddict import OrderedDict
+from collections import defaultdict, OrderedDict
 
 from os.path import abspath, dirname, basename
 from os import listdir
@@ -20,23 +16,11 @@ from xml.etree.cElementTree import Element, SubElement
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
+from io import StringIO
 from hashlib import sha1
 from datetime import datetime
 from textwrap import dedent
 #import logging
-
-
-
-def is_python2():
-	if sys.version[0] == '2':
-		return True
-	return False
-
-if is_python2():
-	from cStringIO import StringIO
-else:
-	from io import StringIO
-
 
 
 class ParseError(Exception):
@@ -309,7 +293,7 @@ class Statistics(object):
 			root = SubElement(self.root, 'regressions')
 		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
 		s = SubElement(r, 'title')
-		s.text = unicode(title.encode('utf-8'))
+		s.text = str(title)
 		s.attrib['revision'] = str(revision)
 		
 		SubElement(r, 'percent').text = str(percent) 
@@ -347,11 +331,11 @@ class Statistics(object):
 			root = SubElement(self.root, 'coverages')
 		r = SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
 		s = SubElement(r, 'corpus')
-		s.text = unicode(f.encode('utf-8'))
+		s.text = str(f)
 		s.attrib["checksum"] = str(fck)
 		
 		s = SubElement(r, 'dictionary')
-		s.text = unicode(df.encode('utf-8'))
+		s.text = str(df)
 		s.attrib["checksum"] = str(dck)
 		
 		SubElement(r, 'percent').text = str(cov)
@@ -361,5 +345,6 @@ class Statistics(object):
 		
 		s = SubElement(r, 'top')
 		for mot, num in topuw:
-			SubElement(s, 'word', count=str(num)).text = unicode(mot.encode('utf-8'))
+			e = SubElement(s, 'word', count=str(num))
+			e.text = str(mot)
 		
