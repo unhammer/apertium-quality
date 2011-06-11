@@ -89,7 +89,7 @@ class Dictionary(object):
 
 	def __init__(self, f):
 		self.fn = f
-		self.f = open(get_dix(f))
+		self.f = open(get_dix(f), 'rb')
 		self.lemmas = None
 		self.rules = None
 		
@@ -117,7 +117,7 @@ class Dictionary(object):
 					parser.parse(i)
 					self.rules[ext] = handler.rules
 				elif is_rlx(ext):
-					f = open(i, 'r')
+					f = open(i, 'rb')
 					self.rules[ext] = defaultdict(list)
 					rules = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
 					for line in f.xreadlines():
@@ -258,7 +258,7 @@ class Statistics(object):
 		self.f = f
 		if os.path.exists(f):
 			try:
-				self.tree = etree.parse(open(f))
+				self.tree = etree.parse(open(f, 'rb'))
 				if self.tree.getroot().tag == "statistics":
 					#if self.tree.getroot().get('version') == "1.0":	
 						#print "[STUB] Do version specific crap here for 1.0"

@@ -66,13 +66,15 @@ if [ 'x'$PYTHON = 'x' ] ; then
 	echo "[!] Python not found. If not in \$PATH, set PYTHON variable." >&2
 	exit 1
 fi
-echo "[*] Python binary: $PYTHON"
 
 if [ 'x'$VERSION = 'x' ] ; then
 	VERSION=`$PYTHON -c "import sys; print(sys.version[:3])"`
+	if [ ! `echo $VERSION | cut -d '.' -f 1` = '3' ] ; then
+		echo "[!] Only compatible with Python 3 (got $VERSION)."
+		echo "[!] Try setting --python to your Python 3 binary."
+		exit 1
+	fi
 fi
-
-echo "[*] Python version: $VERSION"
 
 if [ 'x'$PREFIX = 'x' ] ; then
 	_pkgdir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
@@ -81,6 +83,8 @@ else
 fi
 
 echo "[*] Chosen package directory: ${_pkgdir}"
+echo "[*] Python binary: $PYTHON"
+echo "[*] Python version: $VERSION"
 
 if [ $_PREFIXED -gt 0 ] ; then
 	echo "[*] Attempting a prefixed (rootless) installation"

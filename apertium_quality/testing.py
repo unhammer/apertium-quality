@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, os.path, re, yaml
+import os, os.path, re, sys, yaml
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
 from tempfile import NamedTemporaryFile
@@ -61,15 +61,18 @@ class RegressionTest(object):
 			args = '\n'.join(self.tests[side].keys())
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			app.stdin.write(args.encode('utf-8'))
-			res = str(app.communicate()[0].decode('utf-8'))
-			self.results = res.split('\n')
+			res, err = app.communicate()
+			self.results = str(res.decode('utf-8')).split('\n')
+			if app.returncode > 0:
+				print("An error occurred. (Exit code: %d)" % app.returncode)
+				print(self.results[0])
+				sys.exit(1)
 
 			for n, test in enumerate(self.tests[side].items()):
 				if n >= len(self.results):
 					#raise AttributeError("More tests than results.")
 					continue
 				res = self.results[n].split("[_]")[0].strip()
-				print(type(res))
 				orig = test[0].split("[_]")[0].strip()
 				targ = test[1].strip()
 				self.out.write("%s\t  %s\n" % (self.mode, orig))
