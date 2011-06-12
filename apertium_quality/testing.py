@@ -129,7 +129,8 @@ class CoverageTest(object):
 			output = destxt_escape.sub(lambda o: "\\"+o.group(0), f)
 			output = destxt_space.sub(lambda o: " ", output)
 			
-			proc = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
+			output = output.encode('utf-8')
+			proc = popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
 			
 			output = retxt_escape.sub(lambda o: o.group(0)[-1], output)
