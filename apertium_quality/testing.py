@@ -16,7 +16,6 @@ from io import StringIO
 
 from apertium_quality import whereis
 
-# DIRTY HACKS
 ARROW = "\u2192"
 
 
@@ -28,10 +27,13 @@ class RegressionTest(object):
 	def __init__(self, url, mode, directory="."):
 		whereis([self.program])
 		if not "Special:Export" in url:
-			raise AttributeError("URL did not contain Special:Export.")
+			print("Warning: URL did not contain Special:Export.")
 		self.mode = mode
 		self.directory = directory
-		self.tree = etree.parse(urllib.request.urlopen(url))
+		if url.startswith('http'):
+			self.tree = etree.parse(urllib.request.urlopen(url))
+		else:
+			self.tree = etree.parse(open(url))
 		self.passes = 0
 		self.total = 0
 		text = None
@@ -128,7 +130,7 @@ class CoverageTest(object):
 			output = destxt_space.sub(lambda o: " ", output)
 			
 			proc = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
-			output = proc.communicate(output)[0]
+			output = str(proc.communicate(output)[0].decode('utf-8'))
 			
 			output = retxt_escape.sub(lambda o: o.group(0)[-1], output)
 			output = retxt_space.sub('', output)
@@ -227,7 +229,8 @@ class AmbiguityTest(object):
 	
 	def get_results(self):
 		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE)
-		self.results = self.delim.sub(":", app.communicate()[0]).split('\n')
+		res = str(app.communicate()[0].decode('utf-8'))
+		self.results = self.delim.sub(":", res).split('\n')
 
 	def get_ambiguity(self):
 		self.h = defaultdict(lambda: 0)
@@ -387,7 +390,7 @@ class HfstTest(object):
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
 			app.stdin.write(args)
-			res = app.communicate()[0].split('\n\n')
+			res = str(app.communicate()[0].decode('utf-8')).split('\n\n')
 			self.results[d] = self.parse_fst_output(res)
 		
 		gen = Process(target=parser, args=(self, "gen", self.gen, tests))
