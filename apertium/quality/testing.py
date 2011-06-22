@@ -14,7 +14,7 @@ from multiprocessing import Process, Manager
 from subprocess import *
 from io import StringIO
 
-from apertium_quality import whereis
+from apertium.quality import whereis
 
 ARROW = "\u2192"
 

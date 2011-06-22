@@ -4,8 +4,8 @@ try:
 except:
 	raise ImportError("Please install argparse module.")
 
-from apertium_quality.testing import HfstTest
-from apertium_quality import Statistics, checksum
+from apertium.quality.testing import HfstTest
+from apertium.quality import Statistics, checksum
 
 #TODO add piping for great interfacing
 

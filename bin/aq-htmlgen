@@ -1,3 +1,3 @@
 #!/usr/bin/env python
-from apertium_quality.frontend.website_generator import main
+from apertium.quality.frontend.website_generator import main
 main()

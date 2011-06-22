@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-from apertium_quality import is_python2
+from apertium.quality import is_python2
 
 import sys, os
 reload(sys)

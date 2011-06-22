@@ -4,7 +4,7 @@ try:
 except:
 	raise ImportError("Please install argparse module.")
 
-from apertium_quality import Webpage, Statistics
+from apertium.quality import Webpage, Statistics
 
 #TODO add piping for great interfacing
 

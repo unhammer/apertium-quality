@@ -4,8 +4,8 @@ try:
 except:
 	raise ImportError("Please install argparse module.")
 
-from apertium_quality.testing import RegressionTest
-from apertium_quality import Statistics
+from apertium.quality.testing import RegressionTest
+from apertium.quality import Statistics
 
 #TODO add piping for great interfacing
 
