@@ -1,11 +1,9 @@
-import sys, re, os.path
 try:
 	import argparse	
 except:
 	raise ImportError("Please install argparse module.")
 
 from apertium.quality.testing import AmbiguityTest
-from apertium.quality import Statistics, checksum
 
 #TODO add piping for great interfacing
 
@@ -26,7 +24,7 @@ class UI(object):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile:
-			pass
+			self.test.save_statistics(self.args.statfile)
 
 def main():
 	try:
@@ -34,7 +32,4 @@ def main():
 		ui.start()
 	except KeyboardInterrupt:
 		pass
-
-if __name__ == "__main__":
-	main()
 

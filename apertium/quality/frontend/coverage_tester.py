@@ -1,11 +1,9 @@
-import sys, re, os.path
 try:
 	import argparse	
 except:
 	raise ImportError("Please install argparse module.")
 
 from apertium.quality.testing import CoverageTest
-from apertium.quality import Statistics, checksum
 
 #TODO add piping for great interfacing
 
@@ -27,33 +25,11 @@ class UI(object):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile:
-			stats = Statistics(self.args.statfile)
-			
-			wrx = re.compile(r"\^(.*)/")
-
-			cfn = os.path.basename(self.test.fn)
-			dfn = os.path.basename(self.test.dct)
-			cck = checksum(self.test.f.read())
-			dck = checksum(open(self.test.dct).read())
-			cov = "%.2f" % self.test.get_coverage()
-			words = len(self.test.get_words())
-			kwords = len(self.test.get_known_words())
-			ukwords = len(self.test.get_unknown_words())
-			topukwtmp = self.test.get_top_unknown_words()
-			topukw = []
-			for word, count in topukwtmp:
-				topukw.append((wrx.search(word).group(1), count))
-			
-			stats.add_coverage(cfn, dfn, cck, dck, cov, words, kwords, ukwords, topukw)
-			stats.write()
-
+			self.test.save_statistics(self.args.statfile)
 def main():
 	try:
 		ui = UI()
 		ui.start()
 	except KeyboardInterrupt:
 		pass
-
-if __name__ == "__main__":
-	main()
 

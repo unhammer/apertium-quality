@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-from apertium.quality import is_python2
 
 import sys, os
 reload(sys)
@@ -14,12 +13,8 @@ from xml.sax import SAXException
 from multiprocessing import Process, Pool, Queue, cpu_count
 import multiprocessing
 
-if is_python2():
-	from cStringIO import StringIO
-	from Queue import Empty
-else:
-	from os import StringIO
-	from queue import Empty
+from os import StringIO
+from queue import Empty
 
 from wpparser import *
 from wputils import *

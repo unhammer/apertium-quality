@@ -1,18 +1,16 @@
-import sys
 try:
 	import argparse	
 except:
 	raise ImportError("Please install argparse module.")
 
 from apertium.quality.testing import HfstTest
-from apertium.quality import Statistics, checksum
 
 #TODO add piping for great interfacing
 
 class UI(object):
 	def __init__(self):
 		self.args = args = self.parse_args()
-		self.test = HfstTest(args)
+		self.test = HfstTest(**args)
 	
 	def parse_args(self):
 		ap = argparse.ArgumentParser(
@@ -57,14 +55,13 @@ class UI(object):
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("test_file", nargs=1,
 			help="YAML file with test rules")
-		return ap.parse_args()
+		return dict(ap.parse_args()._get_kwargs())
 	
 	def start(self):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile:
-			stats = Statistics(self.args.statfile)
-			print("[STUB] Not done yet. Relax, have a coffee :)")	
+			self.test.save_statistics(self.args.statfile)
 
 def main():
 	try:
@@ -72,7 +69,4 @@ def main():
 		ui.start()
 	except KeyboardInterrupt:
 		pass
-
-if __name__ == "__main__":
-	main()
 

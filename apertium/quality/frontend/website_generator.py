@@ -1,4 +1,3 @@
-import sys, re, os.path
 try:
 	import argparse	
 except:
@@ -10,7 +9,8 @@ from apertium.quality import Webpage, Statistics
 
 class UI(object):
 	def __init__(self):
-		ap = argparse.ArgumentParser(description="Generate webpage and related files.")
+		ap = argparse.ArgumentParser(
+			description="Generate webpage and related files.")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
 		ap.add_argument("outdir", nargs=1, help="Output directory")
 		self.args = args = ap.parse_args()
@@ -26,8 +26,4 @@ def main():
 		ui.start()
 	except KeyboardInterrupt:
 		pass
-
-if __name__ == "__main__":
-	main()
-
 

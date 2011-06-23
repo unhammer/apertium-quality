@@ -1,7 +1,7 @@
 default namespace = "http://apertium.org/xml/statistics"
 element statistics {
-	attribute type { xsd:string },
-	attribute version { xsd:float },
+	attribute type { "apertium" },
+	attribute version { "1.0" },
 	element regressions {
 		element regression {
 			attribute timestamp { xsd:dateTime },
@@ -17,7 +17,7 @@ element statistics {
 				element speed { xsd:float }
 			}
 		}*
-	},
+	} &
 	element coverages {
 		element coverage {
 			attribute timestamp { xsd:dateTime },
@@ -39,6 +39,51 @@ element statistics {
 					attribute count { xsd:positiveInteger }
 				}*
 			},
+			element system {
+				element speed { xsd:float }
+			}
+		}*
+	} &
+	element ambiguities {
+		element ambiguity {
+			attribute timestamp { xsd:dateTime },
+			element corpus {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element surface-forms { xsd:string },
+			element analyses { xsd:string },
+			element average { xsd:float },
+			element system {
+				element speed { xsd:float }
+			}
+		}* 
+	} &
+	element hfsts {
+		element hfst {
+			attribute timestamp { xsd:dateTime },
+			element config {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element gen {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element morph {
+				xsd:string,
+				attribute checksum { xsd:string }
+			},
+			element tests {
+				element test {
+					xsd:string,
+					attribute passes { xsd:positiveInteger },
+					attribute fails { xsd:positiveInteger }
+				}*
+			},
+			element total { xsd:positiveInteger },
+			element passes { xsd:positiveInteger },
+			element fails { xsd:positiveInteger },
 			element system {
 				element speed { xsd:float }
 			}

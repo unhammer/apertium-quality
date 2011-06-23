@@ -1,11 +1,9 @@
-import sys
 try:
 	import argparse	
 except:
 	raise ImportError("Please install argparse module.")
 
 from apertium.quality.testing import RegressionTest
-from apertium.quality import Statistics
 
 #TODO add piping for great interfacing
 
@@ -30,13 +28,7 @@ class UI(object):
 		self.test.run()
 		self.test.get_output()
 		if self.args.statfile:
-			stats = Statistics(self.args.statfile)
-			ns = "{http://www.mediawiki.org/xml/export-0.3/}"
-			page = self.test.tree.getroot().find(ns + 'page')
-			rev = page.find(ns + 'revision').find(ns + 'id').text
-			title = page.find(ns + 'title').text
-			stats.add_regression(title, rev, self.test.passes, self.test.total, self.test.get_total_percent())
-			stats.write()
+			self.test.save_statistics(self.args.statfile)
 
 def main():
 	try:
@@ -45,5 +37,3 @@ def main():
 	except KeyboardInterrupt:
 		pass
 
-if __name__ == "__main__":
-	main()
