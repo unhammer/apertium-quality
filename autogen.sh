@@ -47,6 +47,11 @@ else
 	PYTHON=`type -P $PYTHON`
 fi
 
+SED=`type -P gsed`
+if [ $? -gt 0 ] ; then
+	SED=sed
+fi
+
 OPTSIN="$*"
 get_opt
 eval $GETOPTS
@@ -113,9 +118,25 @@ _install_prefixed() {
 	fi
 	echo "[*] Installing..."
 	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
-	echo "[-] It is recommended that you add the following lines to your .bashrc:"
-	echo "export PATH=$PATH:${PREFIX}/bin"
-	echo "export PYTHONPATH=${PYTHONPATH}"
+
+	if [ -f $HOME/.bashrc ] ; then 
+		rc=$HOME/.bashrc
+	elif [ -f $HOME/.profile ] ; then
+		rc=$HOME/.profile
+	fi
+
+	if [ x"$rc" != 'x' ] ; then
+		$SED -i "s|source $HOME/\.apertium-quality||g" $rc
+		echo "source $HOME/.apertium-quality" >> $rc
+		echo "export PATH="'$PATH'":${PREFIX}/bin" > $HOME/.apertium-quality
+		echo "export PYTHONPATH=${PYTHONPATH}" >> $HOME/.apertium-quality
+		echo "[-] Restart your shell for the environment settings to take effect."
+	else
+
+		echo "[-] It is recommended that you add the following lines to your .bashrc:"
+		echo 'export PATH=$PATH:'"${PREFIX}/bin"
+		echo "export PYTHONPATH=${PYTHONPATH}"
+	fi
 }
 
 _install() {
