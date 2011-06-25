@@ -60,8 +60,8 @@ class UI(object):
 	def start(self):
 		self.test.run()
 		self.test.get_output()
-		if self.args.statfile:
-			self.test.save_statistics(self.args.statfile)
+		if self.args.get('statfile'):
+			self.test.save_statistics(self.args['statfile'])
 
 def main():
 	try:

@@ -359,9 +359,9 @@ class HfstTest(object):
 
 	def load_config(self):
 		global colourise
-		f = yaml.load(open(self.args['test_file']), _OrderedDictYAMLLoader)
+		f = yaml.load(open(self.args['test_file'][0]), _OrderedDictYAMLLoader)
 		
-		section = self.args['section']
+		section = self.args['section'][0]
 		if not section in f["Config"]:
 			raise AttributeError("'%s' not found in Config of test file." % section)
 		
@@ -393,11 +393,6 @@ class HfstTest(object):
 
 		if not self.args.get('colour'):
 			colourise = lambda x, y=None: x
-
-		
-		# Assume that the command line data is utf-8, convert it to str
-		#if self.args.test:
-		#	self.args.test[0] = self.args.test[0].decode('utf-8')
 		
 	def run_tests(self, data=None):
 		if self.args.get('surface') == self.args.get('lexical') == False:
@@ -430,8 +425,7 @@ class HfstTest(object):
 			keys = tests.keys()
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
-			app.stdin.write(args)
-			res = str(app.communicate()[0].decode('utf-8')).split('\n\n')
+			res = str(app.communicate(args.encode('utf-8'))[0].decode('utf-8')).split('\n\n')
 			self.results[d] = self.parse_fst_output(res)
 		
 		gen = Process(target=parser, args=(self, "gen", self.gen, tests))
@@ -457,13 +451,11 @@ class HfstTest(object):
 			desc = "Lexical/Generation"
 			f = "gen"
 			tests = self.tests[data]
-			#invtests = invert_dict(self.tests[data])
 
 		else: #surface
 			desc = "Surface/Analysis"
 			f = "morph"
 			tests = invert_dict(self.tests[data])
-			#invtests = self.tests[data]
 
 		c = len(self.count)
 		d = "%s (%s)" % (data, desc)
@@ -533,7 +525,7 @@ class HfstTest(object):
 
 	def save_statistics(self, f):
 		stats = Statistics(f)
-		stats.add_hfst(self.args['test_file'], self.gen, self.morph, self.count)
+		stats.add_hfst(self.args['test_file'][0], self.gen, self.morph, self.count, self.passes, self.fails)
 		stats.write()
 
 	def get_output(self):

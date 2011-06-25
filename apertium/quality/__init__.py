@@ -266,7 +266,7 @@ class Statistics(object):
 		SubElement(r, 'analyses').text = str(a)
 		SubElement(r, 'average').text = str(avg)
 
-	def add_hfst(self, config, ck, gen, gk, morph, mk, tests):
+	def add_hfst(self, config, ck, gen, gk, morph, mk, tests, passes, fails):
 		root = self.root.find('hfsts')
 		if not root:
 			root = SubElement(self.root, 'hfsts')
@@ -290,12 +290,6 @@ class Statistics(object):
 			t.text = k
 			t.attrib['passes'] = v["Pass"]
 			t.attrib['fails'] = v["Fail"]
-		
-		passes = 0
-		fails = 0
-		for v in tests.values():
-			passes += v["Pass"]
-			fails += v["Fail"]
 		
 		SubElement(r, 'total').text = str(passes + fails)
 		SubElement(r, 'passes').text = str(passes)
