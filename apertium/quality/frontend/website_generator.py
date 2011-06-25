@@ -1,3 +1,5 @@
+import sys
+
 try:
 	import argparse	
 except:
@@ -24,6 +26,7 @@ def main():
 	try:
 		ui = UI()
 		ui.start()
+		sys.exit(0)
 	except KeyboardInterrupt:
 		pass
 

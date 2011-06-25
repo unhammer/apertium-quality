@@ -17,7 +17,7 @@ class UI(object):
 			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
 		ap.add_argument("corpus", nargs=1, help="Corpus text file")
-		ap.add_argument("dictionary", nargs=1, help="Binary dictionary")
+		ap.add_argument("dictionary", nargs=1, help="Binary dictionary (.bin)")
 		self.args = args = ap.parse_args()
 		self.test = CoverageTest(args.corpus[0], args.dictionary[0])
 	

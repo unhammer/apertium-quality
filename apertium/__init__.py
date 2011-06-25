@@ -1,4 +1,4 @@
-import os, os.path 
+import os, os.path, re
 
 from collections import defaultdict
 from os.path import abspath, dirname, basename
@@ -106,7 +106,7 @@ class Dictionary(object):
 		return self.lemmas
 	
 	def get_unique_entries(self):	
-		return set(get_entries)
+		return set(self.get_entries())
 
 	def get_rules(self):
 		if not self.rules:
@@ -130,14 +130,12 @@ class Dictionary(object):
 		return self.rules
 	
 	def get_rule_count(self):
-		if not self.rules:
-			self.get_rules()
 		c = 0
-		for ik, iv in self.get_rules().items():
-			if isinstance(iv, list):
-				c += len(iv)
-			elif isinstance(iv, dict):
-				for jk, jv in iv.items():
-					c += len(jv)
+		for i in self.get_rules().values():
+			if isinstance(i, list):
+				c += len(i)
+			elif isinstance(i, dict):
+				for j in i.values():
+					c += len(j)
 		return c
 

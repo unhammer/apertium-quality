@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import os, os.path, re, sys, yaml
+import os.path, re, yaml
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
-from tempfile import NamedTemporaryFile
 
 import xml.etree.cElementTree as etree
-from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
+import urllib.request
 
-import urllib.request, urllib.parse, urllib.error
 from multiprocessing import Process, Manager
-from subprocess import *
+from subprocess import Popen, PIPE
 from io import StringIO
 
-from apertium import whereis, destxt, retxt
+from apertium import whereis, destxt, retxt, checksum
 from apertium.quality import Statistics
 
 ARROW = "\u2192"
@@ -70,12 +67,10 @@ class RegressionTest(object):
 			args = '\n'.join(self.tests[side].keys())
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			app.stdin.write(args.encode('utf-8'))
-			res, err = app.communicate()
+			res = app.communicate()[0]
 			self.results = str(res.decode('utf-8')).split('\n')
 			if app.returncode > 0:
-				print("An error occurred. (Exit code: %d)" % app.returncode)
-				print(self.results[0])
-				sys.exit(1)
+				return app.returncode
 
 			for n, test in enumerate(self.tests[side].items()):
 				if n >= len(self.results):
@@ -93,6 +88,7 @@ class RegressionTest(object):
 					self.out.write("\t+ %s\n" % res)
 				self.total += 1
 				self.out.write('\n')
+		return 0
 
 	def get_passes(self):
 		return self.passes
@@ -149,6 +145,7 @@ class CoverageTest(object):
 			
 			output = delim.sub("$\n^", output)
 			self.result = output.split('\n')
+		return 0
 
 	def get_words(self):
 		if not self.result:
@@ -208,8 +205,7 @@ class CoverageTest(object):
 		print(self.get_top_unknown_words_string())
 
 
-
-class VocabularyTest(object):
+'''class VocabularyTest(object):
 	class DIXHandler(ContentHandler):
 		def __init__(self):
 			self.alph = None
@@ -255,6 +251,7 @@ class VocabularyTest(object):
 
 	def get_output(self):
 		return NotImplemented
+'''
 
 
 class AmbiguityTest(object):
@@ -281,19 +278,24 @@ class AmbiguityTest(object):
 				self.surface_forms += 1
 			self.h[row[0]] += 1
 			self.total += 1
+		
+		self.average = float(self.total) / float(self.surface_forms)
 
 	def run(self):
 		self.get_results()
 		self.get_ambiguity()
+		return 0
 
 	def save_statistics(self, f):
-		return NotImplemented
+		stats = Statistics(f)
+		fck = checksum(open(self.f, 'rb').read())
+		stats.add_ambiguity(self.f, fck, self.surface_forms, self.total, self.average)
+		stats.write()
 
 	def get_output(self):
 		print("Total surface forms: %d" % self.surface_forms)
 		print("Total analyses: %d" % self.total)
-		average = float(self.total) / float(self.surface_forms)
-		print("Average ambiguity: %.2f" % average)
+		print("Average ambiguity: %.2f" % self.average)
 
 
 class HfstTest(object):
@@ -343,17 +345,17 @@ class HfstTest(object):
 				self.write(colourise("[PASS] %s\n" % out))
 			
 	def __init__(self, **kwargs):
-		#TODO rewrite to not require argparse as data!!
-		self.args = kwargs
+		self.args = dict(kwargs)
 
 		self.fails = 0
 		self.passes = 0
 
-		self.count = []
+		self.count = OrderedDict()
 		self.load_config()
 
 	def run(self):
 		self.run_tests(self.args['test'])
+		return 0
 
 	def load_config(self):
 		global colourise
@@ -377,9 +379,9 @@ class HfstTest(object):
 				raise IOError("File %s does not exist." % i)
 		
 		if self.args.get('compact'):
-			self.out = HfstTester.CompactOutput()
+			self.out = HfstTest.CompactOutput()
 		else:
-			self.out = HfstTester.NormalOutput()
+			self.out = HfstTest.NormalOutput()
 		
 		if self.args.get('verbose'):
 			self.out.write("`%s` will be used for parsing dictionaries.\n" % self.program)
@@ -455,22 +457,20 @@ class HfstTest(object):
 			desc = "Lexical/Generation"
 			f = "gen"
 			tests = self.tests[data]
-			invtests = invert_dict(self.tests[data])
+			#invtests = invert_dict(self.tests[data])
 
 		else: #surface
 			desc = "Surface/Analysis"
 			f = "morph"
 			tests = invert_dict(self.tests[data])
-			invtests = self.tests[data]
-
-		if not f:
-			return
+			#invtests = self.tests[data]
 
 		c = len(self.count)
-		self.count.append({"Pass":0, "Fail":0})
-		
-		title = "Test %d: %s (%s)" % (c, data, desc)
+		d = "%s (%s)" % (data, desc)
+		title = "Test %d: %s" % (c, d)
 		self.out.title(title)
+
+		self.count[d] = {"Pass": 0, "Fail": 0}
 
 		for test, forms in tests.items():
 			expected_results = set(forms)
@@ -489,27 +489,27 @@ class HfstTest(object):
 				if not form in expected_results:
 					missing.add(form)
 		
-			for form in expected_results:
+			for form in actual_results:
 				if not form in (invalid | missing):
 					passed = True
 					success.add(form)
-					self.count[c]["Pass"] += 1
+					self.count[d]["Pass"] += 1
 					if not self.args.get('hide_pass'):
 						self.out.success(test, form)				
 			
 			if not self.args.get('hide_fail'):
 				if len(invalid) > 0:
 					self.out.failure(test, "Invalid test item", invalid)
-					self.count[c]["Fail"] += len(invalid)
+					self.count[d]["Fail"] += len(invalid)
 				if len(missing) > 0 and \
-					(not self.args.get('ignore_analyses') or not passed):
+						(not self.args.get('ignore_analyses') or not passed):
 					self.out.failure(test, "Unexpected output", missing)
-					self.count[c]["Fail"] += len(missing)
+					self.count[d]["Fail"] += len(missing)
 
-		self.out.result(title, c, self.count[c])
+		self.out.result(title, c, self.count[d])
 		
-		self.passes += self.count[c]["Pass"]
-		self.fails += self.count[c]["Fail"]
+		self.passes += self.count[d]["Pass"]
+		self.fails += self.count[d]["Fail"]
 	
 	def parse_fst_output(self, fst):
 		parsed = {}
@@ -532,7 +532,9 @@ class HfstTest(object):
 		return parsed
 
 	def save_statistics(self, f):
-		return NotImplemented
+		stats = Statistics(f)
+		stats.add_hfst(self.args['test_file'], self.gen, self.morph, self.count)
+		stats.write()
 
 	def get_output(self):
 		print(self.out.get_output())
@@ -542,7 +544,8 @@ class HfstTest(object):
 # SUPPORT FUNCTIONS
 
 def string_to_list(data):
-	if isinstance(data, (str, unicode)): return [data]
+	if isinstance(data, bytes): raise TypeError("Function does not accept bytes as input.")
+	elif isinstance(data, str): return [data]
 	else: return data
 	
 def invert_dict(data):
@@ -589,7 +592,6 @@ def colourise(string, opt=None):
 		return "%s%s" % (x, reset())
 
 
-
 # SUPPORT CLASSES
 
 # Courtesy of https://gist.github.com/844388. Thanks!
@@ -599,8 +601,8 @@ class _OrderedDictYAMLLoader(yaml.Loader):
 	def __init__(self, *args, **kwargs):
 		yaml.Loader.__init__(self, *args, **kwargs)
 
-		self.add_constructor(unicode('tag:yaml.org,2002:map'), type(self).construct_yaml_map)
-		self.add_constructor(unicode('tag:yaml.org,2002:omap'), type(self).construct_yaml_map)
+		self.add_constructor('tag:yaml.org,2002:map', type(self).construct_yaml_map)
+		self.add_constructor('tag:yaml.org,2002:omap', type(self).construct_yaml_map)
 
 	def construct_yaml_map(self, node):
 		data = OrderedDict()

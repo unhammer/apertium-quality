@@ -47,7 +47,7 @@ element statistics {
 	element ambiguities {
 		element ambiguity {
 			attribute timestamp { xsd:dateTime },
-			element corpus {
+			element dictionary {
 				xsd:string,
 				attribute checksum { xsd:string }
 			},
