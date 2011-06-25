@@ -425,11 +425,11 @@ class HfstTest(object):
 			keys = tests.keys()
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
-			print(args)
 			res = str(app.communicate(args.encode('utf-8'))[0].decode('utf-8')).split('\n\n')
-			print(res)
 			if app.returncode > 0:
 				self.results[d] = res[0]
+			elif res[0] == '':
+				self.results[d] = "Possible segfault"
 			else:
 				self.results[d] = self.parse_fst_output(res)
 		
@@ -473,8 +473,6 @@ class HfstTest(object):
 		self.count[d] = {"Pass": 0, "Fail": 0}
 
 		for test, forms in tests.items():
-			print(self.results)
-			import sys; sys.exit()
 			expected_results = set(forms)
 			actual_results = set(self.results[f][test])
 
@@ -485,11 +483,12 @@ class HfstTest(object):
 
 			for form in expected_results:
 				if not form in actual_results:
-					invalid.add(form)
+					missing.add(form)
+
 			
 			for form in actual_results:
 				if not form in expected_results:
-					missing.add(form)
+					invalid.add(form)
 		
 			for form in actual_results:
 				if not form in (invalid | missing):
@@ -501,11 +500,11 @@ class HfstTest(object):
 			
 			if not self.args.get('hide_fail'):
 				if len(invalid) > 0:
-					self.out.failure(test, "Invalid test item", invalid)
+					self.out.failure(test, "unexpected results", invalid)
 					self.count[d]["Fail"] += len(invalid)
 				if len(missing) > 0 and \
 						(not self.args.get('ignore_analyses') or not passed):
-					self.out.failure(test, "Unexpected output", missing)
+					self.out.failure(test, "missing results", missing)
 					self.count[d]["Fail"] += len(missing)
 
 		self.out.result(title, c, self.count[d])
