@@ -426,7 +426,10 @@ class HfstTest(object):
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
 			res = str(app.communicate(args.encode('utf-8'))[0].decode('utf-8')).split('\n\n')
-			self.results[d] = self.parse_fst_output(res)
+			if app.returncode > 0:
+				self.results[d] = res[0]
+			else:
+				self.results[d] = self.parse_fst_output(res)
 		
 		gen = Process(target=parser, args=(self, "gen", self.gen, tests))
 		gen.daemon = True
@@ -456,7 +459,10 @@ class HfstTest(object):
 			desc = "Surface/Analysis"
 			f = "morph"
 			tests = invert_dict(self.tests[data])
-
+		
+		if isinstance(self.results[f], str):
+			raise LookupError('%s had an error:\n%s' % (self.program, self.results[f]))
+		
 		c = len(self.count)
 		d = "%s (%s)" % (data, desc)
 		title = "Test %d: %s" % (c, d)
@@ -585,6 +591,9 @@ def colourise(string, opt=None):
 
 
 # SUPPORT CLASSES
+
+class LookupError(Exception):
+	pass
 
 # Courtesy of https://gist.github.com/844388. Thanks!
 class _OrderedDictYAMLLoader(yaml.Loader):
