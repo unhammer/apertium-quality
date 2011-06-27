@@ -534,7 +534,10 @@ class HfstTest(object):
 
 	def save_statistics(self, f):
 		stats = Statistics(f)
-		stats.add_hfst(self.args['test_file'][0], self.gen, self.morph, self.count, self.passes, self.fails)
+		stats.add_hfst(self.args['test_file'][0], checksum(open(self.args['test_file'][0]).read()), 
+					self.gen, checksum(open(self.gen, 'rb').read()), 
+					self.morph, checksum(open(self.morph, 'rb').read()),
+					self.count, self.passes, self.fails)
 		stats.write()
 
 	def get_output(self):

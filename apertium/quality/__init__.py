@@ -287,9 +287,9 @@ class Statistics(object):
 		s = SubElement(r, 'tests')
 		for k, v in tests.items():
 			t = SubElement(s, 'test')
-			t.text = k
-			t.attrib['passes'] = v["Pass"]
-			t.attrib['fails'] = v["Fail"]
+			t.text = str(k)
+			t.attrib['passes'] = str(v["Pass"])
+			t.attrib['fails'] = str(v["Fail"])
 		
 		SubElement(r, 'total').text = str(passes + fails)
 		SubElement(r, 'passes').text = str(passes)

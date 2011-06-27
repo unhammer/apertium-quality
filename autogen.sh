@@ -56,6 +56,12 @@ OPTSIN="$*"
 get_opt
 eval $GETOPTS
 
+if [ 'x'$PYTHON = 'x' ] ; then
+	PYTHON=`type -P python`
+else
+	PYTHON=`type -P $PYTHON`
+fi
+
 # BEGIN CONFIG
 if [ 'x'$VERBOSE = 'x' ] ; then
 	_VERBOSE=">/dev/null"	
@@ -67,8 +73,8 @@ if [ 'x'$PREFIX = 'x' ] ; then
 	_PREFIXED=0
 fi
 
-if [ 'x'$PYTHON = 'x' ] ; then 
-	echo "[!] Python not found. If not in \$PATH, set PYTHON variable." >&2
+if [ 'x'$PYTHON = 'x' ] ; then
+	echo "[!] Python not found. If not in \$PATH, use full path." >&2
 	exit 1
 fi
 
@@ -82,12 +88,12 @@ if [ 'x'$VERSION = 'x' ] ; then
 fi
 
 if [ 'x'$PREFIX = 'x' ] ; then
-	_pkgdir=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
+	_PKGDIR=`$PYTHON -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"`
 else
-	_pkgdir="${PREFIX}/lib/python${VERSION}/site-packages"
+	_PKGDIR="${PREFIX}/lib/python${VERSION}/site-packages"
 fi
 
-echo "[*] Chosen package directory: ${_pkgdir}"
+echo "[*] Chosen package directory: ${_PKGDIR}"
 echo "[*] Python binary: $PYTHON"
 echo "[*] Python version: $VERSION"
 
@@ -97,11 +103,11 @@ else
 	echo "[*] Attempting a normal installation (may require root)"
 fi
 echo -n "Ready to install [y/N]? "
-read _ready
+read _READY
 
-if [ ! 'x'$_ready = 'xy' ] ; then
+if [ ! 'x'$_READY = 'xy' ] ; then
 	echo "Aborting."
-	exit 1
+	exit 255
 fi
 
 # BEGIN INSTALLATION
@@ -110,7 +116,7 @@ _install_standalone() {
 }
 
 _install_prefixed() {
-	export PYTHONPATH=$_pkgdir
+	export PYTHONPATH=$_PKGDIR
 	mkdir -p $PYTHONPATH
 	if [ $? -gt 0 ] ; then
 		echo "[!] ${PREFIX} not writable. Aborting."
@@ -129,7 +135,7 @@ _install_prefixed() {
 		$SED -i "s|source $HOME/\.apertium-quality||g" $rc
 		echo "source $HOME/.apertium-quality" >> $rc
 		echo "export PATH="'$PATH'":${PREFIX}/bin" > $HOME/.apertium-quality
-		echo "export PYTHONPATH=${PYTHONPATH}" >> $HOME/.apertium-quality
+		echo 'export PYTHONPATH=$PYTHONPATH'"${PYTHONPATH}" >> $HOME/.apertium-quality
 		echo "[-] Restart your shell for the environment settings to take effect."
 	else
 
