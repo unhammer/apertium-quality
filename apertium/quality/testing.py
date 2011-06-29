@@ -359,17 +359,17 @@ class HfstTest(object):
 
 	def load_config(self):
 		global colourise
-		f = yaml.load(open(self.args['test_file'][0]), _OrderedDictYAMLLoader)
+		f = yaml.load(open(self.args['test_file']), _OrderedDictYAMLLoader)
 		
-		section = self.args['section'][0]
+		section = self.args['section']
 		if not section in f["Config"]:
 			raise AttributeError("'%s' not found in Config of test file." % section)
 		
-		self.program = f["Config"][section].get("App", "hfst-lookup")
+		self.program = self.args.get('app') or f["Config"][section].get("App", "hfst-lookup")
 		whereis([self.program])
 
-		self.gen = f["Config"][section].get("Gen", None)
-		self.morph = f["Config"][section].get("Morph", None)
+		self.gen = self.args.get('gen') or f["Config"][section].get("Gen", None)
+		self.morph = self.args.get('morph') or f["Config"][section].get("Morph", None)
 	
 		if self.gen == self.morph == None:
 			raise AttributeError("One of Gen or Morph must be configured.")
@@ -425,11 +425,15 @@ class HfstTest(object):
 			keys = tests.keys()
 			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
-			res = str(app.communicate(args.encode('utf-8'))[0].decode('utf-8')).split('\n\n')
-			if app.returncode > 0:
-				self.results[d] = res[0]
-			elif res[0] == '':
-				self.results[d] = "Possible segfault"
+			
+			res, err = app.communicate(args.encode('utf-8'))
+			res = res.decode('utf-8').split('\n\n')
+			err = err.decode('utf-8').strip()
+
+			if app.returncode != 0:
+				self.results['err'] = "\n".join(
+					[i for i in [res[0], err, "(Error code: %s)" % app.returncode] if i != '']
+				)
 			else:
 				self.results[d] = self.parse_fst_output(res)
 		
@@ -462,8 +466,8 @@ class HfstTest(object):
 			f = "morph"
 			tests = invert_dict(self.tests[data])
 		
-		if isinstance(self.results[f], str):
-			raise LookupError('%s had an error:\n%s' % (self.program, self.results[f]))
+		if self.results.get('err'):
+			raise LookupError('`%s` had an error:\n%s' % (self.program, self.results['err']))
 		
 		c = len(self.count)
 		d = "%s (%s)" % (data, desc)
@@ -485,7 +489,6 @@ class HfstTest(object):
 				if not form in actual_results:
 					missing.add(form)
 
-			
 			for form in actual_results:
 				if not form in expected_results:
 					invalid.add(form)
@@ -534,7 +537,7 @@ class HfstTest(object):
 
 	def save_statistics(self, f):
 		stats = Statistics(f)
-		stats.add_hfst(self.args['test_file'][0], checksum(open(self.args['test_file'][0]).read()), 
+		stats.add_hfst(self.args['test_file'], checksum(open(self.args['test_file']).read()), 
 					self.gen, checksum(open(self.gen, 'rb').read()), 
 					self.morph, checksum(open(self.morph, 'rb').read()),
 					self.count, self.passes, self.fails)

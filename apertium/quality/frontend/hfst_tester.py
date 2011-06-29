@@ -53,9 +53,21 @@ class UI(object):
 		ap.add_argument("-X", "--statistics", dest="statfile", 
 			nargs='?', const='quality-stats.xml', default=None,
 			help="XML file that statistics are to be stored in")
+		
+		ap.add_argument("--app", dest="app", nargs=1, required=False, 
+			help="Override application used for test")
+		ap.add_argument("--gen", dest="gen", nargs=1, required=False, 
+			help="Override generation transducer used for test")
+		ap.add_argument("--morph", dest="morph", nargs=1, required=False, 
+			help="Override morph transducer used for test")
+		
 		ap.add_argument("test_file", nargs=1,
 			help="YAML file with test rules")
-		return dict(ap.parse_args()._get_kwargs())
+		args = dict(ap.parse_args()._get_kwargs())
+		for k, v in args.copy().items():
+			if isinstance(v, list) and len(v) == 1:
+				args[k] = v[0]
+		return args
 	
 	def start(self):
 		self.test.run()
