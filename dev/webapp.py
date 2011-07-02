@@ -43,7 +43,7 @@ def frontpage():
 @post('/upload')
 def upload():
 	data = request.files.get('data')
-	raw = data.file.getvalue().decode('utf-8')
+	raw = data.file.read().decode('utf-8')
 	cksum = sha1(raw.encode('utf-8')).hexdigest()
 
 	stats = Statistics()
