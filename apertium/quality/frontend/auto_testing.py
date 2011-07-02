@@ -76,6 +76,7 @@ class UI(object):
 		corpora = dict(zip(dirs, files))
 		
 		for k, v in corpora.items():
+			print("%s: %s" % (k, v))
 			if k in self._langpairs():
 				print("  :: %s" % k)
 				for i in v:
