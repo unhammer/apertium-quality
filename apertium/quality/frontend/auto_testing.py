@@ -33,7 +33,7 @@ class UI(object):
 		#if not len(self.args.langpair.split('-')) == 2:
 		#	raise AttributeError("Language pair must be a pair!")
 		#self.lang1, self.lang2 = self.args.langpair.split('-')
-		ddir = self.args['dictdir'].split('-')
+		ddir = basename(abspath(self.args['dictdir']).split('-'))
 		self.lang2 = ddir[-1]
 		self.lang1 = ddir[-2]
 	
