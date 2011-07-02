@@ -53,7 +53,7 @@ class UI(object):
 		return abspath(pjoin(self.args['dictdir'], self.tdir, *args))
 
 	def _get_files(self, d):
-		return self._listdir(self._listdir(d))
+		return self._listdir(self._abspath(d))
 	
 	def ambiguity(self):
 		print(":: Ambiguity tests")
