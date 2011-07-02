@@ -3,6 +3,7 @@ import os.path
 pjoin = os.path.join
 import tarfile
 from hashlib import sha1
+from shutil import rmtree
 from time import time
 from os import makedirs
 
@@ -58,6 +59,8 @@ def upload():
 	tf = tarfile.open(pjoin(STATIC_FILES, "%s.tgz" % cksum), "w:gz")
 	tf.add(wdir)
 	tf.close()
+
+	rmtree(pjoin(WORKING_DIR, chksum))
 
 	out = """
 	<h3>Website bundled successfully.</h3>
