@@ -5,7 +5,7 @@ try:
 except:
 	matplotlib = None
 
-import xml.etree.cElementTree as etree
+import xml.etree.ElementTree as etree
 import re, os
 
 from collections import defaultdict, OrderedDict
