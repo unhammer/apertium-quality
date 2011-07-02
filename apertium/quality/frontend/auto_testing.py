@@ -70,10 +70,13 @@ class UI(object):
 	def coverage(self):
 		print(":: Coverage tests")
 		dirs = self._get_files('coverage')
+		print(dirs)
 		files = []
 		for d in dirs:
 			files.append(self._get_files(pjoin('coverage', d)))
+		print(files)
 		corpora = dict(zip(dirs, files))
+		print(corpora)
 		
 		for k, v in corpora.items():
 			print("%s: %s" % (k, v))
