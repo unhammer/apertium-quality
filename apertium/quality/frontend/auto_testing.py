@@ -110,7 +110,7 @@ class UI(object):
 	def webpage(self):
 		print(":: Generating webpages...")
 		self.stats = Statistics(self.args['statistics'])
-		self.web = Webpage(self.stats, self.args.outdir)
+		self.web = Webpage(self.stats, self.args['outdir'])
 		self.web.generate()
 	
 	def start(self):
