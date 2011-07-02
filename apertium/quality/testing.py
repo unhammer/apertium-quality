@@ -30,14 +30,16 @@ class RegressionTest(object):
 			raise TypeError("Url or mode parameter missing.")
 
 		whereis([self.program])
-		if not "Special:Export" in url:
-			print("Warning: URL did not contain Special:Export.")
+		#if not "Special:Export" in url:
+		#	print("Warning: URL did not contain Special:Export.")
 		self.mode = mode
+		
 		self.directory = directory
 		if url.startswith('http'):
 			self.tree = etree.parse(urllib.request.urlopen(url))
 		else:
 			self.tree = etree.parse(open(url))
+		
 		self.passes = 0
 		self.total = 0
 		text = None
@@ -344,8 +346,9 @@ class HfstTest(object):
 			else:
 				self.write(colourise("[PASS] %s\n" % out))
 			
-	def __init__(self, **kwargs):
+	def __init__(self, f=None, **kwargs):
 		self.args = dict(kwargs)
+		self.f = self.args.get('test_file', f)
 
 		self.fails = 0
 		self.passes = 0
@@ -359,7 +362,7 @@ class HfstTest(object):
 
 	def load_config(self):
 		global colourise
-		f = yaml.load(open(self.args['test_file']), _OrderedDictYAMLLoader)
+		f = yaml.load(open(self.f), _OrderedDictYAMLLoader)
 		
 		section = self.args['section']
 		if not section in f["Config"]:
@@ -537,7 +540,7 @@ class HfstTest(object):
 
 	def save_statistics(self, f):
 		stats = Statistics(f)
-		stats.add_hfst(self.args['test_file'], checksum(open(self.args['test_file']).read()), 
+		stats.add_hfst(self.f, checksum(open(self.f).read()), 
 					self.gen, checksum(open(self.gen, 'rb').read()), 
 					self.morph, checksum(open(self.morph, 'rb').read()),
 					self.count, self.passes, self.fails)

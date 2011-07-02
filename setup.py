@@ -37,5 +37,6 @@ setup(
 	aq-regtest = apertium.quality.frontend.regression_tester:main
 	aq-ambtest = apertium.quality.frontend.ambiguity_tester:main
 	aq-htmlgen = apertium.quality.frontend.website_generator:main
+	aq-autotest = apertium.quality.frontend.auto_testing:main
 	"""
 )
