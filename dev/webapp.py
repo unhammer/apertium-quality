@@ -43,11 +43,11 @@ def frontpage():
 @post('/upload')
 def upload():
 	data = request.files.get('data')
-	raw = data.fp.getvalue().decode('utf-8').split('\n\n')[1]
+	raw = data.file.getvalue().decode('utf-8')
 	cksum = sha1(raw).hexdigest()
 
 	stats = Statistics()
-	stats.root = etree.fromstring(raw)
+	stats.root = etree.fromstring(raw.encode('utf-8'))
 	stats.tree = etree.ElementTree(stats.root)
 
 	wdir = pjoin(WORKING_DIR, cksum)
