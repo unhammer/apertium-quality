@@ -187,12 +187,12 @@ class Statistics(object):
 		SubElement(r, 'fails').text = str(total - passes)
 	
 	def get_regressions(self):
-		r = self.root.find('regressions')
-		if not r:
+		root = self.root.find('regressions')
+		if root is None:
 			return dict()
 		regressions = defaultdict(dict)
 		
-		for i in r.getiterator("regression"):
+		for i in root.getiterator("regression"):
 			ts = from_isoformat(i.attrib['timestamp'])
 			t = i.find("title")
 			title = "%s/%s" % (t.text, t.attrib["revision"])
