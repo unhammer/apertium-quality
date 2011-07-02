@@ -186,7 +186,7 @@ class CoverageTest(object):
 		cfn = os.path.basename(self.fn)
 		dfn = os.path.basename(self.dct)
 		cck = checksum(self.f.read())
-		dck = checksum(open(self.dct).read())
+		dck = checksum(open(self.dct, 'rb').read())
 		cov = "%.2f" % self.get_coverage()
 		words = len(self.get_words())
 		kwords = len(self.get_known_words())
@@ -540,7 +540,7 @@ class HfstTest(object):
 
 	def save_statistics(self, f):
 		stats = Statistics(f)
-		stats.add_hfst(self.f, checksum(open(self.f).read()), 
+		stats.add_hfst(self.f, checksum(open(self.f, 'rb').read()), 
 					self.gen, checksum(open(self.gen, 'rb').read()), 
 					self.morph, checksum(open(self.morph, 'rb').read()),
 					self.count, self.passes, self.fails)
