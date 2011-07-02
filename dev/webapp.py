@@ -43,15 +43,15 @@ def frontpage():
 @post('/upload')
 def upload():
 	data = request.files.get('data')
-	raw = data.fp.getvalue()
-	cksum = sha1(raw.encode('utf-8')).hexdigest()
+	raw = data.fp.getvalue().decode('utf-8').split('\n\n')[1]
+	cksum = sha1(raw).hexdigest()
 
 	stats = Statistics()
 	stats.root = etree.fromstring(raw)
 	stats.tree = etree.ElementTree(stats.root)
 
 	wdir = pjoin(WORKING_DIR, cksum)
-	try: makedirs(wdir, exist_ok=True)
+	try: makedirs(wdir)
 	except: pass
 	web = Webpage(stats, wdir)
 
