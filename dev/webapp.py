@@ -6,6 +6,7 @@ from hashlib import sha1
 from shutil import rmtree
 from time import time
 from os import makedirs
+os.chdir(os.path.dirname(__file__))
 
 import bottle
 from bottle import abort, get, post, redirect, request, route, static_file
@@ -78,5 +79,7 @@ def main():
 	application = bottle.app()
 	bottle.run(host='0.0.0.0', port=8080, app=application)
 
-if __name__ == "__main__":
-	main()
+application = bottle.default_app()
+
+#if __name__ == "__main__":
+#	main()
