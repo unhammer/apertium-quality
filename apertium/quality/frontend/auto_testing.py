@@ -33,7 +33,7 @@ class UI(object):
 		#if not len(self.args.langpair.split('-')) == 2:
 		#	raise AttributeError("Language pair must be a pair!")
 		#self.lang1, self.lang2 = self.args.langpair.split('-')
-		ddir = self.args.dictdir.split('-')
+		ddir = self.args['dictdir'].split('-')
 		self.lang2 = ddir[-1]
 		self.lang1 = ddir[-2]
 	
@@ -50,19 +50,19 @@ class UI(object):
 		return x 
 	
 	def _get_files(self, d):
-		tdir = abspath(pjoin(self.args.dictdir, pjoin(self.tdir, d)))
+		tdir = abspath(pjoin(self.args['dictdir'], pjoin(self.tdir, d)))
 		return self._listdir(tdir)
 	
 	def ambiguity(self):
 		print(":: Ambiguity tests")
-		files = [ i for i in self._listdir(self.args.dictdir)
-					if i in ('apertium-%s.%s.dix' % (self.args.langpair, self.lang1), 
-							'apertium-%s.%s.dix' % (self.args.langpair, self.lang2)) ]
+		files = [ i for i in self._listdir(self.args['dictdir'])
+					if i in ('apertium-%s.%s.dix' % (self.args['langpair'], self.lang1), 
+							'apertium-%s.%s.dix' % (self.args['langpair'], self.lang2)) ]
 		
 		for t in files:
 			test = testing.AmbiguityTest(t)
 			test.run()
-			test.save_statistics(self.args.statistics)
+			test.save_statistics(self.args['statistics'])
 	
 	def coverage(self):
 		print(":: Coverage tests")
@@ -79,7 +79,7 @@ class UI(object):
 					print ("    :: %s") % i 
 					test = testing.CoverageTest(i, "%s.automorf.bin" % k)
 					test.run()
-					test.save_statistics(self.args.statistics)
+					test.save_statistics(self.args['statistics'])
 
 	def regression(self):
 		print(":: Regression tests")
@@ -94,9 +94,9 @@ class UI(object):
 				print("  :: %s" % k)
 				for i in v:
 					print ("    :: %s") % i 
-					test = testing.RegressionTest(i, k, self.args.dictdir)
+					test = testing.RegressionTest(i, k, self.args['dictdir'])
 					test.run()
-					test.save_statistics(self.args.statistics)
+					test.save_statistics(self.args['statistics'])
 	
 	def hfst(self):
 		print(":: HFST tests")
@@ -106,10 +106,10 @@ class UI(object):
 			print("  :: %s" % t)
 			test = testing.HfstTest(t)
 			test.run()
-			test.save_statistics(self.args.statistics)
+			test.save_statistics(self.args['statistics'])
 	
 	def start(self):
-		self.stats = Statistics(self.args.statistics)
+		self.stats = Statistics(self.args['statistics'])
 		
 		self.ambiguity()
 		self.coverage()
