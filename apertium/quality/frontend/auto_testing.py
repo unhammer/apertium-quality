@@ -77,7 +77,7 @@ class UI(object):
 			if k in self._langpairs():
 				print("  :: %s" % k)
 				for i in v:
-					print ("    :: %s") % i 
+					print ("    :: %s" % i)
 					test = testing.CoverageTest(i, "%s.automorf.bin" % k)
 					test.run()
 					test.save_statistics(self.args['statistics'])
@@ -94,7 +94,7 @@ class UI(object):
 			if k in self._langpairs():
 				print("  :: %s" % k)
 				for i in v:
-					print ("    :: %s") % i 
+					print ("    :: %s" % i)
 					test = testing.RegressionTest(i, k, self.args['dictdir'])
 					test.run()
 					test.save_statistics(self.args['statistics'])
