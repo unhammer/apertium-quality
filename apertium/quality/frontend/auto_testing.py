@@ -21,7 +21,6 @@ class UI(object):
 		ap = argparse.ArgumentParser(
 			description="Attempt all tests with default settings.")
 		ap.add_argument("dictdir", nargs=1, help="Dictionary directory")
-		#ap.add_argument("langpair", nargs=1, help="Language pair (eg. fr-br)")
 		ap.add_argument("outdir", nargs=1, help="Output directory")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
 		self.args = dict(ap.parse_args()._get_kwargs())
@@ -30,9 +29,6 @@ class UI(object):
 			if isinstance(v, list) and len(v) == 1:
 				self.args[k] = v[0]
 		
-		#if not len(self.args.langpair.split('-')) == 2:
-		#	raise AttributeError("Language pair must be a pair!")
-		#self.lang1, self.lang2 = self.args.langpair.split('-')
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
 		
@@ -111,17 +107,20 @@ class UI(object):
 			test.run()
 			test.save_statistics(self.args['statistics'])
 	
-	def start(self):
+	def webpage(self):
+		print(":: Generating webpages...")
 		self.stats = Statistics(self.args['statistics'])
-		
+		self.web = Webpage(self.stats, self.args.outdir)
+		self.web.generate()
+	
+	def start(self):
 		self.ambiguity()
 		self.coverage()
 		self.regression()
 		self.hfst()
-		
-		print("LE DONE")
-		#self.web = Webpage(self.stats, self.args.outdir)
-		#self.web.generate()
+		self.webpage()
+		print(":: Done.")
+
 
 def main():
 	try:

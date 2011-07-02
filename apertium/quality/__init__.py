@@ -55,6 +55,7 @@ class Webpage(object):
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats
+		os.mkdir(fdir)
 		self.fdir = fdir
 
 	def generate(self):
