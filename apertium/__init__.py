@@ -13,8 +13,8 @@ from datetime import datetime
 
 
 def checksum(data):
-	if hasattr(data, 'decode'):
-		data = data.decode('utf-8')
+	if hasattr(data, 'encode'):
+		data = data.encode('utf-8')
 	return sha1(data).hexdigest()
 
 def whereis(programs):
