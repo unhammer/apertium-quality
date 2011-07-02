@@ -60,6 +60,7 @@ class UI(object):
 							'apertium-%s.%s.dix' % (self.args['langpair'], self.lang2)) ]
 		
 		for t in files:
+			print("  :: %s" % t)
 			test = testing.AmbiguityTest(t)
 			test.run()
 			test.save_statistics(self.args['statistics'])
