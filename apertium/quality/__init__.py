@@ -139,7 +139,10 @@ class Statistics(object):
 	file_version = "1.0"
 	file_type = "apertium"
 
-	def __init__(self, f):
+	def __init__(self, f=None):
+		if f is None:
+				return
+		
 		self.f = f
 		if os.path.exists(f):
 			try:
