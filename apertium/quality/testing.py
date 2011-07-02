@@ -4,7 +4,7 @@ import os.path, re, yaml
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
 
-import xml.etree.cElementTree as etree
+import xml.etree.ElementTree as etree
 import urllib.request
 
 from multiprocessing import Process, Manager
