@@ -44,10 +44,10 @@ def frontpage():
 def upload():
 	data = request.files.get('data')
 	raw = data.file.getvalue().decode('utf-8')
-	cksum = sha1(raw).hexdigest()
+	cksum = sha1(raw.encode('utf-8')).hexdigest()
 
 	stats = Statistics()
-	stats.root = etree.fromstring(raw.encode('utf-8'))
+	stats.root = etree.fromstring(raw)
 	stats.tree = etree.ElementTree(stats.root)
 
 	wdir = pjoin(WORKING_DIR, cksum)
