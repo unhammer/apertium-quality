@@ -49,9 +49,11 @@ class UI(object):
 			pass
 		return x 
 	
+	def _abspath(self, *args):
+		return abspath(pjoin(self.args['dictdir'], self.tdir, *args))
+
 	def _get_files(self, d):
-		tdir = abspath(pjoin(self.args['dictdir'], pjoin(self.tdir, d)))
-		return self._listdir(tdir)
+		return self._listdir(self._listdir(d))
 	
 	def ambiguity(self):
 		print(":: Ambiguity tests")
@@ -78,7 +80,7 @@ class UI(object):
 				print("  :: %s" % k)
 				for i in v:
 					print ("    :: %s" % i)
-					test = testing.CoverageTest(i, "%s.automorf.bin" % k)
+					test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
 					test.run()
 					test.save_statistics(self.args['statistics'])
 
@@ -95,7 +97,7 @@ class UI(object):
 				print("  :: %s" % k)
 				for i in v:
 					print ("    :: %s" % i)
-					test = testing.RegressionTest(i, k, self.args['dictdir'])
+					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
 					test.run()
 					test.save_statistics(self.args['statistics'])
 	
@@ -105,7 +107,7 @@ class UI(object):
 		
 		for t in tests:
 			print("  :: %s" % t)
-			test = testing.HfstTest(t)
+			test = testing.HfstTest(self._abspath('hfst', t))
 			test.run()
 			test.save_statistics(self.args['statistics'])
 	
