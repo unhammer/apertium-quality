@@ -56,7 +56,7 @@ class Webpage(object):
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats
-		os.mkdir(fdir)
+		os.makedirs(fdir, exist_ok=True)
 		self.fdir = fdir
 
 	def generate(self):
@@ -74,7 +74,7 @@ class Webpage(object):
 		ns = self.ns
 		out = Element(ns + "div", id="regressions")
 		root = self.stats.root.find('regressions')
-		if not root:
+		if root is None:
 			SubElement(out, ns + 'h2').text = "Not found."
 			return out
 		
@@ -174,7 +174,7 @@ class Statistics(object):
 
 	def add_regression(self, title, revision, passes, total, percent):
 		root = self.root.find('regressions')
-		if not root:
+		if root is None:
 			root = SubElement(self.root, 'regressions')
 		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
 		s = SubElement(r, 'title')
@@ -211,7 +211,7 @@ class Statistics(object):
 	
 	def add_coverage(self, f, df, fck, dck, cov, words, kwords, ukwords, topuw):
 		root = self.root.find('coverages')
-		if not root:
+		if root is None:
 			root = SubElement(self.root, 'coverages')
 		r = SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
 		s = SubElement(r, 'corpus')
@@ -256,7 +256,7 @@ class Statistics(object):
 		
 	def add_ambiguity(self, f, fck, sf, a, avg):
 		root = self.root.find('ambiguities')
-		if not root:
+		if root is None:
 			root = SubElement(self.root, 'ambiguities')
 		r = SubElement(root, 'ambiguity', timestamp=datetime.utcnow().isoformat())
 		
@@ -270,7 +270,7 @@ class Statistics(object):
 
 	def add_hfst(self, config, ck, gen, gk, morph, mk, tests, passes, fails):
 		root = self.root.find('hfsts')
-		if not root:
+		if root is None:
 			root = SubElement(self.root, 'hfsts')
 		r = SubElement(root, 'hfst', timestamp=datetime.utcnow().isoformat())
 		
