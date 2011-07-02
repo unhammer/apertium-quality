@@ -6,12 +6,13 @@ except:
 	matplotlib = None
 
 import xml.etree.ElementTree as etree
-import re, os
+from xml.etree.ElementTree import Element, SubElement
 
 from collections import defaultdict, OrderedDict
+import re, os
 from io import StringIO
 from textwrap import dedent
-from xml.etree.cElementTree import Element, SubElement
+
 from datetime import datetime
 
 class ParseError(Exception):
