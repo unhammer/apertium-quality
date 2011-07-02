@@ -135,7 +135,7 @@ _install_prefixed() {
 		$SED -i "s|source $HOME/\.apertium-quality||g" $rc
 		echo "source $HOME/.apertium-quality" >> $rc
 		echo "export PATH="'$PATH'":${PREFIX}/bin" > $HOME/.apertium-quality
-		echo 'export PYTHONPATH=$PYTHONPATH'"${PYTHONPATH}" >> $HOME/.apertium-quality
+		echo 'export PYTHONPATH="$PYTHONPATH:'"${PYTHONPATH}\"" >> $HOME/.apertium-quality
 		echo "[-] Restart your shell for the environment settings to take effect."
 	else
 

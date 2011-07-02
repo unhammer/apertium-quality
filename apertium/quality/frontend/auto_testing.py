@@ -29,7 +29,6 @@ class UI(object):
 		for k, v in self.args.copy().items():
 			if isinstance(v, list) and len(v) == 1:
 				self.args[k] = v[0]
-		return self.args
 		
 		#if not len(self.args.langpair.split('-')) == 2:
 		#	raise AttributeError("Language pair must be a pair!")
