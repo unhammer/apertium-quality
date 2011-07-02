@@ -101,6 +101,7 @@ class UI(object):
 				print("  :: %s" % k)
 				for i in v:
 					print ("    :: %s" % i)
+					print(self._abspath('regression',k,i))
 					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
 					test.run()
 					test.save_statistics(self.args['statistics'])
