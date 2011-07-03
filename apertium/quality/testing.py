@@ -77,6 +77,7 @@ class RegressionTest(object):
 			for n, test in enumerate(self.tests[side].items()):
 				if n >= len(self.results):
 					#raise AttributeError("More tests than results.")
+					self.out.write("WARNING: more tests than results!\n")
 					continue
 				res = self.results[n].split("[_]")[0].strip()
 				orig = test[0].split("[_]")[0].strip()
@@ -128,8 +129,8 @@ class CoverageTest(object):
 		if None in (f, dct):
 			raise TypeError("f or dct parameter missing.")
 			
-		whereis(["lt-proc"])#, "apertium-destxt", "apertium-retxt"):
-		self.fn = f #TODO: make sure file exists
+		whereis(["lt-proc"])
+		self.fn = f
 		self.f = open(f, 'r')
 		self.dct = dct
 		self.result = None

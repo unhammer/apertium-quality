@@ -1,4 +1,4 @@
-from os.path import abspath, dirname, basename
+from os.path import abspath, basename
 import os
 pjoin = os.path.join
 

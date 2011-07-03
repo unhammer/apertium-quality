@@ -49,14 +49,16 @@ class Webpage(object):
 		padding: 0;
 	}
 	""")	
-
+	space = re.compile('[ /:]')
+	
 	def __init__(self, stats, fdir):
 		if not matplotlib:
 			raise ImportError("matplotlib not installed.")
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats
-		os.makedirs(fdir, exist_ok=True)
+		try: os.makedirs(fdir)
+		except: pass
 		self.fdir = fdir
 
 	def generate(self):
@@ -65,9 +67,13 @@ class Webpage(object):
 		date = datetime.strftime(datetime.utcnow(), "%Y-%m-%d %H:%M")
 		xhtml = self.base_xhtml.format(title, date, self.base_css)
 		root = tree.parse(StringIO(xhtml))
+		
 		div = root.find(self.ns + "body").find(self.ns + "div")
 		div.append(self.generate_regressions())
-		div.append(self.generate_coverages())
+		#div.append(self.generate_coverages())
+		#div.append(self.generate_ambiguities())
+		#div.append(self.generate_hfsts())
+		
 		tree.write(os.path.join(self.fdir, "index.html"), "utf-8")#, True)#, "html")
 
 	def generate_regressions(self):
@@ -98,9 +104,24 @@ class Webpage(object):
 		#stub
 		return Element("div", id="coverages")
 
+	def generate_ambiguities(self):
+		ns = self.ns
+		out = Element(ns + "div", id="ambiguities")
+		ambiguities = self.stats.get_ambiguities()
+		
+		if ambiguities == {}:
+				SubElement(out, ns+'h2').text = "Not found."
+				return out
+		
+		files = self.plot_ambiguities()
+		for f in files:
+			SubElement(out, ns+'div', {"class":"ambiguity"})
+	
+	def generate_hfsts(self):
+		pass
+
 	def plot_regressions(self):
 		out = []
-		space = re.compile('[ /]')
 		regs = self.stats.get_regressions()
 		for title, reg in regs.items():
 			t = "%s - %s" % (title, "Passes")
@@ -118,7 +139,7 @@ class Webpage(object):
 				y[3].append(vals['fails'])
 
 			plt.plot(x, y[0])
-			png = "%s.png" % space.sub('_', t)
+			png = "%s.png" % self.space.sub('_', t)
 			plt.savefig(os.path.join(self.fdir, png))
 			out.append(png)
 			plt.clf()
@@ -128,7 +149,7 @@ class Webpage(object):
 			plt.ylabel('Quantity')
 
 			plt.plot(x, y[1], 'b', x, y[2], 'g', x, y[3], 'r')
-			png = "%s.png" % space.sub('_', t)
+			png = "%s.png" % self.space.sub('_', t)
 			plt.savefig(os.path.join(self.fdir, png))
 			out.append(png)
 			plt.clf()
@@ -180,6 +201,7 @@ class Statistics(object):
 		if root is None:
 			root = SubElement(self.root, 'regressions')
 		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
+		
 		s = SubElement(r, 'title')
 		s.text = str(title)
 		s.attrib['revision'] = str(revision)
@@ -198,7 +220,7 @@ class Statistics(object):
 		for i in root.getiterator("regression"):
 			ts = from_isoformat(i.attrib['timestamp'])
 			t = i.find("title")
-			title = "%s/%s" % (t.text, t.attrib["revision"])
+			title = "%s__%s" % (t.text, t.attrib["revision"])
 			regressions[title][ts] = {
 				"percent": i.find("percent").text,
 				"total": i.find("total").text,
@@ -217,13 +239,14 @@ class Statistics(object):
 		if root is None:
 			root = SubElement(self.root, 'coverages')
 		r = SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
-		s = SubElement(r, 'corpus')
-		s.text = str(f)
-		s.attrib["checksum"] = str(fck)
 		
 		s = SubElement(r, 'dictionary')
 		s.text = str(df)
 		s.attrib["checksum"] = str(dck)
+		
+		s = SubElement(r, 'corpus')
+		s.text = str(f)
+		s.attrib["checksum"] = str(fck)
 		
 		SubElement(r, 'percent').text = str(cov)
 		SubElement(r, 'total').text = str(words)
@@ -235,27 +258,36 @@ class Statistics(object):
 			e = SubElement(s, 'word', count=str(num))
 			e.text = str(mot)
 	
-	'''def get_coverages(self):
-		r = self.root.find('coverages')
-		if not r:
+	def get_coverages(self):
+		root = self.root.find('coverages')
+		if root is None:
 			return dict()
 		coverages = defaultdict(dict)
 		
-		for i in r.getiterator("coverage"):
+		for i in root.getiterator("coverage"):
 			ts = from_isoformat(i.attrib['timestamp'])
-			c = i.find("corpus").text
-			ck = i.find("corpus").attrib["checksum"]
-			corpus = "%s/%s" % (c, ck)
+			d = i.find("dictionary")
+			dct = "%s__%s" % (d.text, d.attrib["checksum"])
 			
-			coverages[corpus][ts] = {
-				
+			c = i.find("corpus")
+			
+			coverages[dct][ts] = {
+				"corpus": "%s__%s" % (c.text, c.attrib["checksum"]),
+				"percent": i.find("percent").text,
+				"total": i.find("total").text,	
+				"known": i.find("known").text,	
+				"unknown": i.find("unknown").text,
+				"top": OrderedDict()
 			}
+
+			for j in i.find("top").getiterator("word"):
+				coverages[dct][ts]['top'][j.text] = j.attrib["count"]
 
 		out = dict()
 		for k, v in coverages.items():
 			out[k] = OrderedDict(sorted(v.items()))
 
-		return out'''
+		return out
 		
 	def add_ambiguity(self, f, fck, sf, a, avg):
 		root = self.root.find('ambiguities')
@@ -270,6 +302,29 @@ class Statistics(object):
 		SubElement(r, 'surface-forms').text = str(sf)
 		SubElement(r, 'analyses').text = str(a)
 		SubElement(r, 'average').text = str(avg)
+
+	def get_ambiguities(self):
+		root = self.root.find('ambiguities')
+		if root is None:
+			return dict()
+		ambiguities = defaultdict(dict)
+		
+		for i in root.getiterator("ambiguity"):
+			ts = from_isoformat(i.attrib['timestamp'])
+			d = i.find("dictionary")
+			dct = "%s__%s" % (d.text, d.attrib["checksum"])
+			
+			ambiguities[dct][ts] = {
+				"surface-forms": i.find("surface-forms").text,
+				"analyses": i.find("analyses").text,
+				"average": i.find("average").text
+			}
+
+		out = dict()
+		for k, v in ambiguities.items():
+			out[k] = OrderedDict(sorted(v.items()))
+
+		return out	
 
 	def add_hfst(self, config, ck, gen, gk, morph, mk, tests, passes, fails):
 		root = self.root.find('hfsts')
@@ -293,10 +348,46 @@ class Statistics(object):
 		for k, v in tests.items():
 			t = SubElement(s, 'test')
 			t.text = str(k)
-			t.attrib['passes'] = str(v["Pass"])
 			t.attrib['fails'] = str(v["Fail"])
+			t.attrib['passes'] = str(v["Pass"])
 		
 		SubElement(r, 'total').text = str(passes + fails)
 		SubElement(r, 'passes').text = str(passes)
 		SubElement(r, 'fails').text = str(fails)
+		
+	def get_hfsts(self):
+		root = self.root.find('hfsts')
+		if root is None:
+			return dict()
+		ambiguities = defaultdict(dict)
+		
+		for i in root.getiterator("hfst"):
+			ts = from_isoformat(i.attrib['timestamp'])
+			c = i.find("config")
+			cfg = "%s__%s" % (c.text, c.attrib["checksum"])
+			
+			g = i.find("gen")
+			m = i.find("morph")
+			
+			ambiguities[cfg][ts] = {
+				"gen": "%s__%s" % (g.text, g.attrib["checksum"]),
+				"morph": "%s__%s" % (m.text, m.attrib["checksum"]),
+				
+				"tests": OrderedDict(),
+				"total": i.find("total").text,
+				"passes": i.find("passes").text,
+				"fails": i.find("fails").text
+			}
+			
+			for j in i.find("tests").getiterator("test"):
+				ambiguities[cfg][ts]['tests'][j.text] = {
+					"passes": j.attrib['passes'], 
+					"fails": j.attrib['fails']
+				}
+
+		out = dict()
+		for k, v in ambiguities.items():
+			out[k] = OrderedDict(sorted(v.items()))
+
+		return out	
 		
