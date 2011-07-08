@@ -5,6 +5,13 @@ try:
 except:
 	matplotlib = None
 
+try:
+	from mako.template import Template
+	from mako.lookup import TemplateLookup
+except:
+	Template = None
+	TemplateLookup = None
+
 import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -24,36 +31,17 @@ def from_isoformat(t):
 
 class Webpage(object):
 	#ns = "{http://www.w3.org/1999/xhtml}"
-	ns = ""
-	base_xhtml = dedent("""
-	<!DOCTYPE html>
-	<html> <!--xmlns="http://www.w3.org/1999/xhtml" lang="en">-->
-		<head>
-			<meta charset="UTF-8" />
-			<meta name="title" content="{0}" />
-			<title>{0}</title>
-			<style type="text/css">
-				{2}
-			</style>
-		</head>
-		<body>
-			<h1>{0} - {1}</h1>
-			<div id="container"/>
-		</body>
-	</html>
-	""")
-	
-	base_css = dedent("""
-	* {
-		margin: 0;
-		padding: 0;
-	}
-	""")	
 	space = re.compile('[ /:]')
 	
 	def __init__(self, stats, fdir):
 		if not matplotlib:
 			raise ImportError("matplotlib not installed.")
+		if not Template or not TemplateLookup:
+			raise ImportError("mako not installed.")
+		
+		self.base = Template(base)
+		self.statblock = Template(statblock)
+		
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
 		self.stats = stats
@@ -62,60 +50,18 @@ class Webpage(object):
 		self.fdir = fdir
 
 	def generate(self):
-		tree = etree.ElementTree()
-		title = "Apertium Statistics"
-		date = datetime.strftime(datetime.utcnow(), "%Y-%m-%d %H:%M")
-		xhtml = self.base_xhtml.format(title, date, self.base_css)
-		root = tree.parse(StringIO(xhtml))
-		
-		div = root.find(self.ns + "body").find(self.ns + "div")
-		div.append(self.generate_regressions())
-		#div.append(self.generate_coverages())
-		#div.append(self.generate_ambiguities())
-		#div.append(self.generate_hfsts())
-		
-		tree.write(os.path.join(self.fdir, "index.html"), "utf-8")#, True)#, "html")
+		pass
 
 	def generate_regressions(self):
-		ns = self.ns
-		out = Element(ns + "div", id="regressions")
-		root = self.stats.root.find('regressions')
-		if root is None:
-			SubElement(out, ns + 'h2').text = "Not found."
-			return out
+		data = self.stats.get_regressions()
 		
-		files = self.plot_regressions()
-		st = SubElement(out, ns + 'div', {"class":"statistics"})
-		for f in files:
-			SubElement(st, ns + 'img', src=f)
-			SubElement(st, ns + 'br')
-
-		for i in root.getiterator("regression"):
-			r = SubElement(out, ns + 'div', {"class":"regression"})
-			title = SubElement(r, ns + 'h2')
-			title.text = "%s - %s" % (i.find("title").text, i.attrib["timestamp"])
-			SubElement(r, ns + 'h3').text = "Revision: %s" % i.find("title").attrib["revision"]
-			SubElement(r, ns + 'p').text = "Total: %s" % i.find("total").text
-			SubElement(r, ns + 'p').text = "Passes: %s" % i.find("passes").text
-			SubElement(r, ns + 'p').text = "Fails: %s" % i.find("fails").text
-		return out
+		pass
 			
 	def generate_coverages(self):
-		#stub
-		return Element("div", id="coverages")
-
+		pass
+	
 	def generate_ambiguities(self):
-		ns = self.ns
-		out = Element(ns + "div", id="ambiguities")
-		ambiguities = self.stats.get_ambiguities()
-		
-		if ambiguities == {}:
-				SubElement(out, ns+'h2').text = "Not found."
-				return out
-		
-		files = self.plot_ambiguities()
-		for f in files:
-			SubElement(out, ns+'div', {"class":"ambiguity"})
+		pass
 	
 	def generate_hfsts(self):
 		pass
@@ -160,9 +106,17 @@ class Statistics(object):
 	file_version = "1.0"
 	file_type = "apertium"
 
+	elements = {
+		#element: parents,
+		"ambiguity": "ambiguities",
+		"hfst": "hfsts",
+		"regression": "regressions",
+		"coverage": "coverages"
+	}
+	
 	def __init__(self, f=None):
 		if f is None:
-				return
+			return
 		
 		self.f = f
 		if os.path.exists(f):
@@ -196,21 +150,17 @@ class Statistics(object):
 	def write(self):
 		self.tree.write(self.f, encoding="utf-8")#, xml_declaration=True)
 
-	def add_regression(self, title, revision, passes, total, percent):
-		root = self.root.find('regressions')
+	def add(self, xml):
+		el = etree.XML(xml)
+		parent = self.elements.get(el.tag, None)
+		if parent is None:
+			raise AttributeError("Element not supported.")
+		
+		root = self.root.find(parent)
 		if root is None:
-			root = SubElement(self.root, 'regressions')
-		r = SubElement(root, 'regression', timestamp=datetime.utcnow().isoformat())
-		
-		s = SubElement(r, 'title')
-		s.text = str(title)
-		s.attrib['revision'] = str(revision)
-		
-		SubElement(r, 'percent').text = str(percent) 
-		SubElement(r, 'total').text = str(total)
-		SubElement(r, 'passes').text = str(passes)
-		SubElement(r, 'fails').text = str(total - passes)
-	
+			root = SubElement(self.root, parent)		
+		root.append(el)
+
 	def get_regressions(self):
 		root = self.root.find('regressions')
 		if root is None:
@@ -233,30 +183,6 @@ class Statistics(object):
 			out[k] = OrderedDict(sorted(v.items()))
 
 		return out
-	
-	def add_coverage(self, f, df, fck, dck, cov, words, kwords, ukwords, topuw):
-		root = self.root.find('coverages')
-		if root is None:
-			root = SubElement(self.root, 'coverages')
-		r = SubElement(root, 'coverage', timestamp=datetime.utcnow().isoformat())
-		
-		s = SubElement(r, 'dictionary')
-		s.text = str(df)
-		s.attrib["checksum"] = str(dck)
-		
-		s = SubElement(r, 'corpus')
-		s.text = str(f)
-		s.attrib["checksum"] = str(fck)
-		
-		SubElement(r, 'percent').text = str(cov)
-		SubElement(r, 'total').text = str(words)
-		SubElement(r, 'known').text = str(kwords)
-		SubElement(r, 'unknown').text = str(ukwords)
-		
-		s = SubElement(r, 'top')
-		for mot, num in topuw:
-			e = SubElement(s, 'word', count=str(num))
-			e.text = str(mot)
 	
 	def get_coverages(self):
 		root = self.root.find('coverages')
@@ -288,20 +214,6 @@ class Statistics(object):
 			out[k] = OrderedDict(sorted(v.items()))
 
 		return out
-		
-	def add_ambiguity(self, f, fck, sf, a, avg):
-		root = self.root.find('ambiguities')
-		if root is None:
-			root = SubElement(self.root, 'ambiguities')
-		r = SubElement(root, 'ambiguity', timestamp=datetime.utcnow().isoformat())
-		
-		s = SubElement(r, 'dictionary')
-		s.text = str(f)
-		s.attrib["checksum"] = str(fck)
-
-		SubElement(r, 'surface-forms').text = str(sf)
-		SubElement(r, 'analyses').text = str(a)
-		SubElement(r, 'average').text = str(avg)
 
 	def get_ambiguities(self):
 		root = self.root.find('ambiguities')
@@ -326,35 +238,6 @@ class Statistics(object):
 
 		return out	
 
-	def add_hfst(self, config, ck, gen, gk, morph, mk, tests, passes, fails):
-		root = self.root.find('hfsts')
-		if root is None:
-			root = SubElement(self.root, 'hfsts')
-		r = SubElement(root, 'hfst', timestamp=datetime.utcnow().isoformat())
-		
-		s = SubElement(r, 'config')
-		s.text = str(config)
-		s.attrib["checksum"] = str(ck)
-		
-		s = SubElement(r, 'gen')
-		s.text = str(gen)
-		s.attrib["checksum"] = str(gk)
-		
-		s = SubElement(r, 'morph')
-		s.text = str(morph)
-		s.attrib["checksum"] = str(mk)
-		
-		s = SubElement(r, 'tests')
-		for k, v in tests.items():
-			t = SubElement(s, 'test')
-			t.text = str(k)
-			t.attrib['fails'] = str(v["Fail"])
-			t.attrib['passes'] = str(v["Pass"])
-		
-		SubElement(r, 'total').text = str(passes + fails)
-		SubElement(r, 'passes').text = str(passes)
-		SubElement(r, 'fails').text = str(fails)
-		
 	def get_hfsts(self):
 		root = self.root.find('hfsts')
 		if root is None:
@@ -390,4 +273,78 @@ class Statistics(object):
 			out[k] = OrderedDict(sorted(v.items()))
 
 		return out	
+
+base = """
+<html>
+<head>
+	<title>${dirname}</title>
+	<!--<script type="application/javascript" src="js"></script>-->
+  	<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+<div id="header">
+	<h1>%{dirname}</h1>
+</div>
+
+<!-- divs gonna div -->
+%{divs}
+
+<div id="footer">
+	%{footer}
+</div>
+
+</body>
+"""
+
+statblock = """
+<div id="${stat_type}" class="s-container">
+	<h1>%{stat_type}</h1>
+	<h2>%{stat_cksum}</h2>
+
+	<div id="${stat_type}-imgs" class="s-imgs">
+		% for src, alt in images.items():
+		<a href="${src}"><img src="${src}" alt="${alt}" /></a>
+		% endfor
+	</div>
+
+	<div id="${stat_type}-data" class="s-data">
+		<div id="${stat_type}-general" class="s-general">
+			<h1>General Statistics</h1>
+			<table>
+			% for left, right in gen_stats.items():
+			<tr>
+				<td>${left}:</td>
+				<td>${right}</td>
+			</tr>
+			% endfor
+			</table>
+		</div>
+	
+		<div id="${stat_type}-chrono" class="s-chrono">
+			<h1>Chronological Statistics</h1>
+			<ul>
+			% for date, data in chrono.items():
+				<li>
+					<a href="#" id="%{date}">%{date}</a>
+					<div id="%{date}-div">
+						<table>
+						% for d in data:
+						<tr>
+							% for i in d:
+							<td>%{i}</td>
+							% endfor
+						</tr>
+						% endfor
+						</table>
+					</div>
+				</li>
+			% endfor
+			</ul>
+		</div>
 		
+		<hr />
+	</div>
+</div>
+"""

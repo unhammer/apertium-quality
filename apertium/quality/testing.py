@@ -5,19 +5,66 @@ pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
 
 import xml.etree.ElementTree as etree
+from xml.etree.ElementTree import Element, SubElement
 import urllib.request
 
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
 from io import StringIO
+from datetime import datetime
+from hashlib import sha1
 
-from apertium import whereis, destxt, retxt, checksum
-from apertium.quality import Statistics
-
+from apertium import whereis, destxt, retxt
 ARROW = "\u2192"
 
+class Test(object):
+	"""Abstract class for Test objects
+	
+	It is recommended that print not be used within a Test class.
+	Use a StringIO instance and .getvalue() in get_output().
+	"""
+	
+	def __str__(self):
+		"""Will return to_string method's content if exists, 
+		otherwise default to parent class
+		"""
+		try: self.to_string()
+		except: object.__str__()
+	
+	def _checksum(self, data):
+		"""Returns checksum hash for given data (currently SHA1) for the purpose
+		of maintaining integrity of test data.
+		"""
+		if hasattr(data, 'encode'):
+			data = data.encode('utf-8')
+		return sha1(data).hexdigest()
+	
+	def run(self, *args, **kwargs):
+		"""Runs the actual test
+		
+		Parameters: none
+		Returns: integer >= 0 <= 255  (exit value)
+		"""
+		raise NotImplementedError("Required method `run` was not implemented.")
+	
+	def to_xml(self, *args, **kwargs):
+		"""Output XML suitable for saving in Statistics format.
+		It is recommended that you use etree for creating the tree.
+		
+		Parameters: none
+		Returns: none
+		"""
+		raise NotImplementedError("Required method `to_xml` was not implemented.")
+	
+	def to_string(self, *args, **kwargs):
+		"""Prints the output of StringIO instance and other printable output.
+		
+		Parameters: none
+		Returns: none
+		"""
+		raise NotImplementedError("Required method `to_string` was not implemented.")
 
-class RegressionTest(object):
+class RegressionTest(Test):
 	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 	program = "apertium"
@@ -91,6 +138,8 @@ class RegressionTest(object):
 					self.out.write("\t+ %s\n" % res)
 				self.total += 1
 				self.out.write('\n')
+			self.out.write("Passes: %d/%d, Success rate: %.2f%%\n" 
+					% (self.passes, self.total, self.get_total_percent()))
 		return 0
 
 	def get_passes(self):
@@ -103,33 +152,69 @@ class RegressionTest(object):
 		return self.total
 	
 	def get_total_percent(self):
+		if self.get_total() == 0:
+			return 0
 		return "%.2f" % (float(self.passes)/float(self.total)*100)
 	
-	def save_statistics(self, f):		
-		stats = Statistics(f)
-		ns = "{http://www.mediawiki.org/xml/export-0.3/}"
-		page = self.tree.getroot().find(ns + 'page')
-		rev = page.find(ns + 'revision').find(ns + 'id').text
-		title = page.find(ns + 'title').text
-		stats.add_regression(title, rev, self.passes, self.total, self.get_total_percent())
-		stats.write()
+	def to_xml(self):
+		r = Element('regression', timestamp=datetime.utcnow().isoformat())
+		
+		s = SubElement(r, 'title')
+		s.text = page.find(ns + 'title').text
+		s.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
+		
+		SubElement(r, 'percent').text = str(self.get_total_percent())
+		SubElement(r, 'total').text = str(self.get_total())
+		SubElement(r, 'passes').text = str(self.get_passes())
+		SubElement(r, 'fails').text = str(self.get_fails())
+		
+		return etree.tostring(r)
 
-	def get_output(self):
-		print(self.out.getvalue())
-		percent = 0
-		if self.total > 0:
-			percent = float(self.passes) / float(self.total) * 100
-		print("Passes: %d/%d, Success rate: %.2f%%" % (self.passes, self.total, percent))
+	def to_string(self):
+		return self.out.getvalue().strip()
 
-
-class CoverageTest(object):
+'''
+class HfstCoverageTest(CoverageTest):
+	app = "hfst-lookup"
+	
+	def run(self):
+		if not self.result:
+			self.
+			
+			f = '\n'.join(self.f.read().split()) + '\n'
+			self.f.seek(0)
+			
+			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE)
+			output = str(proc.communicate(f)[0].decode('utf-8')).split('\n\n')
+			
+			
+			unfound = []
+			found = 0 
+			
+			ding = False
+			for i in output:
+				for j in i.split('\n'):
+					for k in j.split():
+						if len(k) == 3 and k[-1].strip() == "+?":
+							unfound.append(k[0].strip())
+							ding = True
+					if ding == True:
+						ding = False
+						#blah
+'''						
+					
+			
+	
+class CoverageTest(Test):
+	app = "lt-proc"
+	
 	def __init__(self, f=None, dct=None, **kwargs):
 		f = kwargs.get('f', f)
 		dct = kwargs.get('dct', dct)
 		if None in (f, dct):
 			raise TypeError("f or dct parameter missing.")
 			
-		whereis(["lt-proc"])
+		whereis([self.app])
 		self.fn = f
 		self.f = open(f, 'r')
 		self.dct = dct
@@ -142,7 +227,7 @@ class CoverageTest(object):
 			self.f.seek(0)
 
 			output = destxt(f).encode('utf-8')
-			proc = Popen(['lt-proc', self.dct], stdin=PIPE, stdout=PIPE)
+			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
 			output = retxt(output) 
 			
@@ -179,33 +264,36 @@ class CoverageTest(object):
 		b = float(len(self.get_words()))
 		return a / b * 100
 	
-	def save_statistics(self, f):
-		stats = Statistics(f)
+	def to_xml(self):
+		r = Element('coverage', timestamp=datetime.utcnow().isoformat())
+		
+		s = SubElement(r, 'dictionary')
+		s.text = os.path.basename(self.fn)
+		s.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
+		
+		s = SubElement(r, 'corpus')
+		s.text = os.path.basename(self.dct)
+		s.attrib["checksum"] = self._checksum(open(self.dct, 'rb').read())
+		
+		SubElement(r, 'percent').text = "%.2f" % self.get_coverage()
+		SubElement(r, 'total').text = str(len(self.get_words()))
+		SubElement(r, 'known').text = str(len(self.get_known_words()))
+		SubElement(r, 'unknown').text = str(len(self.get_unknown_words()))
 		
 		wrx = re.compile(r"\^(.*)/")
-
-		cfn = os.path.basename(self.fn)
-		dfn = os.path.basename(self.dct)
-		cck = checksum(self.f.read())
-		dck = checksum(open(self.dct, 'rb').read())
-		cov = "%.2f" % self.get_coverage()
-		words = len(self.get_words())
-		kwords = len(self.get_known_words())
-		ukwords = len(self.get_unknown_words())
-		topukwtmp = self.get_top_unknown_words()
-		topukw = []
-		for word, count in topukwtmp:
-			topukw.append((wrx.search(word).group(1), count))
+		s = SubElement(r, 'top')
+		for word, count in self.get_top_unknown_words():
+			SubElement(s, 'word', count=str(count)).text = wrx.search(word).group(1)
 		
-		stats.add_coverage(cfn, dfn, cck, dck, cov, words, kwords, ukwords, topukw)
-		stats.write()
+		return etree.tostring(r)
 
-	def get_output(self):
-		print("Number of tokenised words in the corpus:",len(self.get_words()))
-		print("Number of known words in the corpus:",len(self.get_known_words()))
-		print("Coverage: %.2f%%" % self.get_coverage())
-		print("Top unknown words in the corpus:")
-		print(self.get_top_unknown_words_string())
+	def to_string(self):
+		out = StringIO()
+		out.write("Number of tokenised words in the corpus: %s\n" % len(self.get_words()))
+		out.write("Coverage: %.2f%%\n" % self.get_coverage())
+		out.write("Top unknown words in the corpus:\n")
+		out.write(self.get_top_unknown_words_string())
+		return out.getvalue().strip()
 
 
 '''class VocabularyTest(object):
@@ -257,7 +345,7 @@ class CoverageTest(object):
 '''
 
 
-class AmbiguityTest(object):
+class AmbiguityTest(Test):
 	delim = re.compile(":[<>]:")
 
 	def __init__(self, f, **kwargs):
@@ -288,27 +376,43 @@ class AmbiguityTest(object):
 		self.get_results()
 		self.get_ambiguity()
 		return 0
+	
+	def to_xml(self):
+		r = Element('ambiguity', timestamp=datetime.utcnow().isoformat())
+		
+		s = SubElement(r, 'dictionary')
+		s.text = self.f
+		s.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
 
-	def save_statistics(self, f):
-		stats = Statistics(f)
-		fck = checksum(open(self.f, 'rb').read())
-		stats.add_ambiguity(self.f, fck, self.surface_forms, self.total, self.average)
-		stats.write()
+		SubElement(r, 'surface-forms').text = self.surface_forms
+		SubElement(r, 'analyses').text = str(self.total)
+		SubElement(r, 'average').text = str(self.average)
+		
+		return etree.tostring(r)
 
-	def get_output(self):
-		print("Total surface forms: %d" % self.surface_forms)
-		print("Total analyses: %d" % self.total)
-		print("Average ambiguity: %.2f" % self.average)
+	def to_string(self):
+		out = StringIO("Total surface forms: %d\n" % self.surface_forms)
+		out.write("Total analyses: %d\n" % self.total)
+		out.write("Average ambiguity: %.2f" % self.average)
+		return out.getvalue().strip()
 
 
-class HfstTest(object):
+class HfstTest(Test):
 	class AllOutput(StringIO):
-		def get_output(self):
-			return self.getvalue()
-
+		def __str__(self):
+			return self.to_string()
+		
+		def title(self, *args): pass
+		def success(self, *args): pass
+		def failure(self, *args): pass		
+		def result(self, *args): pass
+		
 		def final_result(self, hfst):
 			text = "Total passes: %d, Total fails: %d, Total: %d\n"
 			self.write(colourise(text % (hfst.passes, hfst.fails, hfst.fails+hfst.passes), 2))
+		
+		def to_string(self):
+			return self.getvalue().strip()	
 
 	class NormalOutput(AllOutput):
 		def title(self, text):
@@ -329,15 +433,6 @@ class HfstTest(object):
 			self.write(colourise(text % (test, p, f, p+f), 2))
 
 	class CompactOutput(AllOutput):
-		def title(self, *args):
-			pass
-
-		def success(self, *args):
-			pass
-
-		def failure(self, *args):
-			pass
-
 		def result(self, title, test, counts):
 			p = counts["Pass"]
 			f = counts["Fail"]
@@ -539,23 +634,43 @@ class HfstTest(object):
 						parsed[key].add(results[1].strip())
 		return parsed
 
-	def save_statistics(self, f):
-		stats = Statistics(f)
-		stats.add_hfst(self.f, checksum(open(self.f, 'rb').read()), 
-					self.gen, checksum(open(self.gen, 'rb').read()), 
-					self.morph, checksum(open(self.morph, 'rb').read()),
-					self.count, self.passes, self.fails)
-		stats.write()
+	def to_xml(self):
+		r = Element('hfst', timestamp=datetime.utcnow().isoformat())
+		
+		s = SubElement(r, 'config')
+		s.text = self.f
+		s.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
+		
+		s = SubElement(r, 'gen')
+		s.text = self.gen
+		s.attrib["checksum"] = self._checksum(open(self.gen, 'rb').read())
+		
+		s = SubElement(r, 'morph')
+		s.text = self.morph
+		s.attrib["checksum"] = self._checksum(open(self.morph, 'rb').read())
+		
+		s = SubElement(r, 'tests')
+		for k, v in self.count.items():
+			t = SubElement(s, 'test')
+			t.text = str(k)
+			t.attrib['fails'] = str(v["Fail"])
+			t.attrib['passes'] = str(v["Pass"])
+		
+		SubElement(r, 'total').text = str(self.passes + self.fails)
+		SubElement(r, 'passes').text = str(self.passes)
+		SubElement(r, 'fails').text = str(self.fails)
 
-	def get_output(self):
-		print(self.out.get_output())
+		return etree.tostring(r)
+
+	def to_string(self):
+		return self.out.getvalue().strip()
 
 
 
 # SUPPORT FUNCTIONS
 
 def string_to_list(data):
-	if isinstance(data, bytes): raise TypeError("Function does not accept bytes as input.")
+	if isinstance(data, bytes): return [data.decode('utf-8')]
 	elif isinstance(data, str): return [data]
 	else: return data
 	

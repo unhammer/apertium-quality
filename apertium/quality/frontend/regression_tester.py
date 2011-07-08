@@ -1,7 +1,4 @@
-try:
-	import argparse	
-except:
-	raise ImportError("Please install argparse module.")
+import argparse	
 
 from apertium.quality.testing import RegressionTest
 
