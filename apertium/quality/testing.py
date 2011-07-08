@@ -28,8 +28,8 @@ class Test(object):
 		"""Will return to_string method's content if exists, 
 		otherwise default to parent class
 		"""
-		try: self.to_string()
-		except: object.__str__()
+		try: return self.to_string()
+		except: return object.__str__(self)
 	
 	def _checksum(self, data):
 		"""Returns checksum hash for given data (currently SHA1) for the purpose
