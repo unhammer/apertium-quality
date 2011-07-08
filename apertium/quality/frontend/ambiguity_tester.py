@@ -1,30 +1,13 @@
-try:
-	import argparse	
-except:
-	raise ImportError("Please install argparse module.")
-
 from apertium.quality.testing import AmbiguityTest
+from apertium.quality.frontend import Frontend
 
-#TODO add piping for great interfacing
-
-class UI(object):
+class UI(Frontend, AmbiguityTest):
 	def __init__(self):
-		ap = argparse.ArgumentParser(
-			description="Get average ambiguity.")
-		ap.add_argument("-c", "--colour", dest="colour", action="store_true",
-			help="Colours the output")
-		ap.add_argument("-X", "--statistics", dest="statfile", 
-			nargs='?', const='quality-stats.xml', default=None,
-			help="XML file that statistics are to be stored in")
-		ap.add_argument("dictionary", nargs=1, help="DIX file")
-		self.args = args = ap.parse_args()
-		self.test = AmbiguityTest(args.dictionary[0])
-	
-	def start(self):
-		self.test.run()
-		self.test.get_output()
-		if self.args.statfile:
-			self.test.save_statistics(self.args.statfile)
+		Frontend.__init__(self)
+		self.description="Get average ambiguity."
+		self.add_argument("dictionary", nargs=1, help="DIX file")
+		self.args = self.parse_args()
+		AmbiguityTest.__init__(self, self.args.dictionary[0])
 
 def main():
 	try:
@@ -33,3 +16,5 @@ def main():
 	except KeyboardInterrupt:
 		pass
 
+if __name__ == "__main__":
+	main()

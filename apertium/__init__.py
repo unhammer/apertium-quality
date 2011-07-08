@@ -12,11 +12,6 @@ from datetime import datetime
 #import logging
 
 
-def checksum(data):
-	if hasattr(data, 'encode'):
-		data = data.encode('utf-8')
-	return sha1(data).hexdigest()
-
 def whereis(programs):
 	out = {}
 	for p in programs:
@@ -66,9 +61,6 @@ def retxt(data):
 	output = escape.sub(lambda o: o.group(1), data)
 	output = encap.sub(lambda o: o.group(1), output)
 	return output
-	
-#def is_transfer_rules(ext):
-#	return (is_tnx(ext) or is_rlx(ext))
 
 
 class Dictionary(object):

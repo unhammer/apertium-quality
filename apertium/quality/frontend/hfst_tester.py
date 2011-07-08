@@ -1,79 +1,60 @@
-try:
-	import argparse	
-except:
-	raise ImportError("Please install argparse module.")
+from selfertium.quality.frontend import Frontend
+from selfertium.quality.testing import HfstTest
 
-from apertium.quality.testing import HfstTest
-
-#TODO add piping for great interfacing
-
-class UI(object):
+class UI(Frontend, HfstTest):
 	def __init__(self):
-		self.args = args = self.parse_args()
-		self.test = HfstTest(**args)
-	
-	def parse_args(self):
-		ap = argparse.ArgumentParser(
-			description="""Test morphological transducers for consistency. 
+		Frontend.__init__(self)
+		self.description="""Test morphological transducers for consistency. 
 			`hfst-lookup` (or Xerox' `lookup` with argument -x) must be
-			available on the PATH.""",
-			epilog="Will run all tests in the test_file by default.")
-		ap.add_argument("-c", "--colour",
-			dest="colour", action="store_true",
-			help="Colours the output")
-		ap.add_argument("-C", "--compact",
+			available on the PATH."""
+		self.epilog="Will run all tests in the test_file by default."
+		
+		self.add_argument("-C", "--compact",
 			dest="compact", action="store_true",
 			help="Makes output more compact")
-		ap.add_argument("-i", "--ignore-extra-analyses",
+		self.add_argument("-i", "--ignore-extra-analyses",
 			dest="ignore_analyses", action="store_true",
 			help="""Ignore extra analyses when there are more than expected,
 			will PASS if the expected one is found.""")
-		ap.add_argument("-s", "--surface",
+		self.add_argument("-s", "--surface",
 			dest="surface", action="store_true",
 			help="Surface input/analysis tests only")
-		ap.add_argument("-l", "--lexical",
+		self.add_argument("-l", "--lexical",
 			dest="lexical", action="store_true",
 			help="Lexical input/generation tests only")
-		ap.add_argument("-f", "--hide-fails",
+		self.add_argument("-f", "--hide-fails",
 			dest="hide_fail", action="store_true",
 			help="Suppresses passes to make finding failures easier")
-		ap.add_argument("-p", "--hide-passes",
+		self.add_argument("-p", "--hide-passes",
 			dest="hide_pass", action="store_true",
 			help="Suppresses failures to make finding passes easier")
-		ap.add_argument("-S", "--section", default=["hfst"],
+		self.add_argument("-S", "--section", default=["hfst"],
 			dest="section", nargs=1, required=False, 
 			help="The section to be used for testing (default is `hfst`)")
-		ap.add_argument("-t", "--test",
+		self.add_argument("-t", "--test",
 			dest="test", nargs=1, required=False,
 			help="""Which test to run (Default: all). TEST = test ID, e.g.
-			'Noun - gåetie' (remember quotes if the ID contains spaces)""")
-		ap.add_argument("-v", "--verbose",
+			'Noun - g\u00E5etie' (remember quotes if the ID contains spaces)""")
+		self.add_argument("-v", "--verbose",
 			dest="verbose", action="store_true",
 			help="More verbose output.")
-		ap.add_argument("-X", "--statistics", dest="statfile", 
-			nargs='?', const='quality-stats.xml', default=None,
-			help="XML file that statistics are to be stored in")
 		
-		ap.add_argument("--app", dest="app", nargs=1, required=False, 
+		self.add_argument("--app", dest="app", nargs=1, required=False, 
 			help="Override application used for test")
-		ap.add_argument("--gen", dest="gen", nargs=1, required=False, 
+		self.add_argument("--gen", dest="gen", nargs=1, required=False, 
 			help="Override generation transducer used for test")
-		ap.add_argument("--morph", dest="morph", nargs=1, required=False, 
+		self.add_argument("--morph", dest="morph", nargs=1, required=False, 
 			help="Override morph transducer used for test")
 		
-		ap.add_argument("test_file", nargs=1,
+		self.add_argument("test_file", nargs=1,
 			help="YAML file with test rules")
-		args = dict(ap.parse_args()._get_kwargs())
-		for k, v in args.copy().items():
+		
+		self.args = dict(self.parse_args()._get_kwargs())
+		for k, v in self.args.copy().items():
 			if isinstance(v, list) and len(v) == 1:
-				args[k] = v[0]
-		return args
-	
-	def start(self):
-		self.test.run()
-		self.test.get_output()
-		if self.args.get('statfile'):
-			self.test.save_statistics(self.args['statfile'])
+				self.args[k] = v[0]
+
+		HfstTest.__init__(self, **self.args)
 
 def main():
 	try:
@@ -82,3 +63,5 @@ def main():
 	except KeyboardInterrupt:
 		pass
 
+if __name__ == "__main__":
+	main()

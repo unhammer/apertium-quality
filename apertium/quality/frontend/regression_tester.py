@@ -1,31 +1,18 @@
-import argparse	
-
+from apertium.quality.frontend import Frontend
 from apertium.quality.testing import RegressionTest
 
-#TODO add piping for great interfacing
 
-class UI(object):
+class UI(Frontend, RegressionTest):
 	def __init__(self):
-		ap = argparse.ArgumentParser(
-			description="Test for regressions directly from Apertium wiki.")
-		ap.add_argument("-c", "--colour", dest="colour", action="store_true",
-			help="Colours the output")
-		ap.add_argument("-d", "--dict", dest="dictdir", nargs='?',
+		Frontend.__init__(self)
+		self.description="Test for regressions directly from Apertium wiki."
+		self.add_argument("-d", "--dict", dest="dictdir", nargs='?',
 			const=['.'], default=['.'],
 			help="Directory of dictionary (Default: current directory)")
-		ap.add_argument("-X", "--statistics", dest="statfile",
-			nargs='?', const='quality-stats.xml', default=None,
-			help="XML file that statistics are to be stored in")
-		ap.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
-		ap.add_argument("wikiurl", nargs=1, help="URL to regression tests")
-		self.args = args = ap.parse_args()
-		self.test = RegressionTest(args.wikiurl[0], args.mode[0], args.dictdir[0])
-	
-	def start(self):
-		self.test.run()
-		self.test.get_output()
-		if self.args.statfile:
-			self.test.save_statistics(self.args.statfile)
+		self.add_argument("mode", nargs=1, help="Mode of operation (eg. br-fr)")
+		self.add_argument("wikiurl", nargs=1, help="URL to regression tests")
+		self.args = self.parse_args()
+		RegressionTest.__init__(self, self.args.wikiurl[0], self.args.mode[0], self.args.dictdir[0])
 
 def main():
 	try:
@@ -33,4 +20,7 @@ def main():
 		ui.start()
 	except KeyboardInterrupt:
 		pass
+
+if __name__ == "__main__":
+	main()
 

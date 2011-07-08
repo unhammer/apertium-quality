@@ -1,18 +1,12 @@
 from os.path import abspath, basename
 import os
 pjoin = os.path.join
-
-try:
-	import argparse	
-except:
-	raise ImportError("Please install argparse module.")
+import argparse
 
 import apertium.quality.testing as testing
-#from apertium import get_files_by_ext
 from apertium.quality import Webpage, Statistics
 
 
-#TODO add piping for great interfacing
 
 class UI(object):
 	def __init__(self):
@@ -31,7 +25,9 @@ class UI(object):
 		
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
-		
+	
+	def _tab(data, n=0):
+		return "%s:: %s" % ("  "*n, data) 
 	
 	def _langpairs(self):
 		return ['%s-%s' % (self.lang1, self.lang2), 
@@ -52,19 +48,19 @@ class UI(object):
 		return self._listdir(self._abspath(d))
 	
 	def ambiguity(self):
-		print(":: Ambiguity tests")
+		print(self._tab("Ambiguity tests"))
 		files = [ i for i in self._listdir(self.args['dictdir'])
 					if i in ('apertium-%s.%s.dix' % (self.args['langpair'], self.lang1), 
 							'apertium-%s.%s.dix' % (self.args['langpair'], self.lang2)) ]
 		
 		for t in files:
-			print("  :: %s" % t)
+			print(self._tab(t, 1))
 			test = testing.AmbiguityTest(t)
 			test.run()
 			test.save_statistics(self.args['statistics'])
 	
 	def coverage(self):
-		print(":: Coverage tests")
+		print(self._tab("Coverage tests"))
 		dirs = self._get_files('coverage')
 		files = []
 		for d in dirs:
@@ -73,7 +69,7 @@ class UI(object):
 		
 		for k, v in corpora.items():
 			if k in self._langpairs():
-				print("  :: %s" % k)
+				print(self._tab(k, 1))
 				for i in v:
 					print ("    :: %s" % i)
 					test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
@@ -81,7 +77,7 @@ class UI(object):
 					test.save_statistics(self.args['statistics'])
 
 	def regression(self):
-		print(":: Regression tests")
+		print(self._tab("Regression tests"))
 		dirs = self._get_files('regression')
 		files = []
 		for d in dirs:
@@ -90,25 +86,25 @@ class UI(object):
 		
 		for k, v in tests.items():
 			if k in self._langpairs():
-				print("  :: %s" % k)
+				print(self._tab(k, 1))
 				for i in v:
-					print ("    :: %s" % i)
+					print (self._tab(i, 2))
 					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
 					test.run()
 					test.save_statistics(self.args['statistics'])
 	
 	def hfst(self):
-		print(":: HFST tests")
+		print(self._tab("HFST tests"))
 		tests = self._get_files('hfst')
 		
 		for t in tests:
-			print("  :: %s" % t)
+			print(self._tab(t, 1))
 			test = testing.HfstTest(self._abspath('hfst', t))
 			test.run()
 			test.save_statistics(self.args['statistics'])
 	
 	def webpage(self):
-		print(":: Generating webpages...")
+		print(self._tab("Generating webpages..."))
 		self.stats = Statistics(self.args['statistics'])
 		self.web = Webpage(self.stats, self.args['outdir'])
 		self.web.generate()
@@ -119,7 +115,7 @@ class UI(object):
 		self.regression()
 		self.hfst()
 		self.webpage()
-		print(":: Done.")
+		print(self._tab("Done."))
 
 
 def main():

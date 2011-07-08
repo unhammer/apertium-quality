@@ -1,9 +1,4 @@
-import sys
-
-try:
-	import argparse	
-except:
-	raise ImportError("Please install argparse module.")
+import argparse
 
 from apertium.quality import Webpage, Statistics
 
@@ -26,7 +21,6 @@ def main():
 	try:
 		ui = UI()
 		ui.start()
-		sys.exit(0)
 	except KeyboardInterrupt:
 		pass
 

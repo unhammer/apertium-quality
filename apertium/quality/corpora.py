@@ -2,8 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import sys, os
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import re, logging, string
 import xml.sax
 import xml.sax.handler
@@ -59,7 +57,7 @@ class CorpusGenerator(object):
 					self.badText = True
 			
 			elif self.inTitle:
-				if ":" in ch or "Wikipedia" in ch or "Page" in ch:
+				if ch in (":", "Wikipedia", "Page"):
 					self.badText = True
 				else:
 					self.curTitle = special_char(ch)
@@ -120,7 +118,6 @@ class CorpusGenerator(object):
 		parser.setContentHandler(self.Handler(self))
 		parser.parse(open(fin))
 		print("%d parser done, exiting" % pid)
-
 	
 	def heuristics(self, input, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
@@ -146,7 +143,7 @@ class CorpusGenerator(object):
 
 	def worker(self):
 		pid = os.getpid()
-		try:		
+		try:
 			while True:
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
