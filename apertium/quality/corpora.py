@@ -6,16 +6,15 @@ import re, logging, string
 import xml.sax
 import xml.sax.handler
 from xml.sax import SAXException
-#import nltk.data
+import nltk.data
 
 from multiprocessing import Process, Pool, Queue, cpu_count
 import multiprocessing
 
-from os import StringIO
+from io import StringIO
 from queue import Empty
 
-from wpparser import *
-from wputils import *
+from mwparser import MediawikiHandler
 
 class CorpusGenerator(object):
 	class Handler(xml.sax.handler.ContentHandler):
@@ -60,7 +59,7 @@ class CorpusGenerator(object):
 				if ch in (":", "Wikipedia", "Page"):
 					self.badText = True
 				else:
-					self.curTitle = special_char(ch)
+					self.curTitle = ch
 	
 			elif self.inText:
 				self.text.write(ch)
@@ -85,7 +84,12 @@ class CorpusGenerator(object):
 	def __init__(self):
 		self.inq = Queue()
 		self.outq = Queue()
-		#self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+		try:
+			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+		except:
+			from nltk import download
+			download('punkt')
+			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
 	def generate(self, fin, fout, maxsentences=None):
 		self._make_processes(fin, fout, maxsentences)
@@ -119,24 +123,24 @@ class CorpusGenerator(object):
 		parser.parse(open(fin))
 		print("%d parser done, exiting" % pid)
 	
-	def heuristics(self, input, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
+	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
-		if '\n' in input:
+		if '\n' in data:
 			return False
-		if "</" in input or "/>" in input:
+		if "</" in data or "/>" in data:
 			return False
-		if input[0] in punc:
+		if data[0] in punc:
 			return False
-		if minwords-1 > input.count(' '):
+		if minwords-1 > data.count(' '):
 			return False
-		if maxcomma < input.count(','):
+		if maxcomma < data.count(','):
 			return False
 		for p in punc:
-			if maxpunc < input.count(p):
+			if maxpunc < data.count(p):
 				return False
 		count = 0
 		for n in string.digits:
-			count += input.count(n)
+			count += data.count(n)
 		if count > maxdigits:
 			return False
 		return True
@@ -148,13 +152,10 @@ class CorpusGenerator(object):
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
-				#ch = preprocess(ch)
-				article = Article(ch, title)
-				#stripped = StringIO()
-				#self.parseWiki(StringIO(ch), stripped)
-				#stripped.seek(0)
-				#parsed = self.tokenizer.tokenize(stripped.getvalue())
-				self.outq.put(str(article))
+				data = "= %s =\n\n%s" % (title, ch)
+				article = MediawikiHandler(data).parse()
+				parsed = self.tokenizer.tokenize(article)
+				self.outq.put(parsed)#str(article))
 		except Empty:
 			print("%d done, exiting" % pid)
 	
@@ -164,6 +165,7 @@ class CorpusGenerator(object):
 			f = open(fn, 'w')
 			count = 0
 			while True:
+				'''
 				sl = self.outq.get(block=True, timeout=5)
 				f.write(sl)
 				if maxsentences and count < maxsentences:
@@ -178,7 +180,7 @@ class CorpusGenerator(object):
 							count += 1
 					if count == maxsentences: break
 				if count == maxsentences: break
-				'''
+				#'''
 			f.close()
 		except Empty:
 			print("%d output worker done, exiting" % pid)
