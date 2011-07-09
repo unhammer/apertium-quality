@@ -4,7 +4,8 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml']#, 'argparse'], 'numpy', 'matplotlib']
+install_requires = ['pyyaml', 'mwparser']
+#, 'argparse'], 'numpy', 'matplotlib']
 
 try:
 	import argparse
@@ -20,7 +21,7 @@ except:
 
 setup(
 	name = "apertium-quality",
-	version = "0.0",
+	version = "0.2",
 	packages = find_packages(),
 	#scripts = scripts,
 	install_requires = install_requires,
@@ -38,5 +39,6 @@ setup(
 	aq-ambtest = apertium.quality.frontend.ambiguity_tester:main
 	aq-htmlgen = apertium.quality.frontend.website_generator:main
 	aq-autotest = apertium.quality.frontend.auto_testing:main
+	aq-wikicrp = apertium.quality.frontend.corpus_extractor:main
 	"""
 )

@@ -6,17 +6,15 @@ import re, logging, string
 import xml.sax
 import xml.sax.handler
 from xml.sax import SAXException
-import nltk.data
-
 from multiprocessing import Process, Pool, Queue, cpu_count
 import multiprocessing
-
 from io import StringIO
 from queue import Empty
 
+import nltk.data
 from mwparser import MediawikiHandler
 
-class CorpusGenerator(object):
+class CorpusExtractor(object):
 	class Handler(xml.sax.handler.ContentHandler):
 		def __init__(self, parent):
 			self.inq = parent.inq
@@ -91,19 +89,19 @@ class CorpusGenerator(object):
 			download('punkt')
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
-	def generate(self, fin, fout, maxsentences=None):
-		self._make_processes(fin, fout, maxsentences)
+	def generate(self, fin, fout, max_sentences=10000):
+		self._make_processes(fin, fout, max_sentences)
 		self.parser.start()
 		self._start_processes()
 
-	def _make_processes(self, fin, fout, maxsentences=None):
-		print("Cpus: ", cpu_count())
+	def _make_processes(self, fin, fout, max_sentences):
+		#print("Threads: ", cpu_count())
 		self.parser = Process(target=self._parser, args=(fin,))
 		self.parser.daemon = True
 		self.workers = [Process(target=self.worker) for i in range(cpu_count())]
 		for w in self.workers:
 			w.daemon = True
-		self.larry = Process(target=self.output_worker, args=(fout,maxsentences))
+		self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
 		self.larry.daemon = True
 	
 	def _start_processes(self):
@@ -121,7 +119,7 @@ class CorpusGenerator(object):
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(self.Handler(self))
 		parser.parse(open(fin))
-		print("%d parser done, exiting" % pid)
+		print("XML parser done, exiting [PID %d]" % pid)
 	
 	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
@@ -155,9 +153,9 @@ class CorpusGenerator(object):
 				data = "= %s =\n\n%s" % (title, ch)
 				article = MediawikiHandler(data).parse()
 				parsed = self.tokenizer.tokenize(article)
-				self.outq.put(parsed)#str(article))
+				self.outq.put(parsed)
 		except Empty:
-			print("%d done, exiting" % pid)
+			print("Mediawiki parser done, exiting [PID %d]" % pid)
 	
 	def output_worker(self, fn, maxsentences=None):
 		pid = os.getpid()
@@ -165,30 +163,18 @@ class CorpusGenerator(object):
 			f = open(fn, 'w')
 			count = 0
 			while True:
-				'''
-				sl = self.outq.get(block=True, timeout=5)
-				f.write(sl)
-				if maxsentences and count < maxsentences:
-					count += 1
-				if count == maxsentences: break
-				'''
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
-						if maxsentences and count < maxsentences:
-							count += 1
-					if count == maxsentences: break
-				if count == maxsentences: break
-				#'''
+						count += 1
+						sys.stdout.write('\r%d' % count)
+						sys.stdout.flush()
+					if count >= maxsentences: break
+				if count >= maxsentences: break
 			f.close()
+			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
+			sys.stdout.flush()
 		except Empty:
-			print("%d output worker done, exiting" % pid)
-	
-if __name__ == '__main__':
-	if len(sys.argv) == 3:
-		CorpusGenerator().generate(sys.argv[1], sys.argv[2]) #maxpages
-	elif len(sys.argv) == 4:
-		CorpusGenerator().generate(sys.argv[1], sys.argv[2], int(sys.argv[3]))
-	else: print("Fail. %s" % len(sys.argv))
+			print("Output worker done, exiting [PID %d]" % pid)
 
