@@ -12,7 +12,7 @@ from io import StringIO
 from queue import Empty
 
 import nltk.data
-from mwparser import MediawikiHandler
+from mwtools import MediawikiHandler
 
 class CorpusExtractor(object):
 	class Handler(xml.sax.handler.ContentHandler):
