@@ -4,7 +4,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml', 'mwparser']
+install_requires = ['pyyaml', 'mwtools']
 #, 'argparse'], 'numpy', 'matplotlib']
 
 try:
