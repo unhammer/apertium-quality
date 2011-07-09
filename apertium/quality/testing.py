@@ -256,6 +256,7 @@ class CoverageTest(Test):
 	def get_top_unknown_words_string(self, c=20):
 		out = StringIO()
 		for word, count in self.get_top_unknown_words(c):
+			word = word.split('/')[0][1:]
 			out.write("%d\t %s\n" % (count, word))
 		return out.getvalue()
 		
