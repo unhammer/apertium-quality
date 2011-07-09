@@ -116,7 +116,7 @@ _install_nltk_prefixed() {
 	wget https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
-	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
+	eval $PYTHON setup-distutils.py install --prefix=${PREFIX} ${_VERBOSE}
 	cd ..
 	rm -r nltk-3.0.1.tar.gz
 }
@@ -126,7 +126,7 @@ _install_nltk() {
 	wget -c https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
-	eval $PYTHON setup.py install ${_VERBOSE}
+	eval $PYTHON setup-distutils.py install ${_VERBOSE}
 	cd ..
 	rm -r nltk-3.0.1.tar.gz
 
