@@ -111,6 +111,27 @@ if [ ! 'x'$_READY = 'xy' ] ; then
 fi
 
 # BEGIN INSTALLATION
+_install_nltk_prefixed() {
+	$PYTHON -c 'import nltk' ${_VERBOSE} && return
+	wget https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
+	tar xf nltk-3.0.1.tar.gz
+	cd nltk-3.0.1
+	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
+	cd ..
+	rm -r nltk-3.0.1.tar.gz
+}
+
+_install_nltk() {
+	$PYTHON -c 'import nltk' ${_VERBOSE} && return
+	wget -c https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
+	tar xf nltk-3.0.1.tar.gz
+	cd nltk-3.0.1
+	eval $PYTHON setup.py install ${_VERBOSE}
+	cd ..
+	rm -r nltk-3.0.1.tar.gz
+
+}
+
 _install_standalone() {
 	echo "Stub"
 }
@@ -123,6 +144,8 @@ _install_prefixed() {
 		exit 1
 	fi
 	echo "[*] Installing..."
+	_install_nltk_prefixed
+
 	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
 
 	if [ -f $HOME/.bashrc ] ; then 
@@ -147,6 +170,7 @@ _install_prefixed() {
 
 _install() {
 	echo "[*] Installing..."
+	_install_nltk
 	eval $PYTHON setup.py install ${_VERBOSE}
 }
 
