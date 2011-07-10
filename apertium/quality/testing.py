@@ -108,7 +108,7 @@ class GenerationTest(Test):
 		stripped = stripped.getvalue()
 		
 		print('ltproc')
-		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.dictionary, self.mode)], stdin=PIPE, stdout=PIPE)
+		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.mode)], stdin=PIPE, stdout=PIPE)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'^*[0-9]*\^', '^', stripped)
 		print('der')
