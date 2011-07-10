@@ -72,7 +72,8 @@ class GenerationTest(Test):
 		self.corpus = kwargs.get('corpus', corpus)
 		if None in (self.directory, self.mode, self.corpus):
 			raise ValueError("direc, mode or corpus missing.")
-
+		
+		self.lang = '-'.join(self.mode.rsplit('-')[0:2])
 		whereis(["apertium", "lt-proc"])
 	
 	def get_transfer(self, data):
@@ -106,7 +107,7 @@ class GenerationTest(Test):
 			stripped.write("%d\t%s\n" % (count, word))
 		stripped = stripped.getvalue()
 		
-		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.mode)], stdin=PIPE, stdout=PIPE)
+		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
 		
@@ -165,7 +166,7 @@ class GenerationTest(Test):
 		out.write("\n".join(self.tagmismatch)+"\n\n")
 		
 		out.write(border + "\n")
-		out.write("Summary")
+		out.write("Summary\n")
 		out.write(border + "\n")
 		
 		out.write("%6d %s\n" % (len(self.multiform), "multiform"))
