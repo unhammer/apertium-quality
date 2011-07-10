@@ -64,6 +64,7 @@ element statistics {
 			attribute timestamp { xsd:dateTime },
 			element config {
 				xsd:string,
+				attribute app { xsd:string },
 				attribute checksum { xsd:string }
 			},
 			element gen {

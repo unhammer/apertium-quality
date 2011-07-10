@@ -41,6 +41,9 @@ class Webpage(object):
 		
 		self.base = Template(base)
 		self.statblock = Template(statblock)
+		self.statdiv = Template(statdiv)
+		self.generaldiv = Template(generaldiv)
+		self.chronodiv = Template(chronodiv)
 		
 		#if not isinstance(stats, Statistics):
 		#	raise TypeError("Input must be Statistics object.")
@@ -50,21 +53,40 @@ class Webpage(object):
 		self.fdir = fdir
 
 	def generate(self):
-		pass
-
+		footer = "<p>TIME GOES HERE</p>"
+		divs = []
+		divs.append(self.generate_regressions())
+		# others
+		out = self.base.render(dirname="DIRNAME", divs=divs, footer=footer)
+		
+		f = open(pjoin(self.fdir, "index.html"), 'w')
+		f.write(out)
+		f.close()
+		
 	def generate_regressions(self):
 		data = self.stats.get_regressions()
 		
-		pass
+		divs = []
+		stat_type = "regressions"
+		stat_type_title = "Regression Tests"
+		
+		for k, v in data.items():
+			stat_title, stat_cksum = k.rsplit("__", 1)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			stats = self.statdiv.render(stat_title=stat_title, stat_type=stat_type, stat_cksum=stat_cksum, 
+									chrono=chrono, general={"Stub": "True!"}, images={'':''})
+			divs.append(stats)
+		
+		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 			
 	def generate_coverages(self):
-		pass
+		data = self.stats.get_coverages()
 	
 	def generate_ambiguities(self):
-		pass
+		data = self.stats.get_ambiguities()
 	
 	def generate_hfsts(self):
-		pass
+		data = self.stats.get_hfsts()
 
 	def plot_regressions(self):
 		out = []
@@ -277,7 +299,7 @@ class Statistics(object):
 base = """
 <html>
 <head>
-	<title>${dirname}</title>
+	<title>Statistics - ${dirname}</title>
 	<!--<script type="application/javascript" src="js"></script>-->
   	<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -285,14 +307,14 @@ base = """
 <body>
 
 <div id="header">
-	<h1>%{dirname}</h1>
+	<h1>${dirname}</h1>
 </div>
 
 <!-- divs gonna div -->
-%{divs}
+${divs}
 
 <div id="footer">
-	%{footer}
+	${footer}
 </div>
 
 </body>
@@ -300,51 +322,69 @@ base = """
 
 statblock = """
 <div id="${stat_type}" class="s-container">
-	<h1>%{stat_type}</h1>
-	<h2>%{stat_cksum}</h2>
+	<h1>%{stat_type_title}</h1>
+	
+	% for div in divs
+	${div}
+	% endfor
+</div>
+"""
 
-	<div id="${stat_type}-imgs" class="s-imgs">
-		% for src, alt in images.items():
-		<a href="${src}"><img src="${src}" alt="${alt}" /></a>
-		% endfor
-	</div>
-
-	<div id="${stat_type}-data" class="s-data">
-		<div id="${stat_type}-general" class="s-general">
-			<h1>General Statistics</h1>
-			<table>
-			% for left, right in gen_stats.items():
-			<tr>
-				<td>${left}:</td>
-				<td>${right}</td>
-			</tr>
+statdiv = """
+	<div id="${stat_type}-${stat_title}" class="s-stats">
+		<h1>{stat_title}</h1>
+		<h2>{stat_cksum}</h2>
+		<div id="${stat_type}-${stat_title}-imgs" class="s-imgs">
+			% for src, alt in images.items():
+			<a href="${src}"><img src="${src}" alt="${alt}" /></a>
 			% endfor
-			</table>
 		</div>
 	
-		<div id="${stat_type}-chrono" class="s-chrono">
-			<h1>Chronological Statistics</h1>
-			<ul>
-			% for date, data in chrono.items():
-				<li>
-					<a href="#" id="%{date}">%{date}</a>
-					<div id="%{date}-div">
-						<table>
-						% for d in data:
-						<tr>
-							% for i in d:
-							<td>%{i}</td>
-							% endfor
-						</tr>
-						% endfor
-						</table>
-					</div>
-				</li>
-			% endfor
-			</ul>
+		<div id="${stat_type}-${stat_title}-data" class="s-data">
+
+			${general}
+			
+			${chrono}
+
+			<hr />
 		</div>
-		
-		<hr />
 	</div>
-</div>
+"""
+
+generaldiv = """
+			<div id="${stat_type}-${stat_title}-general" class="s-general">
+				<h1>General Statistics</h1>
+				<table>
+				% for left, right in gen_stats.items():
+				<tr>
+					<td>${left}:</td>
+					<td>${right}</td>
+				</tr>
+				% endfor
+				</table>
+			</div>
+"""
+
+chronodiv = """
+			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
+				<h1>Chronological Statistics</h1>
+				<ul>
+				% for date, data in chrono_stats.items():
+					<li>
+						<a href="#" id="${date}">${date}</a>
+						<div id="%{date}-div">
+							<table>
+							% for d in data:
+							<tr>
+								% for i in d:
+								<td>${i}</td>
+								% endfor
+							</tr>
+							% endfor
+							</table>
+						</div>
+					</li>
+				% endfor
+				</ul>
+			</div>
 """
