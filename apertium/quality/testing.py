@@ -95,7 +95,6 @@ class GenerationTest(Test):
 		return out.getvalue().split('\n')
 					
 	def run(self):
-		print("apertium")
 		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE)
 		#app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
 		#		stdin=PIPE, stdout=PIPE, shell=True)
@@ -107,11 +106,9 @@ class GenerationTest(Test):
 			stripped.write("%d\t%s\n" % (count, word))
 		stripped = stripped.getvalue()
 		
-		print('ltproc')
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.mode)], stdin=PIPE, stdout=PIPE)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
-		print('der')
 		
 		gen_errors = StringIO()
 		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
@@ -130,7 +127,17 @@ class GenerationTest(Test):
 					tagmismatch.append(i)
 			elif "/" in i:
 				multiform.append(i)
-			
+		
+		print("DEBUG:")
+		print("raw:\n%s\n" % res)
+		print("transfer:\n%s\n" % transfer)
+		print("stripped:\n%s\n" % stripped)
+		print("surface:\n%s\n" % surface)
+		print("nofreq:\n%s\n" % nofreq)
+		print('\nmultiform: %s' % multiform)
+		print('multibidix: %s' % multibidix)
+		print("tagmismatch %s" % tagmismatch)
+		
 		self.multiform = multiform
 		self.multibidix = multibidix
 		self.tagmismatch = tagmismatch
@@ -143,17 +150,17 @@ class GenerationTest(Test):
 		border = "=" * 80
 		
 		out.write(border + "\n")
-		out.write("Multiple surface forms for a single lexical form")
+		out.write("Multiple surface forms for a single lexical form\n")
 		out.write(border + "\n")
 		out.write("\n".join(self.multiform)+'\n\n')
 		
 		out.write(border + "\n")
-		out.write("Multiple bidix entries for a single source language lexical form")
+		out.write("Multiple bidix entries for a single source language lexical form\n")
 		out.write(border + "\n")
 		out.write("\n".join(self.multibidix)+"\n\n")
 		
 		out.write(border + "\n")
-		out.write("Tag mismatch between transfer and generation")
+		out.write("Tag mismatch between transfer and generation\n")
 		out.write(border + "\n")
 		out.write("\n".join(self.tagmismatch)+"\n\n")
 		
