@@ -473,11 +473,10 @@ chronodiv = """
 						<a href="#" id="${date}">${date}</a>
 						<div id="${date}-div">
 							<table>
-							% for d in data:
+							% for k, v in data.items():
 							<tr>
-								% for i in d:
-								<td>${i}</td>
-								% endfor
+								<td>${k}</td>
+								<td>${v}</td>
 							</tr>
 							% endfor
 							</table>
