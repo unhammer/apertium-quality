@@ -17,6 +17,7 @@ from xml.etree.ElementTree import Element, SubElement
 
 from collections import defaultdict, OrderedDict
 import re, os
+pjoin = os.path.join
 from io import StringIO
 from textwrap import dedent
 
@@ -108,7 +109,7 @@ class Webpage(object):
 
 			plt.plot(x, y[0])
 			png = "%s.png" % self.space.sub('_', t)
-			plt.savefig(os.path.join(self.fdir, png))
+			plt.savefig(pjoin(self.fdir, png))
 			out.append(png)
 			plt.clf()
 
@@ -118,7 +119,7 @@ class Webpage(object):
 
 			plt.plot(x, y[1], 'b', x, y[2], 'g', x, y[3], 'r')
 			png = "%s.png" % self.space.sub('_', t)
-			plt.savefig(os.path.join(self.fdir, png))
+			plt.savefig(pjoin(self.fdir, png))
 			out.append(png)
 			plt.clf()
 		return out
