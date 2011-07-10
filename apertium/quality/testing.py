@@ -8,6 +8,7 @@ import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 import urllib.request
 
+import itertools
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
 from io import StringIO
@@ -64,6 +65,110 @@ class Test(object):
 		"""
 		raise NotImplementedError("Required method `to_string` was not implemented.")
 
+class GenerationTest(Test):
+	def __init__(self, direc=None, mode=None, corpus=None, **kwargs):
+		self.directory = kwargs.get('direc', direc)
+		self.mode = kwargs.get('mode', mode)
+		self.corpus = kwargs.get('corpus', corpus)
+		if None in (self.directory, self.mode, self.corpus):
+			raise ValueError("direc, mode or corpus missing.")
+
+		whereis(["apertium", "lt-proc"])
+	
+	def get_transfer(self, data):
+		count = Counter()
+		out = StringIO()
+		buf = StringIO()
+		in_word = False
+		
+		for i in data:
+			if i == "^":
+				in_word = True
+			elif i == "$":
+				out.write("%s$\n" % buf)
+				count[buf] += 1
+				buf = StringIO()
+				in_word = False
+			if in_word:
+				buf.write(i)
+		
+		return out.getvalue().split('\n')
+					
+	def run(self):
+		print("apertium")
+		#app = Popen(['apertium', '-d', self.directory, '%s-transfer' % self.mode], stdin=PIPE, stdout=PIPE, bufsize=-1)
+		app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
+				stdin=PIPE, stdout=PIPE, shell=True)
+		res = app.communicate()[0].decode('utf-8')
+		transfer = self.get_transfer(res)
+		
+		stripped = StringIO()
+		for word, count in Counter(transfer).most_common():
+			stripped.write("%d\t%s\n" % (count, word))
+		stripped = stripped.getvalue()
+		
+		print('ltproc')
+		app = Popen(['lt-proc', '-d', self.directory, "%s.autogen.bin" % self.mode], stdin=PIPE, stdout=PIPE)
+		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
+		nofreq = re.sub(r'^*[0-9]*\^', '^', stripped)
+		print('der')
+		
+		gen_errors = StringIO()
+		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
+			gen_errors.write("{:<16}{:<16}".format(*list(str(x) for x in i)))
+		gen_errors = gen_errors.getvalue().split('\n')
+
+		multiform = []
+		multibidix = []
+		tagmismatch = []
+		
+		for i in gen_errors:
+			if "#" in i:
+				if re.search(r'[0-9] #.*\/', i):
+					multibidix.append(i)
+				elif re.search(r'[0-9] #', i) and not '/' in i:
+					tagmismatch.append(i)
+			elif "/" in i:
+				multiform.append(i)
+			
+		self.multiform = multiform
+		self.multibidix = multibidix
+		self.tagmismatch = tagmismatch
+
+	#def to_xml(self):
+	#	pass
+	
+	def to_string(self):
+		out = StringIO()
+		border = "=" * 80
+		
+		out.write(border + "\n")
+		out.write("Multiple surface forms for a single lexical form")
+		out.write(border + "\n")
+		out.write("\n".join(self.multiform)+'\n\n')
+		
+		out.write(border + "\n")
+		out.write("Multiple bidix entries for a single source language lexical form")
+		out.write(border + "\n")
+		out.write("\n".join(self.multibidix)+"\n\n")
+		
+		out.write(border + "\n")
+		out.write("Tag mismatch between transfer and generation")
+		out.write(border + "\n")
+		out.write("\n".join(self.tagmismatch)+"\n\n")
+		
+		out.write(border + "\n")
+		out.write("Summary")
+		out.write(border + "\n")
+		
+		out.write("%6d %s\n" % (len(self.multiform), "multiform"))
+		out.write("%6d %s\n" % (len(self.multibidix), "multibidix"))
+		out.write("%6d %s\n" % (len(self.tagmismatch), "tagmismatch"))
+		out.write("Total: %d\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
+		
+		return out.getvalue()
+		
+		
 class RegressionTest(Test):
 	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
@@ -74,7 +179,7 @@ class RegressionTest(Test):
 		mode = kwargs.get('mode', mode)
 		directory = kwargs.get('directory', directory)
 		if None in (url, mode):
-			raise TypeError("Url or mode parameter missing.")
+			raise ValueError("Url or mode parameter missing.")
 
 		whereis([self.program])
 		#if not "Special:Export" in url:

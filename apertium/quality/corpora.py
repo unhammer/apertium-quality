@@ -86,6 +86,7 @@ class CorpusExtractor(object):
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 		except:
 			from nltk import download
+			print("Downloading tokenisation library. This may take some time. (~6MB)")
 			download('punkt')
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
