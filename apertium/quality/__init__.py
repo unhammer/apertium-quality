@@ -311,7 +311,7 @@ base = """
 </div>
 
 <!-- divs gonna div -->
-% for div in divs
+% for div in divs:
 ${div}
 % endfor
 
@@ -326,7 +326,7 @@ statblock = """
 <div id="${stat_type}" class="s-container">
 	<h1>%{stat_type_title}</h1>
 	
-	% for div in divs
+	% for div in divs:
 	${div}
 	% endfor
 </div>
