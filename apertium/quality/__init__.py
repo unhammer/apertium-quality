@@ -64,6 +64,10 @@ class Webpage(object):
 		f.write(out)
 		f.close()
 		
+		f = open(pjoin(self.fdir, "style.css"), 'w')
+		f.write(css)
+		f.close()
+		
 	def generate_regressions(self):
 		data = self.stats.get_regressions()
 		
@@ -73,9 +77,11 @@ class Webpage(object):
 		
 		for k, v in data.items():
 			stat_title, stat_cksum = k.rsplit("__", 1)
+			stat_title = self.space.sub('_', stat_title)
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
 			stats = self.statdiv.render(stat_title=stat_title, stat_type=stat_type, stat_cksum=stat_cksum, 
-									chrono=chrono, general={"Stub": "True!"}, images={'':''})
+									chrono=chrono, general=general, images={'':''})
 			divs.append(stats)
 		
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
@@ -297,6 +303,96 @@ class Statistics(object):
 
 		return out	
 
+css = """
+* {
+  border: 0;
+  padding: 0; }
+
+body {
+  background-color: #777777; }
+
+div {
+  border: 1px solid black;
+  margin: 1em; }
+
+h1 {
+  margin: 0;
+  padding: 0;
+  margin-top: 0.5em;
+  margin-left: 0.5em;
+  font-variant: small-caps; }
+
+table {
+  border-collapse: collapse; }
+
+/*table, th, td {
+	border: 1px solid black;
+}*/
+div#container {
+  padding: 0;
+  margin: 0 auto;
+  width: 100%; }
+
+div#header, div#footer {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  /*border-radius: $radius;
+  -moz-border-radius: $radius;
+  -webkit-border-radius: $radius;*/
+  background-color: white; }
+  div#header h1, div#footer h1 {
+    margin-top: 6px; }
+
+div.s-container div.s-stats {
+  background-color: white;
+  border: 1px solid black;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  /*border-radius: $radius;
+  -moz-border-radius: $radius;
+  -webkit-border-radius: $radius;*/
+  clear: both; }
+  div.s-container div.s-stats h1 {
+    font-size: 16pt; }
+  div.s-container div.s-stats hr {
+    clear: both;
+    border: 0;
+    margin: 0;
+    padding: 0; }
+  div.s-container div.s-stats div.s-imgs img {
+    width: 267px;
+    height: 200px;
+    border: 1px solid black;
+    margin: 1em; }
+  div.s-container div.s-stats div.s-data h1 {
+    font-size: 14pt; }
+  div.s-container div.s-stats div.s-data div.s-general {
+    float: left;
+    margin-right: 0;
+    width: 47.75%; }
+    div.s-container div.s-stats div.s-data div.s-general table {
+      margin: 1em; }
+      div.s-container div.s-stats div.s-data div.s-general table tr td {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+        text-align: right; }
+      div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
+        text-align: left; }
+  div.s-container div.s-stats div.s-data div.s-chrono {
+    float: right;
+    margin-left: 0;
+    width: 47.75%; }
+    div.s-container div.s-stats div.s-data div.s-chrono ul li {
+      margin-left: 2em; }
+      div.s-container div.s-stats div.s-data div.s-chrono ul li div {
+        margin-left: -1em;
+        padding: 6px; }
+"""
+
 base = """
 <html>
 <head>
@@ -325,7 +421,7 @@ ${div}
 
 statblock = """
 <div id="${stat_type}" class="s-container">
-	<h1>%{stat_type_title}</h1>
+	<h1>${stat_type_title}</h1>
 	
 	% for div in divs:
 	${div}
@@ -335,8 +431,8 @@ statblock = """
 
 statdiv = """
 	<div id="${stat_type}-${stat_title}" class="s-stats">
-		<h1>{stat_title}</h1>
-		<h2>{stat_cksum}</h2>
+		<h1>${stat_title}</h1>
+		<h2>${stat_cksum}</h2>
 		<div id="${stat_type}-${stat_title}-imgs" class="s-imgs">
 			% for src, alt in images.items():
 			<a href="${src}"><img src="${src}" alt="${alt}" /></a>
@@ -375,7 +471,7 @@ chronodiv = """
 				% for date, data in chrono_stats.items():
 					<li>
 						<a href="#" id="${date}">${date}</a>
-						<div id="%{date}-div">
+						<div id="${date}-div">
 							<table>
 							% for d in data:
 							<tr>
