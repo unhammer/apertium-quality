@@ -311,7 +311,9 @@ base = """
 </div>
 
 <!-- divs gonna div -->
-${divs}
+% for div in divs
+${div}
+% endfor
 
 <div id="footer">
 	${footer}
