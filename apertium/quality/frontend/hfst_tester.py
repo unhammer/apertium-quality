@@ -1,5 +1,5 @@
-from selfertium.quality.frontend import Frontend
-from selfertium.quality.testing import HfstTest
+from apertium.quality.frontend import Frontend
+from apertium.quality.testing import HfstTest
 
 class UI(Frontend, HfstTest):
 	def __init__(self):
