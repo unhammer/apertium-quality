@@ -85,8 +85,8 @@ class GenerationTest(Test):
 			if i == "^":
 				in_word = True
 			elif i == "$":
-				out.write("%s$\n" % buf)
-				count[buf] += 1
+				out.write("%s$\n" % buf.getvalue())
+				count[buf.getvalue()] += 1
 				buf = StringIO()
 				in_word = False
 			if in_word:
@@ -96,9 +96,9 @@ class GenerationTest(Test):
 					
 	def run(self):
 		print("apertium")
-		#app = Popen(['apertium', '-d', self.directory, '%s-transfer' % self.mode], stdin=PIPE, stdout=PIPE, bufsize=-1)
-		app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
-				stdin=PIPE, stdout=PIPE, shell=True)
+		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE)
+		#app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
+		#		stdin=PIPE, stdout=PIPE, shell=True)
 		res = app.communicate()[0].decode('utf-8')
 		transfer = self.get_transfer(res)
 		
@@ -108,7 +108,7 @@ class GenerationTest(Test):
 		stripped = stripped.getvalue()
 		
 		print('ltproc')
-		app = Popen(['lt-proc', '-d', self.directory, "%s.autogen.bin" % self.mode], stdin=PIPE, stdout=PIPE)
+		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.dictionary, self.mode)], stdin=PIPE, stdout=PIPE)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'^*[0-9]*\^', '^', stripped)
 		print('der')
