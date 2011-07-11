@@ -71,6 +71,10 @@ class Webpage(object):
 		f.write(css)
 		f.close()
 		
+		f = open(pjoin(self.fdir, "stats.js"), 'w')
+		f.write(js)
+		f.close()
+		
 	def generate_regressions(self):
 		data = self.stats.get_regressions()
 		images = self.plot_regressions()
@@ -287,14 +291,14 @@ class Statistics(object):
 				"Total": i.find("total").text,	
 				"Known": i.find("known").text,	
 				"Unknown": i.find("unknown").text,
-				'':'',
-				"Top words:": ''#OrderedDict()
+				#'':'',
+				#"Top words:": ''#OrderedDict()
 		
 			})
-			for j in i.find("top").getiterator("word"):
-				coverages[dct][ts][j.text] = j.attrib["count"]
 			#for j in i.find("top").getiterator("word"):
-			#	coverages[dct][ts]['top'][j.text] = j.attrib["count"]
+			#	coverages[dct][ts][j.text] = j.attrib["count"]
+			##for j in i.find("top").getiterator("word"):
+			##	coverages[dct][ts]['top'][j.text] = j.attrib["count"]
 
 		out = dict()
 		for k, v in coverages.items():
@@ -329,7 +333,7 @@ class Statistics(object):
 		root = self.root.find('hfsts')
 		if root is None:
 			return dict()
-		ambiguities = defaultdict(dict)
+		hfsts = defaultdict(dict)
 		
 		for i in root.getiterator("hfst"):
 			ts = from_isoformat(i.attrib['timestamp'])
@@ -339,24 +343,24 @@ class Statistics(object):
 			g = i.find("gen")
 			m = i.find("morph")
 			
-			ambiguities[cfg][ts] = {
-				"gen": "%s__%s" % (g.text, g.attrib["checksum"]),
-				"morph": "%s__%s" % (m.text, m.attrib["checksum"]),
-				
-				"tests": OrderedDict(),
-				"total": i.find("total").text,
-				"passes": i.find("passes").text,
-				"fails": i.find("fails").text
+			hfsts[cfg][ts] = {
+				"Gen": "%s__%s" % (g.text, g.attrib["checksum"]),
+				"Morph": "%s__%s" % (m.text, m.attrib["checksum"]),
+				'':'',
+				#"Tests": OrderedDict(),
+				"Total": i.find("total").text,
+				"Passes": i.find("passes").text,
+				"Fails": i.find("fails").text
 			}
 			
-			for j in i.find("tests").getiterator("test"):
-				ambiguities[cfg][ts]['tests'][j.text] = {
-					"passes": j.attrib['passes'], 
-					"fails": j.attrib['fails']
-				}
+			#for j in i.find("tests").getiterator("test"):
+			#	hfsts[cfg][ts]['tests'][j.text] = {
+			#		"passes": j.attrib['passes'], 
+			#		"fails": j.attrib['fails']
+			#	}
 
 		out = dict()
-		for k, v in ambiguities.items():
+		for k, v in hfsts.items():
 			out[k] = OrderedDict(sorted(v.items()))
 
 		return out	
@@ -496,12 +500,35 @@ div.s-container {
                 text-align: left; }
 """
 
+js = """function toggle(id)
+{
+	var div = document.getElementById(id + '-div');
+	
+	if (div.style.display == 'block') {
+		div.style.display = 'none';
+	}
+	else {
+		div.style.display = 'block';
+	}
+}
+
+function init() 
+{
+	var cdivs = document.getElementsByClassName("cdiv");
+	for (var i = 0; i < cdivs.length; ++i) {
+		cdivs[i].style.display = "none";
+	}
+}
+
+window.addEventListener("load", init, false);
+"""
+
 base = """<!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Statistics - ${dirname}</title>
-	<!--<script type="application/javascript" src="js"></script>-->
+	<script type="application/javascript" src="stats.js"></script>
   	<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
@@ -574,8 +601,8 @@ chronodiv = """
 				<ul>
 				% for c, date in enumerate(reversed(chrono_stats)):
 					<li>
-						<a href="#" id="${stat_type}-${stat_title}-chrono-${c}">${date}</a>
-						<div id="${stat_type}-${stat_title}-chrono-${c}-div">
+						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
+						<div class="cdiv" id="${stat_type}-${stat_title}-chrono-${c}-div">
 							<table>
 							% for k, v in chrono_stats[date].items():
 								<% 
