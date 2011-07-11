@@ -482,20 +482,22 @@ chronodiv = """
 				<h1>Chronological Statistics</h1>
 				<ul>
 				% for date in reversed(chrono_stats):
-					${date} ${chrono_stats[date]} <br />
-					##<li>
-					##	<a href="#" id="${date}">${date}</a>
-					##	<div id="${date}-div">
-					##		<table>
-					##		% for k, v in chrono_stats[date].items():
-					##			<tr>
-					##				<td>${k}</td>
-					##				<td>${v}</td>
-					##			</tr>
-					##		% endfor
-					##		</table>
-					##	</div>
-					##</li>
+					<li>
+						<a href="#" id="${date}">${date}</a>
+						<div id="${date}-div">
+							<table>
+							% for k, v in chrono_stats[date].items():
+								% if "percent" in k.lower():
+									% v = "%s%%" % v
+								% endif
+								<tr>
+									<td>${k}</td>
+									<td>${v}</td>
+								</tr>
+							% endfor
+							</table>
+						</div>
+					</li>
 				% endfor
 				</ul>
 			</div>
