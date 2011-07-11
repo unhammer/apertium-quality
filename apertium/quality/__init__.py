@@ -78,7 +78,7 @@ class Webpage(object):
 		
 		for k, v in data.items():
 			stat_title_human, stat_cksum = k.rsplit("__", 1)
-			stat_title = self.space.sub('_', stat_title_human
+			stat_title = self.space.sub('_', stat_title_human)
 			general = self.generaldiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
 			stats = self.statdiv.render(stat_title=stat_title, stat_type=stat_type, stat_cksum=stat_cksum, 
