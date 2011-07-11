@@ -111,7 +111,7 @@ class Webpage(object):
 			
 			avg = 0.0
 			for i in ts.values():
-				avg += i['Percent']
+				avg += float(i['Percent'])
 			avg /= float(len(data))
 			
 			gen_stats = {
