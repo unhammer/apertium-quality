@@ -485,10 +485,10 @@ chronodiv = """
 						<a href="#" id="${date}">${date}</a>
 						<div id="${date}-div">
 							<table>
-							% for k, v in reversed(data.items()):
+							% for k in reversed(data):
 								<tr>
 									<td>${k}</td>
-									<td>${v}</td>
+									<td>${data[k]}</td>
 								</tr>
 							% endfor
 							</table>
