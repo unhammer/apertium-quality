@@ -70,6 +70,7 @@ class Webpage(object):
 		
 	def generate_regressions(self):
 		data = self.stats.get_regressions()
+		images = self.plot_regressions()
 		
 		divs = []
 		stat_type = "regressions"
@@ -81,7 +82,7 @@ class Webpage(object):
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
 			stats = self.statdiv.render(stat_title=stat_title, stat_type=stat_type, stat_cksum=stat_cksum, 
-									chrono=chrono, general=general, images={'':''})
+									chrono=chrono, general=general, images=images)
 			divs.append(stats)
 		
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
@@ -108,10 +109,10 @@ class Webpage(object):
 			y = [[], [], [], []]
 			
 			for ts, vals in reg.items():
-				y[0].append(vals['percent'])
-				y[1].append(vals['total'])
-				y[2].append(vals['passes'])
-				y[3].append(vals['fails'])
+				y[0].append(vals['Percent'])
+				y[1].append(vals['Total'])
+				y[2].append(vals['Passes'])
+				y[3].append(vals['Fails'])
 
 			plt.plot(x, y[0])
 			png = "%s.png" % self.space.sub('_', t)
@@ -201,10 +202,10 @@ class Statistics(object):
 			t = i.find("title")
 			title = "%s__%s" % (t.text, t.attrib["revision"])
 			regressions[title][ts] = {
-				"percent": i.find("percent").text,
-				"total": i.find("total").text,
-				"passes": i.find("passes").text,
-				"fails": i.find("fails").text
+				"Percent": i.find("percent").text,
+				"Total": i.find("total").text,
+				"Passes": i.find("passes").text,
+				"Fails": i.find("fails").text
 			}
 
 		out = dict()
@@ -227,8 +228,8 @@ class Statistics(object):
 			c = i.find("corpus")
 			
 			coverages[dct][ts] = {
-				"corpus": "%s__%s" % (c.text, c.attrib["checksum"]),
-				"percent": i.find("percent").text,
+				"Corpus": "%s__%s" % (c.text, c.attrib["checksum"]),
+				"Percent": i.find("percent").text,
 				"total": i.find("total").text,	
 				"known": i.find("known").text,	
 				"unknown": i.find("unknown").text,
@@ -345,7 +346,7 @@ div#header, div#footer {
   div#header h1, div#footer h1 {
     margin-top: 6px; }
 
-div.s-container div.s-stats {
+div.s-container {
   background-color: white;
   border: 1px solid black;
   margin-top: 1em;
@@ -356,41 +357,52 @@ div.s-container div.s-stats {
   -moz-border-radius: $radius;
   -webkit-border-radius: $radius;*/
   clear: both; }
-  div.s-container div.s-stats h1 {
-    font-size: 16pt; }
-  div.s-container div.s-stats hr {
-    clear: both;
-    border: 0;
+  div.s-container div.s-stats {
     margin: 0;
     padding: 0; }
-  div.s-container div.s-stats div.s-imgs img {
-    width: 267px;
-    height: 200px;
-    border: 1px solid black;
-    margin: 1em; }
-  div.s-container div.s-stats div.s-data h1 {
-    font-size: 14pt; }
-  div.s-container div.s-stats div.s-data div.s-general {
-    float: left;
-    margin-right: 0;
-    width: 47.75%; }
-    div.s-container div.s-stats div.s-data div.s-general table {
+    div.s-container div.s-stats h1 {
+      font-size: 16pt; }
+    div.s-container div.s-stats hr {
+      clear: both;
+      border: 0;
+      margin: 0;
+      padding: 0; }
+    div.s-container div.s-stats div.s-imgs img {
+      width: 267px;
+      height: 200px;
+      border: 1px solid black;
       margin: 1em; }
-      div.s-container div.s-stats div.s-data div.s-general table tr td {
-        padding-left: 0.5em;
-        padding-right: 0.5em;
-        text-align: right; }
-      div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
-        text-align: left; }
-  div.s-container div.s-stats div.s-data div.s-chrono {
-    float: right;
-    margin-left: 0;
-    width: 47.75%; }
-    div.s-container div.s-stats div.s-data div.s-chrono ul li {
-      margin-left: 2em; }
-      div.s-container div.s-stats div.s-data div.s-chrono ul li div {
-        margin-left: -1em;
-        padding: 6px; }
+    div.s-container div.s-stats div.s-data h1 {
+      font-size: 14pt; }
+    div.s-container div.s-stats div.s-data div.s-general {
+      float: left;
+      margin-right: 0;
+      width: 47.75%; }
+      div.s-container div.s-stats div.s-data div.s-general table {
+        margin: 1em; }
+        div.s-container div.s-stats div.s-data div.s-general table tr td {
+          padding-left: 0.5em;
+          padding-right: 0.5em;
+          text-align: right; }
+        div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
+          text-align: left; }
+    div.s-container div.s-stats div.s-data div.s-chrono {
+      float: right;
+      margin-left: 0;
+      width: 47.75%; }
+      div.s-container div.s-stats div.s-data div.s-chrono ul li {
+        margin-left: 2em; }
+        div.s-container div.s-stats div.s-data div.s-chrono ul li div {
+          margin-left: -1em;
+          padding: 6px; }
+          div.s-container div.s-stats div.s-data div.s-chrono ul li div table {
+            margin: 1em; }
+            div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td {
+              padding-left: 0.5em;
+              padding-right: 0.5em;
+              text-align: right; }
+            div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td:nth-child(2) {
+              text-align: left; }
 """
 
 base = """
@@ -473,11 +485,11 @@ chronodiv = """
 						<a href="#" id="${date}">${date}</a>
 						<div id="${date}-div">
 							<table>
-							% for k, v in data.items():
-							<tr>
-								<td>${k}</td>
-								<td>${v}</td>
-							</tr>
+							% for k, v in reversed(data.items()):
+								<tr>
+									<td>${k}</td>
+									<td>${v}</td>
+								</tr>
 							% endfor
 							</table>
 						</div>
