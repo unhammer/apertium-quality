@@ -487,9 +487,10 @@ chronodiv = """
 						<div id="${date}-div">
 							<table>
 							% for k, v in chrono_stats[date].items():
-								% if "percent" in k.lower():
-									% v = "%s%%" % v
-								% endif
+								<% 
+								if "percent" in k.lower():
+									v = "%s%%" % v
+								%>
 								<tr>
 									<td>${k}</td>
 									<td>${v}</td>
