@@ -583,7 +583,7 @@ chronodiv = """
 									v = "%s%%" % v
 								elif "__" in v:
 									tmp = v.rsplit('__', 1)
-									v = "%s (%s)" % (tmp[0], tmp[1])
+									v = "%s (%s)" % (tmp[0], tmp[1].upper())
 								%>
 								<tr>
 									<td>${k}</td>
