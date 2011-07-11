@@ -80,6 +80,7 @@ class Webpage(object):
 			stat_title, stat_cksum = k.rsplit("__", 1)
 			stat_title = self.space.sub('_', stat_title)
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
+			print("CHRONO:", v)
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
 			stats = self.statdiv.render(stat_title=stat_title, stat_type=stat_type, stat_cksum=stat_cksum, 
 									chrono=chrono, general=general, images=images)
