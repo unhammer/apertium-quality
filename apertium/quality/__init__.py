@@ -194,10 +194,10 @@ class Webpage(object):
 			first = tsk[0].strftime("%Y-%m-%d %H:%M")
 			last = tsk[-1].strftime("%Y-%m-%d %H:%M")
 			
-			avg = 0.0
-			for i in ts.values():
-				avg += float(i['Percent'])
-			avg /= float(len(ts))
+			#avg = 0.0
+			#for i in ts.values():
+			#	avg += float(i['Percent'])
+			#avg /= float(len(ts))
 			
 			gen_stats = {
 				"First test": first,
