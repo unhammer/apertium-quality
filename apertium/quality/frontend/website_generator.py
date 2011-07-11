@@ -16,7 +16,7 @@ class UI(object):
 		ap.add_argument("outdir", nargs=1, help="Output directory")
 		self.args = args = ap.parse_args()
 		self.stats = Statistics(args.statistics[0])
-		self.web = Webpage(self.stats, args.outdir[0], self.title[0])
+		self.web = Webpage(self.stats, args.outdir[0], args.title[0])
 	
 	def start(self):
 		self.web.generate()
