@@ -480,15 +480,15 @@ chronodiv = """
 			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
 				<h1>Chronological Statistics</h1>
 				<ul>
-				% for date, data in chrono_stats.items():
+				% for date in reversed(chrono_stats):
 					<li>
 						<a href="#" id="${date}">${date}</a>
 						<div id="${date}-div">
 							<table>
-							% for k in reversed(data):
+							% for k, v in chrono_stats[date].items():
 								<tr>
 									<td>${k}</td>
-									<td>${data[k]}</td>
+									<td>${v}</td>
 								</tr>
 							% endfor
 							</table>
