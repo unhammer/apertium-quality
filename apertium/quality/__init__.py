@@ -54,9 +54,10 @@ class Webpage(object):
 		self.fdir = fdir
 
 	def generate(self):
-		footer = "<p>TIME GOES HERE</p>"
+		footer = "Generated: %s" % datetime.utcnow().strftime("%Y-%m-%d %H:%M (UTC)")
 		divs = []
 		divs.append(self.generate_regressions())
+		divs.append(self.generate_coverages())
 		# others
 		out = self.base.render(dirname="DIRNAME", divs=divs, footer=footer)
 		
@@ -79,7 +80,7 @@ class Webpage(object):
 		for k, v in data.items():
 			stat_title_human, stat_cksum = k.rsplit("__", 1)
 			stat_cksum = "Revision: %s" % stat_cksum
-			stat_title = self.space.sub('_', stat_title_human)
+			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
@@ -90,6 +91,23 @@ class Webpage(object):
 			
 	def generate_coverages(self):
 		data = self.stats.get_coverages()
+		images = []#self.plot_regressions()
+		
+		divs = []
+		stat_type = "coverages"
+		stat_type_title = "Coverage Tests"
+		
+		for k, v in data.items():
+			stat_title_human, stat_cksum = k.rsplit("__", 1)
+			stat_cksum = stat_cksum
+			stat_title = self.space.sub('_', stat_title_human.lower())
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
+									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
+			divs.append(stats)
+		
+		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	
 	def generate_ambiguities(self):
 		data = self.stats.get_ambiguities()
@@ -228,17 +246,19 @@ class Statistics(object):
 			
 			c = i.find("corpus")
 			
-			coverages[dct][ts] = {
+			coverages[dct][ts] = OrderedDict({
 				"Corpus": "%s__%s" % (c.text, c.attrib["checksum"]),
 				"Percent": i.find("percent").text,
-				"total": i.find("total").text,	
-				"known": i.find("known").text,	
-				"unknown": i.find("unknown").text,
-				"top": OrderedDict()
-			}
-
+				"Total": i.find("total").text,	
+				"Known": i.find("known").text,	
+				"Unknown": i.find("unknown").text,
+				"Top words:": ''#OrderedDict()
+		
+			})
 			for j in i.find("top").getiterator("word"):
-				coverages[dct][ts]['top'][j.text] = j.attrib["count"]
+				coverages[dct][ts][j.text] = j.attrib["count"]
+			#for j in i.find("top").getiterator("word"):
+			#	coverages[dct][ts]['top'][j.text] = j.attrib["count"]
 
 		out = dict()
 		for k, v in coverages.items():
@@ -315,14 +335,16 @@ body {
 
 div {
   border: 1px solid black;
-  margin: 1em; }
+  margin: 12px; }
 
-h1 {
+h1, h2 {
   margin: 0;
   padding: 0;
-  margin-top: 0.5em;
-  margin-left: 0.5em;
+  padding-left: 12px;
   font-variant: small-caps; }
+
+h1 {
+  padding-top: 8px; }
 
 table {
   border-collapse: collapse; }
@@ -335,75 +357,108 @@ div#container {
   margin: 0 auto;
   width: 100%; }
 
-div#header, div#footer {
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-  /*border-radius: $radius;
-  -moz-border-radius: $radius;
-  -webkit-border-radius: $radius;*/
+div#header {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-left: 6px;
+  margin-right: 6px;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
   background-color: white; }
-  div#header h1, div#footer h1 {
+  div#header h1 {
     margin-top: 6px; }
+
+div#footer {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: black;
+  text-align: center;
+  font-size: 9pt; }
 
 div.s-container {
   background-color: white;
   border: 1px solid black;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-  /*border-radius: $radius;
-  -moz-border-radius: $radius;
-  -webkit-border-radius: $radius;*/
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-left: 6px;
+  margin-right: 6px;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
   clear: both; }
   div.s-container div.s-stats {
     margin: 0;
-    padding: 0; }
+    padding: 0;
+    border: 0; }
     div.s-container div.s-stats h1 {
-      font-size: 16pt; }
+      border-top: 1px dotted black;
+      font-size: 16pt;
+      padding-left: 16px;
+      text-decoration: none; }
+    div.s-container div.s-stats h2 {
+      font-size: 8pt;
+      padding-left: 16px; }
     div.s-container div.s-stats hr {
       clear: both;
       border: 0;
       margin: 0;
       padding: 0; }
-    div.s-container div.s-stats div.s-imgs img {
-      width: 267px;
-      height: 200px;
-      border: 1px solid black;
-      margin: 1em; }
-    div.s-container div.s-stats div.s-data h1 {
-      font-size: 14pt; }
-    div.s-container div.s-stats div.s-data div.s-general {
-      float: left;
-      margin-right: 0;
-      width: 47.75%; }
-      div.s-container div.s-stats div.s-data div.s-general table {
-        margin: 1em; }
-        div.s-container div.s-stats div.s-data div.s-general table tr td {
-          padding-left: 0.5em;
-          padding-right: 0.5em;
-          text-align: right; }
-        div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
-          text-align: left; }
-    div.s-container div.s-stats div.s-data div.s-chrono {
-      float: right;
-      margin-left: 0;
-      width: 47.75%; }
-      div.s-container div.s-stats div.s-data div.s-chrono ul li {
-        margin-left: 2em; }
-        div.s-container div.s-stats div.s-data div.s-chrono ul li div {
-          margin-left: -1em;
-          padding: 6px; }
-          div.s-container div.s-stats div.s-data div.s-chrono ul li div table {
-            margin: 1em; }
-            div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td {
-              padding-left: 0.5em;
-              padding-right: 0.5em;
-              text-align: right; }
-            div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td:nth-child(2) {
-              text-align: left; }
+    div.s-container div.s-stats div.s-imgs {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      margin-left: 6px;
+      margin-right: 6px;
+      border-radius: 7px;
+      -moz-border-radius: 7px;
+      -webkit-border-radius: 7px; }
+      div.s-container div.s-stats div.s-imgs img {
+        width: 267px;
+        height: 200px;
+        border: 1px solid black;
+        margin: 12px; }
+    div.s-container div.s-stats div.s-data {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      margin-left: 6px;
+      margin-right: 6px;
+      border-radius: 7px;
+      -moz-border-radius: 7px;
+      -webkit-border-radius: 7px; }
+      div.s-container div.s-stats div.s-data h1 {
+        font-size: 14pt;
+        border: 0; }
+      div.s-container div.s-stats div.s-data div.s-general {
+        float: left;
+        margin-right: 0;
+        width: 47.75%; }
+        div.s-container div.s-stats div.s-data div.s-general table {
+          margin: 12px; }
+          div.s-container div.s-stats div.s-data div.s-general table tr td {
+            padding-left: 6px;
+            padding-right: 6px;
+            text-align: right; }
+          div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
+            text-align: left; }
+      div.s-container div.s-stats div.s-data div.s-chrono {
+        float: right;
+        margin-left: 0;
+        width: 47.75%; }
+        div.s-container div.s-stats div.s-data div.s-chrono ul li {
+          margin-left: 24px; }
+          div.s-container div.s-stats div.s-data div.s-chrono ul li div {
+            margin-left: -12px;
+            padding: 6px; }
+            div.s-container div.s-stats div.s-data div.s-chrono ul li div table {
+              margin: 12px; }
+              div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td {
+                padding-left: 6px;
+                padding-right: 6px;
+                text-align: right; }
+              div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td:nth-child(2) {
+                text-align: left; }
+
 """
 
 base = """
@@ -481,10 +536,10 @@ chronodiv = """
 			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
 				<h1>Chronological Statistics</h1>
 				<ul>
-				% for date in reversed(chrono_stats):
+				% for c, date in enumerate(reversed(chrono_stats)):
 					<li>
-						<a href="#" id="${date}">${date}</a>
-						<div id="${date}-div">
+						<a href="#" id="${stat_type}-${stat_title}-chrono-${c}">${date}</a>
+						<div id="${stat_type}-${stat_title}-chrono-${c}-div">
 							<table>
 							% for k, v in chrono_stats[date].items():
 								<% 
