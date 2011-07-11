@@ -34,7 +34,7 @@ class Webpage(object):
 	#ns = "{http://www.w3.org/1999/xhtml}"
 	space = re.compile('[ /:]')
 	
-	def __init__(self, stats, fdir):
+	def __init__(self, stats, fdir, title):
 		if not matplotlib:
 			raise ImportError("matplotlib not installed.")
 		if not Template or not TemplateLookup:
@@ -52,6 +52,7 @@ class Webpage(object):
 		try: os.makedirs(fdir)
 		except: pass
 		self.fdir = fdir
+		self.title = title
 
 	def generate(self):
 		footer = "Generated: %s" % datetime.utcnow().strftime("%Y-%m-%d %H:%M (UTC)")
@@ -61,7 +62,7 @@ class Webpage(object):
 		divs.append(self.generate_ambiguities())
 		divs.append(self.generate_hfsts())
 		# others
-		out = self.base.render(dirname="DIRNAME", divs=divs, footer=footer)
+		out = self.base.render(dirname=self.title, divs=divs, footer=footer)
 		
 		f = open(pjoin(self.fdir, "index.html"), 'w')
 		f.write(out)
@@ -103,12 +104,26 @@ class Webpage(object):
 		stat_type = "coverages"
 		stat_type_title = "Coverage Tests"
 		
-		for k, v in data.items():
-			stat_title_human, stat_cksum = k.rsplit("__", 1)
+		for cfg, ts in data.items():
+			first = ts.keys()[0].strftime("%Y-%m-%d %H:%M (UTC)")
+			last = ts.keys()[-1].strftime("%Y-%m-%d %H:%M (UTC)")
+			
+			avg = 0.0
+			for i in ts.values():
+				avg += i['Percent']
+			avg /= float(len(data))
+			
+			gen_stats = {
+				"First test": first,
+				"Last test": last,
+				"Average percent": avg
+			}
+			
+			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
-			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=ts)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -154,6 +169,7 @@ class Webpage(object):
 			divs.append(stats)
 		
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
+	
 	def plot_regressions(self):
 		out = []
 		regs = self.stats.get_regressions()
