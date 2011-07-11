@@ -9,7 +9,7 @@ class UI(object):
 	def __init__(self):
 		ap = argparse.ArgumentParser(
 			description="Generate webpage and related files.")
-		self.add_argument("-t", "--title", dest="title", nargs='?',
+		ap.add_argument("-t", "--title", dest="title", nargs='?',
 			const=[basename(abspath('.'))], default=[basename(abspath('.'))],
 			help="Directory of dictionary (Default: current directory)")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
