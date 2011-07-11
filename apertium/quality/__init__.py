@@ -58,6 +58,7 @@ class Webpage(object):
 		divs = []
 		divs.append(self.generate_regressions())
 		divs.append(self.generate_coverages())
+		divs.append(self.generate_ambiguities())
 		# others
 		out = self.base.render(dirname="DIRNAME", divs=divs, footer=footer)
 		
@@ -111,6 +112,23 @@ class Webpage(object):
 	
 	def generate_ambiguities(self):
 		data = self.stats.get_ambiguities()
+		images = []#self.plot_regressions()
+		
+		divs = []
+		stat_type = "ambiguities"
+		stat_type_title = "Ambiguity Tests"
+		
+		for k, v in data.items():
+			stat_title_human, stat_cksum = k.rsplit("__", 1)
+			stat_cksum = stat_cksum
+			stat_title = self.space.sub('_', stat_title_human.lower())
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
+									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
+			divs.append(stats)
+		
+		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	
 	def generate_hfsts(self):
 		data = self.stats.get_hfsts()
@@ -252,6 +270,7 @@ class Statistics(object):
 				"Total": i.find("total").text,	
 				"Known": i.find("known").text,	
 				"Unknown": i.find("unknown").text,
+				'':'',
 				"Top words:": ''#OrderedDict()
 		
 			})
@@ -278,9 +297,9 @@ class Statistics(object):
 			dct = "%s__%s" % (d.text, d.attrib["checksum"])
 			
 			ambiguities[dct][ts] = {
-				"surface-forms": i.find("surface-forms").text,
-				"analyses": i.find("analyses").text,
-				"average": i.find("average").text
+				"Surface forms": i.find("surface-forms").text,
+				"Analyses": i.find("analyses").text,
+				"Average": i.find("average").text
 			}
 
 		out = dict()
@@ -430,9 +449,9 @@ div.s-container {
         font-size: 14pt;
         border: 0; }
       div.s-container div.s-stats div.s-data div.s-general {
-        float: left;
+        /*float: left;
         margin-right: 0;
-        width: 47.75%; }
+        width: 47.75%;*/ }
         div.s-container div.s-stats div.s-data div.s-general table {
           margin: 12px; }
           div.s-container div.s-stats div.s-data div.s-general table tr td {
@@ -442,9 +461,9 @@ div.s-container {
           div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
             text-align: left; }
       div.s-container div.s-stats div.s-data div.s-chrono {
-        float: right;
+        /*float: right;
         margin-left: 0;
-        width: 47.75%; }
+        width: 47.75%;*/ }
         div.s-container div.s-stats div.s-data div.s-chrono ul li {
           margin-left: 24px; }
           div.s-container div.s-stats div.s-data div.s-chrono ul li div {
@@ -458,12 +477,12 @@ div.s-container {
                 text-align: right; }
               div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td:nth-child(2) {
                 text-align: left; }
-
 """
 
-base = """
+base = """<!DOCTYPE html>
 <html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Statistics - ${dirname}</title>
 	<!--<script type="application/javascript" src="js"></script>-->
   	<link rel="stylesheet" href="style.css" type="text/css" />
@@ -545,6 +564,9 @@ chronodiv = """
 								<% 
 								if "percent" in k.lower():
 									v = "%s%%" % v
+								elif "__" in v:
+									tmp = v.rsplit('__', 1)
+									v = "%s (%s)" % (tmp[0], tmp[1])
 								%>
 								<tr>
 									<td>${k}</td>
