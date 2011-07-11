@@ -100,7 +100,7 @@ class Webpage(object):
 		
 		for k, v in data.items():
 			stat_title_human, stat_cksum = k.rsplit("__", 1)
-			stat_cksum = stat_cksum
+			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
@@ -120,7 +120,7 @@ class Webpage(object):
 		
 		for k, v in data.items():
 			stat_title_human, stat_cksum = k.rsplit("__", 1)
-			stat_cksum = stat_cksum
+			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
@@ -132,7 +132,23 @@ class Webpage(object):
 	
 	def generate_hfsts(self):
 		data = self.stats.get_hfsts()
-
+		images = []#self.plot_regressions()
+		
+		divs = []
+		stat_type = "morphs"
+		stat_type_title = "Morph (HFST) Tests"
+		
+		for k, v in data.items():
+			stat_title_human, stat_cksum = k.rsplit("__", 1)
+			stat_cksum = stat_cksum.upper()
+			stat_title = self.space.sub('_', stat_title_human.lower())
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
+									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
+			divs.append(stats)
+		
+		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	def plot_regressions(self):
 		out = []
 		regs = self.stats.get_regressions()
