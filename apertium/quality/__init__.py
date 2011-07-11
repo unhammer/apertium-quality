@@ -502,7 +502,7 @@ div.s-container {
 
 js = """function toggle(id)
 {
-	var div = document.getElementById(id + '-div');
+	var div = document.getElementById(id);
 	
 	if (div.style.display == 'block') {
 		div.style.display = 'none';
