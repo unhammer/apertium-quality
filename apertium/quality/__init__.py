@@ -84,12 +84,27 @@ class Webpage(object):
 		stat_type = "regressions"
 		stat_type_title = "Regression Tests"
 		
-		for k, v in data.items():
-			stat_title_human, stat_cksum = k.rsplit("__", 1)
+		for cfg, ts in data.items():
+			tsk = list(ts.keys())
+			first = tsk[0].strftime("%Y-%m-%d %H:%M")
+			last = tsk[-1].strftime("%Y-%m-%d %H:%M")
+			
+			avg = 0.0
+			for i in ts.values():
+				avg += float(i['Percent'])
+			avg /= float(len(ts))
+			
+			gen_stats = {
+				"First test": first,
+				"Last test": last,
+				"Average percent": avg
+			}
+			
+			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
 			stat_cksum = "Revision: %s" % stat_cksum
 			stat_title = self.space.sub('_', stat_title_human.lower())
-			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=ts)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -106,13 +121,13 @@ class Webpage(object):
 		
 		for cfg, ts in data.items():
 			tsk = list(ts.keys())
-			first = tsk[0].strftime("%Y-%m-%d %H:%M (UTC)")
-			last = tsk[-1].strftime("%Y-%m-%d %H:%M (UTC)")
+			first = tsk[0].strftime("%Y-%m-%d %H:%M")
+			last = tsk[-1].strftime("%Y-%m-%d %H:%M")
 			
 			avg = 0.0
 			for i in ts.values():
 				avg += float(i['Percent'])
-			avg /= float(len(data))
+			avg /= float(len(ts))
 			
 			gen_stats = {
 				"First test": first,
@@ -139,12 +154,27 @@ class Webpage(object):
 		stat_type = "ambiguities"
 		stat_type_title = "Ambiguity Tests"
 		
-		for k, v in data.items():
-			stat_title_human, stat_cksum = k.rsplit("__", 1)
+		for cfg, ts in data.items():
+			tsk = list(ts.keys())
+			first = tsk[0].strftime("%Y-%m-%d %H:%M")
+			last = tsk[-1].strftime("%Y-%m-%d %H:%M")
+			
+			avg = 0.0
+			for i in ts.values():
+				avg += float(i['Average'])
+			avg /= float(len(ts))
+			
+			gen_stats = {
+				"First test": first,
+				"Last test": last,
+				"Overall average": "%s%%" % avg
+			}
+			
+			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
-			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=ts)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -159,12 +189,27 @@ class Webpage(object):
 		stat_type = "morphs"
 		stat_type_title = "Morph (HFST) Tests"
 		
-		for k, v in data.items():
-			stat_title_human, stat_cksum = k.rsplit("__", 1)
+		for cfg, ts in data.items():
+			tsk = list(ts.keys())
+			first = tsk[0].strftime("%Y-%m-%d %H:%M")
+			last = tsk[-1].strftime("%Y-%m-%d %H:%M")
+			
+			avg = 0.0
+			for i in ts.values():
+				avg += float(i['Percent'])
+			avg /= float(len(ts))
+			
+			gen_stats = {
+				"First test": first,
+				"Last test": last#,
+				#"Average percent": avg
+			}
+			
+			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
-			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats={"Stub": "True!"})
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=v)
+			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=ts)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
