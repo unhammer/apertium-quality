@@ -447,8 +447,8 @@ statdiv = """
 		<h1>${stat_title}</h1>
 		<h2>${stat_cksum}</h2>
 		<div id="${stat_type}-${stat_title}-imgs" class="s-imgs">
-			% for src, alt in images.items():
-			<a href="${src}"><img src="${src}" alt="${alt}" /></a>
+			% for src in images:
+			<a href="${src}"><img src="${src}" /></a>
 			% endfor
 		</div>
 	
