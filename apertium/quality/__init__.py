@@ -105,8 +105,9 @@ class Webpage(object):
 		stat_type_title = "Coverage Tests"
 		
 		for cfg, ts in data.items():
-			first = ts.keys()[0].strftime("%Y-%m-%d %H:%M (UTC)")
-			last = ts.keys()[-1].strftime("%Y-%m-%d %H:%M (UTC)")
+			tsk = list(ts.keys())
+			first = tsk[0].strftime("%Y-%m-%d %H:%M (UTC)")
+			last = tsk[-1].strftime("%Y-%m-%d %H:%M (UTC)")
 			
 			avg = 0.0
 			for i in ts.values():
