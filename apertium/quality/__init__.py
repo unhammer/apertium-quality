@@ -59,6 +59,7 @@ class Webpage(object):
 		divs.append(self.generate_regressions())
 		divs.append(self.generate_coverages())
 		divs.append(self.generate_ambiguities())
+		divs.append(self.generate_hfsts())
 		# others
 		out = self.base.render(dirname="DIRNAME", divs=divs, footer=footer)
 		
