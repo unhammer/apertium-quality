@@ -97,7 +97,7 @@ class Webpage(object):
 			gen_stats = {
 				"First test": first,
 				"Last test": last,
-				"Average percent": avg
+				"Average percent": "%s%%" % avg
 			}
 			
 			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
@@ -132,7 +132,7 @@ class Webpage(object):
 			gen_stats = {
 				"First test": first,
 				"Last test": last,
-				"Average percent": avg
+				"Average percent": "%s%%" % avg
 			}
 			
 			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
@@ -167,7 +167,7 @@ class Webpage(object):
 			gen_stats = {
 				"First test": first,
 				"Last test": last,
-				"Overall average": "%s%%" % avg
+				"Overall average": avg
 			}
 			
 			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
