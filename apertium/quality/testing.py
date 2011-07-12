@@ -271,7 +271,7 @@ class RegressionTest(Test):
 		return float(self.passes)/float(self.total)*100
 	
 	def to_xml(self):
-		page = self.tree.getroot()
+		page = self.tree.getroot().find("page")
 		ns = self.ns
 		
 		q = Element('title')
