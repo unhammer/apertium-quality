@@ -224,15 +224,15 @@ class Webpage(object):
 	# WER/PER/BLEU over time
 	# percentage of regression tests passed over time 
 	
-	def plot_coverages(self):
-		data = self.stats.get_coverages():
+	'''def plot_coverages(self):
+		data = self.stats.get_coverages()
 		out = []
 		
 		def coverage_over_time(title, data):
 			plt.title(title)
 			plt.xlabel("Time")
 			plt.ylabel("Coverage (%)")
-			
+	'''		
 			
 			
 	
