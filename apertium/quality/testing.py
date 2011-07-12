@@ -388,7 +388,7 @@ class CoverageTest(Test):
 		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'corpus')
-		s.text = os.path.basename(self.dct)
+		s.attrib["value"] = os.path.basename(self.dct)
 		s.attrib["checksum"] = self._checksum(open(self.dct, 'rb').read())
 		
 		SubElement(r, 'percent').text = "%.2f" % self.get_coverage()
@@ -758,11 +758,11 @@ class MorphTest(Test):
 		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'gen')
-		s.text = self.gen
+		s.attrib["value"] = self.gen
 		s.attrib["checksum"] = self._checksum(open(self.gen, 'rb').read())
 		
 		s = SubElement(r, 'morph')
-		s.text = self.morph
+		s.attrib["value"] = self.morph
 		s.attrib["checksum"] = self._checksum(open(self.morph, 'rb').read())
 		
 		SubElement(r, 'total').text = str(self.passes + self.fails)

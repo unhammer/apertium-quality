@@ -47,7 +47,7 @@ element statistics {
 				attribute value { xsd:dateTime },
 
 				element corpus {
-					xsd:string,
+					attribute value { xsd:string },
 					attribute checksum { xsd:string }
 				},
 				element percent { xsd:float },
@@ -94,11 +94,11 @@ element statistics {
 				attribute value { xsd:dateTime },
 
 				element gen {
-					xsd:string,
+					attribute value { xsd:string },
 					attribute checksum { xsd:string }
 				},
 				element morph {
-					xsd:string,
+					attribute value { xsd:string },
 					attribute checksum { xsd:string }
 				},
 				element total { xsd:positiveInteger },

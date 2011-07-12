@@ -280,13 +280,10 @@ class Statistics(object):
 	file_version = "1.0"
 	file_type = "apertium"
 
-	elements = {
-		#element: parents,
-		"ambiguity": "ambiguities",
-		"hfst": "hfsts",
-		"regression": "regressions",
-		"coverage": "coverages"
-	}
+	elements = [
+		"general", "regression", "coverage",
+		"ambiguity", "morph"
+	]
 	
 	def __init__(self, f=None):
 		if f is None:
