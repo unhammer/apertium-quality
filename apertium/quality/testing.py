@@ -268,7 +268,7 @@ class RegressionTest(Test):
 	def get_total_percent(self):
 		if self.get_total() == 0:
 			return 0
-		return "%.2f" % (float(self.passes)/float(self.total)*100)
+		return float(self.passes)/float(self.total)*100
 	
 	def to_xml(self):
 		
