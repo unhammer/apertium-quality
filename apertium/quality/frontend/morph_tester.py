@@ -1,7 +1,7 @@
 from apertium.quality.frontend import Frontend
-from apertium.quality.testing import HfstTest
+from apertium.quality.testing import MorphTest
 
-class UI(Frontend, HfstTest):
+class UI(Frontend, MorphTest):
 	def __init__(self):
 		Frontend.__init__(self)
 		self.description="""Test morphological transducers for consistency. 
@@ -54,7 +54,7 @@ class UI(Frontend, HfstTest):
 			if isinstance(v, list) and len(v) == 1:
 				self.args[k] = v[0]
 
-		HfstTest.__init__(self, **self.args)
+		MorphTest.__init__(self, **self.args)
 
 def main():
 	try:

@@ -94,12 +94,12 @@ class UI(object):
 					test.save_statistics(self.args['statistics'])
 	
 	def hfst(self):
-		print(self._tab("HFST tests"))
-		tests = self._get_files('hfst')
+		print(self._tab("Morph tests"))
+		tests = self._get_files('morph')
 		
 		for t in tests:
 			print(self._tab(t, 1))
-			test = testing.HfstTest(self._abspath('hfst', t))
+			test = testing.MorphTest(self._abspath('morph', t))
 			test.run()
 			test.save_statistics(self.args['statistics'])
 	

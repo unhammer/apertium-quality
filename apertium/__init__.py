@@ -79,10 +79,7 @@ class Dictionary(object):
 
 		def startElement(self, tag, attrs):
 			if tag == "rule":
-				if "comment" in attrs:
-					self.rules.append(attrs.get("comment"))
-				else:
-					self.rules.append(None)
+				self.rules.append(attrs.get("comment", None))
 
 	def __init__(self, f):
 		self.fn = f

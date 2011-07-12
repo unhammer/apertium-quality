@@ -216,11 +216,34 @@ class Webpage(object):
 		
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	
+	# coverage over time
+	# number of rules over time
+	# mean ambiguity over time
+	# number of dict entries over time
+	# translation speed over time
+	# WER/PER/BLEU over time
+	# percentage of regression tests passed over time 
+	
+	def plot_coverages(self):
+		data = self.stats.get_coverages():
+		out = []
+		
+		def coverage_over_time(title, data):
+			plt.title(title)
+			plt.xlabel("Time")
+			plt.ylabel("Coverage (%)")
+			
+			
+			
+	
 	def plot_regressions(self):
+		#def 
+		
 		out = []
 		regs = self.stats.get_regressions()
+		
 		for title, reg in regs.items():
-			t = "%s - %s" % (title, "Passes")
+			t = "%s\n%s" % (title, "Passes over time")
 			plt.title(t)
 			plt.xlabel('Test ID')
 			plt.ylabel('Passes (%)')
@@ -240,7 +263,7 @@ class Webpage(object):
 			out.append(png)
 			plt.clf()
 
-			t = "%s - %s" % (title, "Statistics")
+			t = "%s\n%s" % (title, "Statistics")
 			plt.title(t)
 			plt.ylabel('Quantity')
 
@@ -250,7 +273,8 @@ class Webpage(object):
 			out.append(png)
 			plt.clf()
 		return out
-
+	
+	
 
 class Statistics(object):
 	file_version = "1.0"
@@ -300,9 +324,9 @@ class Statistics(object):
 	def write(self):
 		self.tree.write(self.f, encoding="utf-8")#, xml_declaration=True)
 
-	def add(self, xml):
+	def add(self, parent, xml):
 		el = etree.XML(xml)
-		parent = self.elements.get(el.tag, None)
+		#parent = self.elements.get(el.tag, None)
 		if parent is None:
 			raise AttributeError("Element not supported.")
 		

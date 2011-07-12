@@ -53,7 +53,8 @@ class Test(object):
 		It is recommended that you use etree for creating the tree.
 		
 		Parameters: none
-		Returns: none
+		Returns: (string, string)
+			first being parent node, second being xml
 		"""
 		raise NotImplementedError("Required method `to_xml` was not implemented.")
 	
@@ -61,7 +62,7 @@ class Test(object):
 		"""Prints the output of StringIO instance and other printable output.
 		
 		Parameters: none
-		Returns: none
+		Returns: string
 		"""
 		raise NotImplementedError("Required method `to_string` was not implemented.")
 
@@ -270,18 +271,19 @@ class RegressionTest(Test):
 		return "%.2f" % (float(self.passes)/float(self.total)*100)
 	
 	def to_xml(self):
-		r = Element('regression', timestamp=datetime.utcnow().isoformat())
 		
-		s = SubElement(r, 'title')
-		s.text = page.find(ns + 'title').text
-		s.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
+		q = Element('title')
+		q.attrib['value'] = page.find(ns + 'title').text
+		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
+		
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		SubElement(r, 'percent').text = str(self.get_total_percent())
 		SubElement(r, 'total').text = str(self.get_total())
 		SubElement(r, 'passes').text = str(self.get_passes())
 		SubElement(r, 'fails').text = str(self.get_fails())
 		
-		return etree.tostring(r)
+		return ("regression", etree.tostring(r))
 
 	def to_string(self):
 		return self.out.getvalue().strip()
@@ -379,11 +381,11 @@ class CoverageTest(Test):
 		return a / b * 100
 	
 	def to_xml(self):
-		r = Element('coverage', timestamp=datetime.utcnow().isoformat())
+		q = Element('dictionary')
+		q.attrib["value"] = os.path.basename(self.fn)
+		q.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
 		
-		s = SubElement(r, 'dictionary')
-		s.text = os.path.basename(self.fn)
-		s.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'corpus')
 		s.text = os.path.basename(self.dct)
@@ -399,7 +401,7 @@ class CoverageTest(Test):
 		for word, count in self.get_top_unknown_words():
 			SubElement(s, 'word', count=str(count)).text = wrx.search(word).group(1)
 		
-		return etree.tostring(r)
+		return ("coverage", etree.tostring(q))
 
 	def to_string(self):
 		out = StringIO()
@@ -492,17 +494,17 @@ class AmbiguityTest(Test):
 		return 0
 	
 	def to_xml(self):
-		r = Element('ambiguity', timestamp=datetime.utcnow().isoformat())
-		
-		s = SubElement(r, 'dictionary')
-		s.text = self.f
-		s.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
+		q = Element('dictionary')
+		q.attrib["value"] = self.f
+		q.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
+
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 
 		SubElement(r, 'surface-forms').text = self.surface_forms
 		SubElement(r, 'analyses').text = str(self.total)
 		SubElement(r, 'average').text = str(self.average)
 		
-		return etree.tostring(r)
+		return ("ambiguity", etree.tostring(q))
 
 	def to_string(self):
 		out = StringIO("Total surface forms: %d\n" % self.surface_forms)
@@ -511,7 +513,7 @@ class AmbiguityTest(Test):
 		return out.getvalue().strip()
 
 
-class HfstTest(Test):
+class MorphTest(Test):
 	class AllOutput(StringIO):
 		def __str__(self):
 			return self.to_string()
@@ -592,9 +594,9 @@ class HfstTest(Test):
 				raise IOError("File %s does not exist." % i)
 		
 		if self.args.get('compact'):
-			self.out = HfstTest.CompactOutput()
+			self.out = MorphTest.CompactOutput()
 		else:
-			self.out = HfstTest.NormalOutput()
+			self.out = MorphTest.NormalOutput()
 		
 		if self.args.get('verbose'):
 			self.out.write("`%s` will be used for parsing dictionaries.\n" % self.program)
@@ -749,11 +751,11 @@ class HfstTest(Test):
 		return parsed
 
 	def to_xml(self):
-		r = Element('hfst', timestamp=datetime.utcnow().isoformat())
+		q = Element('config')
+		q.attrib["value"] = self.f
+		q.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
 		
-		s = SubElement(r, 'config')
-		s.text = self.f
-		s.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'gen')
 		s.text = self.gen
@@ -763,18 +765,18 @@ class HfstTest(Test):
 		s.text = self.morph
 		s.attrib["checksum"] = self._checksum(open(self.morph, 'rb').read())
 		
+		SubElement(r, 'total').text = str(self.passes + self.fails)
+		SubElement(r, 'passes').text = str(self.passes)
+		SubElement(r, 'fails').text = str(self.fails)
+		
 		s = SubElement(r, 'tests')
 		for k, v in self.count.items():
 			t = SubElement(s, 'test')
 			t.text = str(k)
 			t.attrib['fails'] = str(v["Fail"])
 			t.attrib['passes'] = str(v["Pass"])
-		
-		SubElement(r, 'total').text = str(self.passes + self.fails)
-		SubElement(r, 'passes').text = str(self.passes)
-		SubElement(r, 'fails').text = str(self.fails)
 
-		return etree.tostring(r)
+		return ("morph", etree.tostring(r))
 
 	def to_string(self):
 		return self.out.getvalue().strip()

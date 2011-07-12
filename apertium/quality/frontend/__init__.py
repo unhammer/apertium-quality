@@ -19,6 +19,6 @@ class Frontend(Test, ArgumentParser):
         print(self.to_string())
         if self.args.statfile:
             stats = Statistics(self.args.statfile)
-            stats.add(self.to_xml())
+            stats.add(*self.to_xml())
             stats.write()
         self.exit(ret)
