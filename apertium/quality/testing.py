@@ -272,7 +272,7 @@ class RegressionTest(Test):
 	
 	def to_xml(self):
 		page = self.tree.getroot()
-		self.ns = ns
+		ns = self.ns
 		
 		q = Element('title')
 		q.attrib['value'] = page.find(ns + 'title').text
