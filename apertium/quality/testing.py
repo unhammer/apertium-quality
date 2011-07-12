@@ -280,7 +280,7 @@ class RegressionTest(Test):
 		
 		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
-		SubElement(r, 'percent').text = str(self.get_total_percent())
+		SubElement(r, 'percent').text = "%.2f" % self.get_total_percent()
 		SubElement(r, 'total').text = str(self.get_total())
 		SubElement(r, 'passes').text = str(self.get_passes())
 		SubElement(r, 'fails').text = str(self.get_fails())
@@ -502,7 +502,7 @@ class AmbiguityTest(Test):
 
 		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 
-		SubElement(r, 'surface-forms').text = self.surface_forms
+		SubElement(r, 'surface-forms').text = str(self.surface_forms)
 		SubElement(r, 'analyses').text = str(self.total)
 		SubElement(r, 'average').text = str(self.average)
 		
