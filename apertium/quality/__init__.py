@@ -81,7 +81,7 @@ class Webpage(object):
 		images = self.plot_regressions()
 		
 		divs = []
-		stat_type = "regressions"
+		stat_type = "regression"
 		stat_type_title = "Regression Tests"
 		
 		for cfg, ts in data.items():
@@ -116,7 +116,7 @@ class Webpage(object):
 		images = []#self.plot_regressions()
 		
 		divs = []
-		stat_type = "coverages"
+		stat_type = "coverage"
 		stat_type_title = "Coverage Tests"
 		
 		for cfg, ts in data.items():
@@ -151,7 +151,7 @@ class Webpage(object):
 		images = []#self.plot_regressions()
 		
 		divs = []
-		stat_type = "ambiguities"
+		stat_type = "ambiguity"
 		stat_type_title = "Ambiguity Tests"
 		
 		for cfg, ts in data.items():
@@ -186,7 +186,7 @@ class Webpage(object):
 		images = []#self.plot_regressions()
 		
 		divs = []
-		stat_type = "morphs"
+		stat_type = "morph"
 		stat_type_title = "Morph (HFST) Tests"
 		
 		for cfg, ts in data.items():
@@ -333,7 +333,7 @@ class Statistics(object):
 		root.append(el)
 
 	def get_regressions(self):
-		root = self.root.find('regressions')
+		root = self.root.find('regression')
 		if root is None:
 			return dict()
 		regressions = defaultdict(dict)
@@ -356,28 +356,28 @@ class Statistics(object):
 		return out
 	
 	def get_coverages(self):
-		root = self.root.find('coverages')
+		root = self.root.find('coverage')
 		if root is None:
 			return dict()
 		coverages = defaultdict(dict)
 		
-		for i in root.getiterator("coverage"):
-			ts = from_isoformat(i.attrib['timestamp'])
-			d = i.find("dictionary")
-			dct = "%s__%s" % (d.text, d.attrib["checksum"])
+		for d in root.getiterator("dictionary"):
+			for ts in d.getiterator("timestamp"):
+				tsv = from_isoformat(ts.attrib['value'])
+				dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
 			
-			c = i.find("corpus")
+				c = d.find("corpus")
 			
-			coverages[dct][ts] = OrderedDict({
-				"Corpus": "%s__%s" % (c.text, c.attrib["checksum"]),
-				"Percent": i.find("percent").text,
-				"Total": i.find("total").text,	
-				"Known": i.find("known").text,	
-				"Unknown": i.find("unknown").text,
+					coverages[dct][tsv] = OrderedDict({
+						"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
+						"Percent": ts.find("percent").text,
+						"Total": ts.find("total").text,	
+						"Known": ts.find("known").text,	
+						"Unknown": ts.find("unknown").text,
 				#'':'',
 				#"Top words:": ''#OrderedDict()
 		
-			})
+					})
 			#for j in i.find("top").getiterator("word"):
 			#	coverages[dct][ts][j.text] = j.attrib["count"]
 			##for j in i.find("top").getiterator("word"):
@@ -390,13 +390,13 @@ class Statistics(object):
 		return out
 
 	def get_ambiguities(self):
-		root = self.root.find('ambiguities')
+		root = self.root.find('ambiguity')
 		if root is None:
 			return dict()
 		ambiguities = defaultdict(dict)
 		
-		for i in root.getiterator("ambiguity"):
-			ts = from_isoformat(i.attrib['timestamp'])
+		for d in root.getiterator("dictionary"):
+			ts = d.find("timestamp")from_isoformat(i.attrib['timestamp'])
 			d = i.find("dictionary")
 			dct = "%s__%s" % (d.text, d.attrib["checksum"])
 			
