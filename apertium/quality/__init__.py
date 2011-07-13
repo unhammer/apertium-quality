@@ -57,10 +57,10 @@ class Webpage(object):
 	def generate(self):
 		footer = "Generated: %s" % datetime.utcnow().strftime("%Y-%m-%d %H:%M (UTC)")
 		divs = []
-		#divs.append(self.generate_regressions())
+		divs.append(self.generate_regressions())
 		divs.append(self.generate_coverages())
-		#divs.append(self.generate_ambiguities())
-		#divs.append(self.generate_hfsts())
+		divs.append(self.generate_ambiguities())
+		divs.append(self.generate_hfsts())
 		# others
 		out = self.base.render(dirname=self.title, divs=divs, footer=footer)
 		
