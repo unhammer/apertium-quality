@@ -15,14 +15,16 @@ class UI(object):
 		ap = argparse.ArgumentParser(
 			description="Attempt all tests with default settings.")
 		ap.add_argument("dictdir", nargs=1, help="Dictionary directory")
-		ap.add_argument("outdir", nargs=1, help="Output directory")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
+		self.add_argument("-w", "--webpages", dest="outdir", nargs=1, 
+      		help="Output directory for webpages")
 		self.args = dict(ap.parse_args()._get_kwargs())
 		
 		for k, v in self.args.copy().items():
 			if isinstance(v, list) and len(v) == 1:
 				self.args[k] = v[0]
 		
+		self.stats = self.args.statistics[0]
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
 	
@@ -57,7 +59,7 @@ class UI(object):
 			print(self._tab(t, 1))
 			test = testing.AmbiguityTest(t)
 			test.run()
-			test.save_statistics(self.args['statistics'])
+			self.stats.add(*test.to_xml())
 	
 	def coverage(self):
 		print(self._tab("Coverage tests"))
@@ -74,7 +76,7 @@ class UI(object):
 					print ("    :: %s" % i)
 					test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
 					test.run()
-					test.save_statistics(self.args['statistics'])
+					self.stats.add(*test.to_xml())
 
 	def regression(self):
 		print(self._tab("Regression tests"))
@@ -91,9 +93,9 @@ class UI(object):
 					print (self._tab(i, 2))
 					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
 					test.run()
-					test.save_statistics(self.args['statistics'])
+					self.stats.add(*test.to_xml())
 	
-	def hfst(self):
+	def morph(self):
 		print(self._tab("Morph tests"))
 		tests = self._get_files('morph')
 		
@@ -101,11 +103,10 @@ class UI(object):
 			print(self._tab(t, 1))
 			test = testing.MorphTest(self._abspath('morph', t))
 			test.run()
-			test.save_statistics(self.args['statistics'])
+			self.stats.add(*test.to_xml())
 	
 	def webpage(self):
 		print(self._tab("Generating webpages..."))
-		self.stats = Statistics(self.args['statistics'])
 		self.web = Webpage(self.stats, self.args['outdir'])
 		self.web.generate()
 	
@@ -113,8 +114,10 @@ class UI(object):
 		self.ambiguity()
 		self.coverage()
 		self.regression()
-		self.hfst()
-		self.webpage()
+		self.morph()
+		self.stats.write()
+		if self.args.get('outdir'):
+			self.webpage()
 		print(self._tab("Done."))
 
 
