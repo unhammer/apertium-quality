@@ -338,7 +338,7 @@ class Statistics(object):
 			return dict()
 		regressions = defaultdict(dict)
 		
-		for d in root.getiterator("regression"):
+		for d in root.getiterator("title"):
 			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
 			for ts in d.getiterator('title'):
 				tsv = from_isoformat(ts.attrib['value'])
