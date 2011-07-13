@@ -366,7 +366,7 @@ class Statistics(object):
 				tsv = from_isoformat(ts.attrib['value'])
 				dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
 			
-				c = d.find("corpus")
+				c = ts.find("corpus")
 			
 				coverages[dct][tsv] = OrderedDict({
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
