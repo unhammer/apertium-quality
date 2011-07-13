@@ -368,16 +368,15 @@ class Statistics(object):
 			
 				c = d.find("corpus")
 			
-					coverages[dct][tsv] = OrderedDict({
-						"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
-						"Percent": ts.find("percent").text,
-						"Total": ts.find("total").text,	
-						"Known": ts.find("known").text,	
-						"Unknown": ts.find("unknown").text,
-				#'':'',
-				#"Top words:": ''#OrderedDict()
-		
-					})
+				coverages[dct][tsv] = OrderedDict({
+					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
+					"Percent": ts.find("percent").text,
+					"Total": ts.find("total").text,	
+					"Known": ts.find("known").text,	
+					"Unknown": ts.find("unknown").text,
+					#'':'',
+					#"Top words:": ''#OrderedDict()
+				})
 			#for j in i.find("top").getiterator("word"):
 			#	coverages[dct][ts][j.text] = j.attrib["count"]
 			##for j in i.find("top").getiterator("word"):
