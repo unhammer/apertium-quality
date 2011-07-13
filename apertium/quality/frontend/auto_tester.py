@@ -29,7 +29,7 @@ class UI(object):
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
 	
-	def _tab(data, n=0):
+	def _tab(self, data, n=0):
 		return "%s:: %s" % ("  "*n, data) 
 	
 	def _langpairs(self):
