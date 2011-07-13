@@ -340,7 +340,7 @@ class Statistics(object):
 		
 		for d in root.getiterator("title"):
 			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
-			for ts in d.getiterator('title'):
+			for ts in d.getiterator('timestamp'):
 				tsv = from_isoformat(ts.attrib['value'])
 				
 				regressions[title][tsv] = {
