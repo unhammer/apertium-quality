@@ -338,16 +338,17 @@ class Statistics(object):
 			return dict()
 		regressions = defaultdict(dict)
 		
-		for i in root.getiterator("regression"):
-			ts = from_isoformat(i.attrib['timestamp'])
-			t = i.find("title")
-			title = "%s__%s" % (t.text, t.attrib["revision"])
-			regressions[title][ts] = {
-				"Percent": i.find("percent").text,
-				"Total": i.find("total").text,
-				"Passes": i.find("passes").text,
-				"Fails": i.find("fails").text
-			}
+		for d in root.getiterator("regression"):
+			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
+			for ts in d.getiterator('title'):
+				tsv = from_isoformat(ts.attrib['value'])
+				
+				regressions[title][tsv] = {
+					"Percent": ts.find("percent").text,
+					"Total": ts.find("total").text,
+					"Passes": ts.find("passes").text,
+					"Fails": ts.find("fails").text
+				}
 
 		out = dict()
 		for k, v in regressions.items():
@@ -362,10 +363,9 @@ class Statistics(object):
 		coverages = defaultdict(dict)
 		
 		for d in root.getiterator("dictionary"):
+			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
 			for ts in d.getiterator("timestamp"):
 				tsv = from_isoformat(ts.attrib['value'])
-				dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			
 				c = ts.find("corpus")
 			
 				coverages[dct][tsv] = OrderedDict({
@@ -394,17 +394,16 @@ class Statistics(object):
 			return dict()
 		ambiguities = defaultdict(dict)
 		
-		for d in root.getiterator("dictionaryxx"):
-			ts = d.find("timestamp")
-			from_isoformat(d.attrib['timestamp'])
-			d = d.find("dictionary")
-			dct = "%s__%s" % (d.text, d.attrib["checksum"])
-			
-			ambiguities[dct][ts] = {
-				"Surface forms": d.find("surface-forms").text,
-				"Analyses": d.find("analyses").text,
-				"Average": d.find("average").text
-			}
+		for d in root.getiterator("dictionary"):
+			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
+			for ts in d.getiterator("timestamp"):
+				tsv = from_isoformat(ts.attrib['value'])
+
+				ambiguities[dct][tsv] = {
+					"Surface forms": ts.find("surface-forms").text,
+					"Analyses": ts.find("analyses").text,
+					"Average": ts.find("average").text
+				}
 
 		out = dict()
 		for k, v in ambiguities.items():
@@ -413,28 +412,27 @@ class Statistics(object):
 		return out	
 
 	def get_hfsts(self):
-		root = self.root.find('hfsts')
+		root = self.root.find('morph')
 		if root is None:
 			return dict()
 		hfsts = defaultdict(dict)
 		
-		for i in root.getiterator("hfst"):
-			ts = from_isoformat(i.attrib['timestamp'])
-			c = i.find("config")
-			cfg = "%s__%s" % (c.text, c.attrib["checksum"])
+		for d in root.getiterator("config"):
+			cfg = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
+			for ts in d.getiterator("timestamp"):
+				tsv = from_isoformat(ts.attrib['value'])
+				g = ts.find("gen")
+				m = ts.find("morph")
 			
-			g = i.find("gen")
-			m = i.find("morph")
-			
-			hfsts[cfg][ts] = {
-				"Gen": "%s__%s" % (g.text, g.attrib["checksum"]),
-				"Morph": "%s__%s" % (m.text, m.attrib["checksum"]),
-				'':'',
-				#"Tests": OrderedDict(),
-				"Total": i.find("total").text,
-				"Passes": i.find("passes").text,
-				"Fails": i.find("fails").text
-			}
+				hfsts[cfg][tsv] = {
+					"Gen": "%s__%s" % (g.attrib['value'], g.attrib["checksum"]),
+					"Morph": "%s__%s" % (m.attrib['value'], m.attrib["checksum"]),
+					'':'',
+					#"Tests": OrderedDict(),
+					"Total": ts.find("total").text,
+					"Passes": ts.find("passes").text,
+					"Fails": ts.find("fails").text
+				}
 			
 			#for j in i.find("tests").getiterator("test"):
 			#	hfsts[cfg][ts]['tests'][j.text] = {
