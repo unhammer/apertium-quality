@@ -285,7 +285,7 @@ class RegressionTest(Test):
 		SubElement(r, 'passes').text = str(self.get_passes())
 		SubElement(r, 'fails').text = str(self.get_fails())
 		
-		return ("regression", etree.tostring(r))
+		return ("regression", etree.tostring(q))
 
 	def to_string(self):
 		return self.out.getvalue().strip()
