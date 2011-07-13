@@ -32,7 +32,7 @@ def from_isoformat(t):
 
 class Webpage(object):
 	#ns = "{http://www.w3.org/1999/xhtml}"
-	space = re.compile('[ /:]')
+	space = re.compile('[ /:\n]')
 	
 	def __init__(self, stats, fdir, title):
 		if not matplotlib:
