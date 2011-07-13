@@ -25,7 +25,7 @@ class UI(object):
 			if isinstance(v, list) and len(v) == 1:
 				self.args[k] = v[0]
 		
-		self.stats = self.args.statistics[0]
+		self.stats = self.args['statistics']
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
 	
