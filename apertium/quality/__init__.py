@@ -394,15 +394,16 @@ class Statistics(object):
 			return dict()
 		ambiguities = defaultdict(dict)
 		
-		for d in root.getiterator("dictionary"):
-			ts = d.find("timestamp")from_isoformat(i.attrib['timestamp'])
-			d = i.find("dictionary")
+		for d in root.getiterator("dictionaryxx"):
+			ts = d.find("timestamp")
+			from_isoformat(d.attrib['timestamp'])
+			d = d.find("dictionary")
 			dct = "%s__%s" % (d.text, d.attrib["checksum"])
 			
 			ambiguities[dct][ts] = {
-				"Surface forms": i.find("surface-forms").text,
-				"Analyses": i.find("analyses").text,
-				"Average": i.find("average").text
+				"Surface forms": d.find("surface-forms").text,
+				"Analyses": d.find("analyses").text,
+				"Average": d.find("average").text
 			}
 
 		out = dict()
