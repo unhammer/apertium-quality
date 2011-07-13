@@ -2,6 +2,7 @@ from os.path import abspath, basename
 import os
 pjoin = os.path.join
 import argparse
+from glob import glob
 
 import apertium.quality.testing as testing
 from apertium.quality import Webpage, Statistics
@@ -16,7 +17,7 @@ class UI(object):
 			description="Attempt all tests with default settings.")
 		ap.add_argument("dictdir", nargs=1, help="Dictionary directory")
 		ap.add_argument("statistics", nargs=1, help="Statistics file")
-		self.add_argument("-w", "--webpages", dest="outdir", nargs=1, 
+		ap.add_argument("-w", "--webpages", dest="outdir", nargs=1, 
       		help="Output directory for webpages")
 		self.args = dict(ap.parse_args()._get_kwargs())
 		
