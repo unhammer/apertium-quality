@@ -144,9 +144,9 @@ _install_prefixed() {
 		exit 1
 	fi
 	echo "[*] Installing..."
-	_install_nltk_prefixed
 
 	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
+	_install_nltk_prefixed
 
 	if [ -f $HOME/.bashrc ] ; then 
 		rc=$HOME/.bashrc

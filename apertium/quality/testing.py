@@ -7,7 +7,7 @@ from collections import defaultdict, Counter, OrderedDict
 import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 import urllib.request
-
+import shlex
 import itertools
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
@@ -582,8 +582,8 @@ class MorphTest(Test):
 		if not section in f["Config"]:
 			raise AttributeError("'%s' not found in Config of test file." % section)
 		
-		self.program = self.args.get('app') or f["Config"][section].get("App", "hfst-lookup")
-		whereis([self.program])
+		self.program = shlex.split(self.args.get('app') or f["Config"][section].get("App", "hfst-lookup"))
+		whereis([self.program[0]])
 
 		self.gen = self.args.get('gen') or f["Config"][section].get("Gen", None)
 		self.morph = self.args.get('morph') or f["Config"][section].get("Morph", None)
@@ -640,7 +640,7 @@ class MorphTest(Test):
 
 		def parser(self, d, f, tests):
 			keys = tests.keys()
-			app = Popen([self.program, f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			app = Popen(self.program + [f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 			args = '\n'.join(keys) + '\n'
 			
 			res, err = app.communicate(args.encode('utf-8'))
