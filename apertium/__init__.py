@@ -82,8 +82,8 @@ class Dictionary(object):
 				self.rules.append(attrs.get("comment", None))
 
 	def __init__(self, f):
-		self.fn = f
-		self.f = open(get_dix(f), 'rb')
+		self.f = f
+		self.dix = open(get_dix(f), 'rb')
 		self.lemmas = None
 		self.rules = None
 		
@@ -92,7 +92,7 @@ class Dictionary(object):
 			parser = make_parser()
 			handler = self.DIXHandler()
 			parser.setContentHandler(handler)
-			parser.parse(self.f)
+			parser.parse(self.dix)
 			self.lemmas = handler.lemmas
 		return self.lemmas
 	
@@ -102,7 +102,7 @@ class Dictionary(object):
 	def get_rules(self):
 		if not self.rules:
 			self.rules = {}
-			for i in get_file_family(self.fn):
+			for i in get_file_family(self.f):
 				ext = split_ext(i)[1]
 				if is_tnx(ext):
 					parser = make_parser()

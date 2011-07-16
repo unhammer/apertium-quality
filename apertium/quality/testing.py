@@ -15,8 +15,11 @@ from io import StringIO
 from datetime import datetime
 from hashlib import sha1
 
-from apertium import whereis, destxt, retxt
+from apertium import whereis, destxt, retxt, Dictionary
+
 ARROW = "\u2192"
+
+# TODO: add self.results dict() to all objects
 
 class Test(object):
 	"""Abstract class for Test objects
@@ -320,7 +323,22 @@ class HfstCoverageTest(CoverageTest):
 						#blah
 '''						
 					
-			
+class DictionaryTest(Test):
+	def __init__(self, f=None, **kwargs):
+		f = kwargs.get('f', f)
+		if f is None:
+			raise ValueError('f parameter missing.')
+		self.f = f
+		
+	def run(self):
+		self.dct = Dictionary(self.f)
+		
+	
+	def to_xml(self):
+		pass
+	
+	def to_string(self):
+		pass
 	
 class CoverageTest(Test):
 	app = "lt-proc"

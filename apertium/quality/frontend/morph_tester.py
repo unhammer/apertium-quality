@@ -55,7 +55,16 @@ class UI(Frontend, MorphTest):
 				self.args[k] = v[0]
 
 		MorphTest.__init__(self, **self.args)
-
+	
+	def start(self):
+		ret = self.run()
+		print(self.to_string())
+		if self.args.get('statfile'):
+			stats = Statistics(self.args['statfile'])
+			stats.add(*self.to_xml())
+			stats.write()
+		self.exit(ret)
+		
 def main():
 	try:
 		ui = UI()
