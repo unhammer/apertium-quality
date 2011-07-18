@@ -156,7 +156,7 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		try:
 			while True:
-				summary.print_(summary.summarize(get_objects(include_frames=True)))
+				summary.print_(summary.summarize(muppy.get_objects(include_frames=True)))
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
