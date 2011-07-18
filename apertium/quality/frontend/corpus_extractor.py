@@ -6,7 +6,7 @@ class UI(object):
         ap = argparse.ArgumentParser(
             description="Extract a usable corpus from a Wikipedia dump.")
         ap.add_argument("-c", "--count",
-            dest="count", nargs=1, required=False, default=[0],
+            dest="count", nargs=1, required=False, default=[-1],
             help="""Maximum sentences to store in corpus output (default: unlimited)""")
         ap.add_argument("-C", "--cores", dest="cores", nargs=1, required=False,
             default=[None], help="""Limit how many cores to use for generation""")

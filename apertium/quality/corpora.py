@@ -82,7 +82,7 @@ class CorpusExtractor(object):
 	def __init__(self, fin, fout, cores=None, tokenizer=None):
 		self.fin = fin
 		self.fout = fout
-		self.cores = cores
+		self.cores = int(cores)
 		self.inq = Queue()
 		self.outq = Queue()
 		try:
@@ -122,7 +122,10 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(self.Handler(self))
-		parser.parse(open(fin))
+		f = open(fin)
+		parser.parse(f)
+		f.close()
+		del parser
 		print("XML parser done, exiting [PID %d]" % pid)
 	
 	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
@@ -156,12 +159,15 @@ class CorpusExtractor(object):
 					continue
 				data = "[= %s =]\n\n%s" % (title, ch)
 				article = MediawikiHandler(data).parse()
+				del data
 				parsed = self.tokenizer.tokenize(article)
+				del article
 				self.outq.put(parsed)
+				del parsed
 		except Empty:
 			print("Mediawiki parser done, exiting [PID %d]" % pid)
 	
-	def output_worker(self, fn, maxsentences=None):
+	def output_worker(self, fn, maxsentences=-1):
 		pid = os.getpid()
 		try:
 			count = 0
