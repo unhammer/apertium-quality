@@ -82,7 +82,7 @@ class CorpusExtractor(object):
 	def __init__(self, fin, fout, cores=None, tokenizer=None):
 		self.fin = fin
 		self.fout = fout
-		self.cores = int(cores)
+		self.cores = int(cores or 0)
 		self.inq = Queue()
 		self.outq = Queue()
 		try:
@@ -167,21 +167,24 @@ class CorpusExtractor(object):
 		except Empty:
 			print("Mediawiki parser done, exiting [PID %d]" % pid)
 	
-	def output_worker(self, fn, maxsentences=-1):
+	def output_worker(self, fn, maxsentences=0):
 		pid = os.getpid()
 		try:
 			count = 0
 			while True:
+				if maxsentences <= 0 or count >= maxsentences: 
+					break
 				f = open(fn, 'a')
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
+					if maxsentences <= 0 or count >= maxsentences: 
+						break
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
 						count += 1
 						sys.stdout.write('\r%d' % count)
 						sys.stdout.flush()
-					if count >= maxsentences: break
-				if count >= maxsentences: break
+
 				f.close()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
