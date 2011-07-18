@@ -12,6 +12,8 @@ class UI(object):
             default=[None], help="""Limit how many cores to use for generation""")
         ap.add_argument("-t", "--tokeniser", dest="tokeniser", nargs=1, required=False,
             default=[None], help="""Tokeniser to use""")
+        ap.add_argument("-q", "--queue", dest="queue", nargs=1, required=False,
+            default=[None], help="""Set queue size (for advanced users)""")
         ap.add_argument("wikidump", nargs=1, help="Wikipedia XML dump")
         ap.add_argument("outfile", nargs=1, help="Output filename")
         

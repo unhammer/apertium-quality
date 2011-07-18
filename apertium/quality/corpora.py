@@ -79,11 +79,11 @@ class CorpusExtractor(object):
 			elif name == "mediawiki":
 				self.inMediawiki = False
 	
-	def __init__(self, fin, fout, cores=None, tokenizer=None):
+	def __init__(self, fin, fout, cores=0, tokenizer=None, q=None):
 		self.fin = fin
 		self.fout = fout
 		self.cores = int(cores or 0)
-		self.inq = Queue(128)
+		self.inq = Queue(q or 32)
 		self.outq = Queue()
 		try:
 			self.tokenizer = nltk.data.load(tokenizer or 'tokenizers/punkt/english.pickle')
