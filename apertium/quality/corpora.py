@@ -172,12 +172,12 @@ class CorpusExtractor(object):
 		try:
 			count = 0
 			while True:
-				if maxsentences <= 0 or count >= maxsentences: 
+				if maxsentences > 0 and count >= maxsentences: 
 					break
 				f = open(fn, 'a')
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
-					if maxsentences <= 0 or count >= maxsentences: 
+					if maxsentences > 0 and count >= maxsentences: 
 						break
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
