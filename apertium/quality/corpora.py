@@ -79,19 +79,22 @@ class CorpusExtractor(object):
 			elif name == "mediawiki":
 				self.inMediawiki = False
 	
-	def __init__(self):
+	def __init__(self, fin, fout, cores=None, tokenizer=None):
+		self.fin = fin
+		self.fout = fout
+		self.cores = cores
 		self.inq = Queue()
 		self.outq = Queue()
 		try:
-			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+			self.tokenizer = nltk.data.load(tokenizer or 'tokenizers/punkt/english.pickle')
 		except:
 			from nltk import download
 			print("Downloading tokenisation library. This may take some time. (~6MB)")
 			download('punkt')
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
-	def generate(self, fin, fout, max_sentences=10000):
-		self._make_processes(fin, fout, max_sentences)
+	def generate(self, max_sentences=10000):
+		self._make_processes(self.fin, self.fout, max_sentences)
 		self.parser.start()
 		self._start_processes()
 
@@ -99,7 +102,7 @@ class CorpusExtractor(object):
 		#print("Threads: ", cpu_count())
 		self.parser = Process(target=self._parser, args=(fin,))
 		self.parser.daemon = True
-		self.workers = [Process(target=self.worker) for i in range(cpu_count())]
+		self.workers = [Process(target=self.worker) for i in range(self.cores or cpu_count())]
 		for w in self.workers:
 			w.daemon = True
 		self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
@@ -126,7 +129,7 @@ class CorpusExtractor(object):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
 		if '\n' in data:
 			return False
-		if "</" in data or "/>" in data:
+		if data in ("<", ">"):
 			return False
 		if data[0] in punc:
 			return False
@@ -151,7 +154,7 @@ class CorpusExtractor(object):
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
-				data = "= %s =\n\n%s" % (title, ch)
+				data = "[= %s =]\n\n%s" % (title, ch)
 				article = MediawikiHandler(data).parse()
 				parsed = self.tokenizer.tokenize(article)
 				self.outq.put(parsed)
@@ -161,9 +164,9 @@ class CorpusExtractor(object):
 	def output_worker(self, fn, maxsentences=None):
 		pid = os.getpid()
 		try:
-			f = open(fn, 'w')
 			count = 0
 			while True:
+				f = open(fn, 'a')
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
 					if(self.heuristics(s.strip())):
@@ -173,9 +176,10 @@ class CorpusExtractor(object):
 						sys.stdout.flush()
 					if count >= maxsentences: break
 				if count >= maxsentences: break
-			f.close()
+				f.close()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
+			f.close()
 		except Empty:
 			print("Output worker done, exiting [PID %d]" % pid)
 

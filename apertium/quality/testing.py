@@ -332,13 +332,28 @@ class DictionaryTest(Test):
 		
 	def run(self):
 		self.dct = Dictionary(self.f)
-		
+		self.dct.get_entries()
+		self.dct.get_rules()
 	
 	def to_xml(self):
-		pass
+		q = Element('dictionary')
+		q.attrib["value"] = os.path.basename(self.dct.f)
+		#q.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
+		
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		
+		SubElement(r, 'entries').text = str(len(self.dct.gen_entries()))
+		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
+		SubElement(r, 'rules').text = str(self.dct.get_rule_count())
+		
+		return ("general", etree.tostring(q))
 	
 	def to_string(self):
-		pass
+		out = StringIO()
+		out.write("Entries: %d\n" % len(self.dct.get_entries()))
+		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
+		out.write("Rules: %d\n" % self.dct.get_rule_count())
+		return out.getvalue().strip()
 	
 class CoverageTest(Test):
 	app = "lt-proc"

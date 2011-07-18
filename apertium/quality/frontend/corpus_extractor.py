@@ -6,17 +6,21 @@ class UI(object):
         ap = argparse.ArgumentParser(
             description="Extract a usable corpus from a Wikipedia dump.")
         ap.add_argument("-c", "--count",
-            dest="count", nargs=1, required=False, default=[10000],
-            help="""Maximum sentences to store in corpus output (default: 10000)""")
+            dest="count", nargs=1, required=False, default=[0],
+            help="""Maximum sentences to store in corpus output (default: unlimited)""")
+        ap.add_argument("-C", "--cores", dest="cores", nargs=1, required=False,
+            default=[None], help="""Limit how many cores to use for generation""")
+        ap.add_argument("-t", "--tokeniser", dest="tokeniser", nargs=1, required=False,
+            default=[None], help="""Tokeniser to use""")
         ap.add_argument("wikidump", nargs=1, help="Wikipedia XML dump")
         ap.add_argument("outfile", nargs=1, help="Output filename")
         
         self.args = ap.parse_args()
-        self.corpus = CorpusExtractor()
+        self.corpus = CorpusExtractor(self.args.wikidump[0], 
+                self.args.outfile[0], self.args.cores[0], self.args.tokeniser[0])
     
     def start(self):
-        self.corpus.generate(self.args.wikidump[0], 
-                self.args.outfile[0], int(self.args.count[0]))
+        self.corpus.generate(int(self.args.count[0]))
 
 def main():
     try:

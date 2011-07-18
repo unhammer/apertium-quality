@@ -1,5 +1,6 @@
 from apertium.quality.frontend import Frontend
 from apertium.quality.testing import MorphTest
+from apertium.quality import Statistics
 
 class UI(Frontend, MorphTest):
 	def __init__(self):

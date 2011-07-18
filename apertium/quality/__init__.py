@@ -285,11 +285,18 @@ class Statistics(object):
 		"ambiguity", "morph"
 	]
 	
+	@staticmethod
+	def node_equal(a, b):
+		for i in (a, b):
+			if not (hasattr(i, "tag") and hasattr(i, "attrib")):
+				return False
+		return a.tag == b.tag and a.attrib == b.attrib
+	
 	def __init__(self, f=None):
 		if f is None:
 			return
-		
 		self.f = f
+		
 		if os.path.exists(f):
 			try:
 				self.tree = etree.parse(open(f, 'rb'))
@@ -322,15 +329,21 @@ class Statistics(object):
 		self.tree.write(self.f, encoding="utf-8")#, xml_declaration=True)
 
 	def add(self, parent, xml):
-		el = etree.XML(xml)
-		#parent = self.elements.get(el.tag, None)
-		if parent is None:
+		if parent not in self.elements:
 			raise AttributeError("Element not supported.")
 		
-		root = self.root.find(parent)
-		if root is None:
-			root = SubElement(self.root, parent)		
-		root.append(el)
+		old_node = None
+		new_node = etree.XML(xml)
+		parent_node = self.root.find(parent) or SubElement(self.root, parent)
+		for i in parent_node.getiterator(new_node.tag):
+			if self.node_equal(new_node, i):
+				old_node = i
+				break
+		
+		if old_node is None:
+			parent_node.append(new_node)
+		else:
+			old_node.append(new_node.find("timestamp"))
 
 	def get_regressions(self):
 		root = self.root.find('regression')
