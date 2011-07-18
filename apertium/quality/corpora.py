@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+from pympler import muppy, summary
+
 import sys, os
 import re, logging, string
 import xml.sax
@@ -154,6 +156,7 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		try:
 			while True:
+				summary.print_(summary.summarize(get_objects(include_frames=True)))
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
