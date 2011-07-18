@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-from pympler import muppy, summary
+#from pympler import muppy, summary
+from sys import getsizeof
 
 import sys, os
 import re, logging, string
@@ -78,6 +79,7 @@ class CorpusExtractor(object):
 			elif name == "text" and self.inRedirect == False and self.badText == False:
 				if (len(self.text.getvalue()) > 8):
 					self.inq.put((self.text.getvalue(), self.curTitle))
+					print(getsizeof(self.inq))
 			elif name == "mediawiki":
 				self.inMediawiki = False
 	
@@ -95,7 +97,7 @@ class CorpusExtractor(object):
 			download('punkt')
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
-	def generate(self, max_sentences=10000):
+	def generate(self, max_sentences=0):
 		self._make_processes(self.fin, self.fout, max_sentences)
 		self.parser.start()
 		self._start_processes()
@@ -156,7 +158,7 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		try:
 			while True:
-				summary.print_(summary.summarize(muppy.get_objects(include_frames=True)))
+				#summary.print_(summary.summarize(muppy.get_objects(include_frames=True)))
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
@@ -185,9 +187,8 @@ class CorpusExtractor(object):
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
 						count += 1
-						sys.stdout.write('\r%d' % count)
-						sys.stdout.flush()
-
+						#sys.stdout.write('\r%d' % count)
+						#sys.stdout.flush()
 				f.close()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
