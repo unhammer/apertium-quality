@@ -188,7 +188,6 @@ class CorpusExtractor(object):
 				f.close()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
-			f.close()
 		except Empty:
 			print("Output worker done, exiting [PID %d]" % pid)
 
