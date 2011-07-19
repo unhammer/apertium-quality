@@ -186,9 +186,9 @@ class CorpusExtractor(object):
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
 						count += 1
-						sys.stdout.write('\r%d' % count)
-						sys.stdout.flush()
 				f.close()
+				sys.stdout.write('\r%d' % count)
+				sys.stdout.flush()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
 		except Empty:
