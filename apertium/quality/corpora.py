@@ -86,7 +86,10 @@ class CorpusExtractor(object):
 		self.inq = Queue(q or 32)
 		self.outq = Queue()
 		try:
-			self.tokenizer = nltk.data.load(tokenizer or 'tokenizers/punkt/english.pickle')
+			if tokenizer:
+				self.tokenizer = nltk.data.load("file:" + tokenizer)
+			else:
+				self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 		except:
 			from nltk import download
 			print("Downloading tokenisation library. This may take some time. (~6MB)")
@@ -126,13 +129,13 @@ class CorpusExtractor(object):
 		parser.parse(f)
 		f.close()
 		del parser
-		print("XML parser done, exiting [PID %d]" % pid)
+		#print("XML parser done, exiting [PID %d]" % pid)
 	
 	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
 		if '\n' in data:
 			return False
-		if data in ("<", ">"):
+		if "<" in data or ">" in data:
 			return False
 		if data[0] in punc:
 			return False
@@ -165,7 +168,8 @@ class CorpusExtractor(object):
 				self.outq.put(parsed)
 				del parsed
 		except Empty:
-			print("Mediawiki parser done, exiting [PID %d]" % pid)
+			pass
+			#print("Mediawiki parser done, exiting [PID %d]" % pid)
 	
 	def output_worker(self, fn, maxsentences=0):
 		pid = os.getpid()
@@ -188,5 +192,6 @@ class CorpusExtractor(object):
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
 		except Empty:
-			print("Output worker done, exiting [PID %d]" % pid)
+			pass
+			#print("Output worker done, exiting [PID %d]" % pid)
 
