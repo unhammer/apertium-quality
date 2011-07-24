@@ -297,6 +297,7 @@ class Statistics(object):
 			if not (hasattr(i, "tag") and hasattr(i, "attrib")):
 				raise
 				return False
+		print("%s:%s %s:%s" % a.tag, b.tag, a.attrib, b.attrib)
 		return a.tag == b.tag and a.attrib == b.attrib
 	
 	def __init__(self, f=None):
