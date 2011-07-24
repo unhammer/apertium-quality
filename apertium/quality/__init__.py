@@ -319,16 +319,22 @@ class Statistics(object):
 			except:
 				raise
 		else:
-			self.root = Element(Statistics.ns + "statistics",
-							type=Statistics.file_type,
-							version=Statistics.version
-							xmlns=Statistics.xmlns)
+			kwargs = {
+				"type": Statistics.file_type,
+				"version": Statistics.version,
+				"xmlns": Statistics.xmlns
+			}
+			if etree.__name__ == "lxml.etree":
+				kwargs['nsmap'] = {None: Statistics.xmlns}
+			
+			self.root = Element(Statistics.ns + "statistics", **kwargs)
 			self.tree = etree.ElementTree(self.root)
 	
 	def write(self):
 		try: 
 			self.tree.write(self.f, encoding="utf-8", xml_declaration=True, pretty_print=True)
 		except:
+			raise
 			self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
 
 	def add(self, parent, xml):
