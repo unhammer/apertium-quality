@@ -12,8 +12,8 @@ except:
 	Template = None
 	TemplateLookup = None
 
-import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element, SubElement
+from lxml import etree
+from lxml.etree import Element, SubElement
 
 from collections import defaultdict, OrderedDict
 import re, os
@@ -277,8 +277,11 @@ class Webpage(object):
 	
 
 class Statistics(object):
-	file_version = "1.0"
+	file_version = "0.1"
 	file_type = "apertium"
+	xmlns = "http://apertium.org/xml/statistics/0.1"
+	ns = "{%s}" % Statistics.xmlns
+	nsmap = {None: Statistics.xmlns}
 
 	elements = [
 		"general", "regression", "coverage",
@@ -300,7 +303,7 @@ class Statistics(object):
 		if os.path.exists(f):
 			try:
 				self.tree = etree.parse(open(f, 'rb'))
-				if self.tree.getroot().tag == "statistics":
+				if self.tree.getroot().tag == Statistics.ns + "statistics":
 					#if self.tree.getroot().get('version') == "1.0":	
 						#print "[STUB] Do version specific crap here for 1.0"
 					#else:
@@ -310,23 +313,17 @@ class Statistics(object):
 					#print "[DEBUG] Imported tree."
 				else:
 					raise ParseError("File does not seem to be a statistics file.")
-			except IOError:
-				raise
-			except ParseError:
-				raise
 			except:
 				raise
 		else:
-			xml = '<statistics type="%s" version="%s"/>' % \
-				(Statistics.file_type, Statistics.file_version)
-			try:
-				self.root = etree.fromstring(xml)
-				self.tree = etree.ElementTree(self.root)
-			except:
-				raise
+			self.root = Element(Statistics.ns + "statistics",
+							type=Statistics.file_type,
+							version=Statistics.version,
+							nsmap=Statistics.nsmap)
+			self.tree = etree.ElementTree(self.root)
 	
 	def write(self):
-		self.tree.write(self.f, encoding="utf-8")#, xml_declaration=True)
+		self.tree.write(self.f, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 	def add(self, parent, xml):
 		if parent not in self.elements:

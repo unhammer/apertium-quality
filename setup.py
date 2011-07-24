@@ -4,7 +4,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml', 'mwtools']
+install_requires = ['lxml', 'pyyaml', 'mwtools']
 #, 'argparse'], 'numpy', 'matplotlib']
 
 try:
@@ -17,13 +17,10 @@ try:
 except:
 	install_requires.append('ordereddict')
 
-#scripts = [ "bin/" + i for i in listdir("bin") if i[0] != '.' ]
-
 setup(
 	name = "apertium-quality",
 	version = "0.2",
 	packages = find_packages(),
-	#scripts = scripts,
 	install_requires = install_requires,
 
 	author = "Brendan Molloy",
