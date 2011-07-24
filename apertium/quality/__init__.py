@@ -284,7 +284,7 @@ class Statistics(object):
 	file_version = "0.1"
 	file_type = "apertium"
 	xmlns = "http://apertium.org/xml/statistics/0.1"
-	ns = "{%s}" % Statistics.xmlns
+	ns = "{%s}" % xmlns
 
 	elements = [
 		"general", "regression", "coverage",
