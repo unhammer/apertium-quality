@@ -89,7 +89,6 @@ class Webpage(object):
 		stat_type_title = "Regression Tests"
 		
 		for cfg, rev in data.items():
-			print(rev)
 			tsk = list(rev.keys())
 			first = tsk[0]
 			last = tsk[-1]
@@ -116,6 +115,7 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 			
 	def generate_coverages(self):
+		
 		images = []#self.plot_regressions()
 		
 		divs = []
@@ -124,6 +124,7 @@ class Webpage(object):
 		stat_type_title = "Coverage Tests"
 		
 		for cfg, rev in data.items():
+			print(rev)
 			tsk = list(rev.keys())
 			first = tsk[0]
 			last = tsk[-1]
@@ -387,7 +388,6 @@ class Statistics(object):
 			title = d.attrib['value']
 			for rev in d.getiterator(self.ns + 'revision'):
 				r = rev.attrib['value']
-				
 				
 				regressions[title][r] = {
 					"Timestamp": rev.attrib['timestamp'],
