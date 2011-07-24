@@ -107,7 +107,7 @@ class Webpage(object):
 			stat_title_human, stat_cksum = cfg, last
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=cfg)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -142,7 +142,7 @@ class Webpage(object):
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=cfg)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -177,7 +177,7 @@ class Webpage(object):
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=cfg)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -206,7 +206,7 @@ class Webpage(object):
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
-			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
+			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=cfg)
 			stats = self.statdiv.render(stat_title_human=stat_title_human, stat_title=stat_title, stat_type=stat_type, 
 									stat_cksum=stat_cksum, chrono=chrono, general=general, images=images)
 			divs.append(stats)
@@ -725,12 +725,12 @@ chronodiv = """
 			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
 				<h1>Chronological Statistics</h1>
 				<ul>
-				% for c, date in enumerate(reversed(chrono_stats)):
+				% for c, rev in enumerate(reversed(chrono_stats)):
 					<li>
-						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
+						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${rev}</a>
 						<div class="cdiv" id="${stat_type}-${stat_title}-chrono-${c}-div">
 							<table>
-							% for k, v in chrono_stats[date].items():
+							% for k, v in chrono_stats[rev].items():
 								<% 
 								if "percent" in k.lower():
 									v = "%s%%" % v
