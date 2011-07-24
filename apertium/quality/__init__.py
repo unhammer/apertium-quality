@@ -353,6 +353,7 @@ class Statistics(object):
 		parent_node = self.root.find(ns + parent) or SubElement(self.root, ns + parent)
 		
 		for i in parent_node.getiterator(ns + new_node.tag):
+			print("NODE_EQUAL")
 			if self.node_equal(new_node, i):
 				old_node = i
 				break
