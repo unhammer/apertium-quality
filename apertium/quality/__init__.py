@@ -285,11 +285,6 @@ class Statistics(object):
 	type = "apertium"
 	xmlns = "http://apertium.org/xml/statistics/0.1"
 	ns = "{%s}" % xmlns
-
-	elements = [
-		"general", "regression", "coverage",
-		"ambiguity", "morph"
-	]
 	
 	@staticmethod
 	def node_equal(a, b):
@@ -299,6 +294,14 @@ class Statistics(object):
 		if f is None:
 			return
 		self.f = f
+		
+		self.elements = {
+			"general": self.get_general,
+			"regression": self.get_regression,
+			"coverage": self.get_coverage,
+			"ambiguity": self.get_ambiguity,
+			"morph": self.get_morph
+		}
 		
 		if os.path.exists(f):
 			try:
@@ -369,18 +372,27 @@ class Statistics(object):
 		# Else append as no override required
 		old_node.append(new_node.find("revision"))
 
-	def get_regressions(self):
-		root = self.root.find('regression')
+	def get(self, tag):
+		if not tag in self.elements:
+			raise AttributeError("Element not supported.")
+		
+		root = self.root.find(tag)
 		if root is None:
 			return dict()
+		
+		out = defaultdict(dict)
+		return self.elements[tag](root)
+
+	def get_regression(self, root):
 		regressions = defaultdict(dict)
 		
 		for d in root.getiterator("title"):
 			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
-			for ts in d.getiterator('timestamp'):
+			for ts in d.getiterator('revision'):
 				tsv = from_isoformat(ts.attrib['value'])
 				
 				regressions[title][tsv] = {
+					"Timestamp": ts.attrib["timestamp"],
 					"Percent": ts.find("percent").text,
 					"Total": ts.find("total").text,
 					"Passes": ts.find("passes").text,
@@ -393,19 +405,16 @@ class Statistics(object):
 
 		return out
 	
-	def get_coverages(self):
-		root = self.root.find('coverage')
-		if root is None:
-			return dict()
-		coverages = defaultdict(dict)
-		
+	def get_coverage(self, root):	
+		coverages = defaultdict(dict)	
 		for d in root.getiterator("dictionary"):
 			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("timestamp"):
+			for ts in d.getiterator("revision"):
 				tsv = from_isoformat(ts.attrib['value'])
 				c = ts.find("corpus")
 			
 				coverages[dct][tsv] = OrderedDict({
+					"Timestamp": ts.attrib["timestamp"],
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
 					"Percent": ts.find("percent").text,
 					"Total": ts.find("total").text,	
@@ -425,18 +434,16 @@ class Statistics(object):
 
 		return out
 
-	def get_ambiguities(self):
-		root = self.root.find('ambiguity')
-		if root is None:
-			return dict()
+	def get_ambiguity(self, root):
 		ambiguities = defaultdict(dict)
 		
 		for d in root.getiterator("dictionary"):
 			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("timestamp"):
+			for ts in d.getiterator("revision"):
 				tsv = from_isoformat(ts.attrib['value'])
 
 				ambiguities[dct][tsv] = {
+					"Timestamp": ts.attrib["timestamp"],
 					"Surface forms": ts.find("surface-forms").text,
 					"Analyses": ts.find("analyses").text,
 					"Average": ts.find("average").text
@@ -448,20 +455,18 @@ class Statistics(object):
 
 		return out	
 
-	def get_hfsts(self):
-		root = self.root.find('morph')
-		if root is None:
-			return dict()
-		hfsts = defaultdict(dict)
+	def get_morph(self, root):
+		morphs = defaultdict(dict)
 		
 		for d in root.getiterator("config"):
 			cfg = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("timestamp"):
+			for ts in d.getiterator("revision"):
 				tsv = from_isoformat(ts.attrib['value'])
 				g = ts.find("gen")
 				m = ts.find("morph")
 			
-				hfsts[cfg][tsv] = {
+				morphs[cfg][tsv] = {
+					"Timestamp": ts.attrib["timestamp"],
 					"Gen": "%s__%s" % (g.attrib['value'], g.attrib["checksum"]),
 					"Morph": "%s__%s" % (m.attrib['value'], m.attrib["checksum"]),
 					'':'',
@@ -478,7 +483,7 @@ class Statistics(object):
 			#	}
 
 		out = dict()
-		for k, v in hfsts.items():
+		for k, v in morphs.items():
 			out[k] = OrderedDict(sorted(v.items()))
 
 		return out	
