@@ -65,12 +65,12 @@ class AutoTest(object):
 			if k in self._langpairs():
 				print(self._tab(k, 1))
 				for i in v:
-					print ("    :: %s" % i)
+					print (self._tab(i, 2))
 					try:
 						test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
 						test.run()
 					except:
-						print(self._tab("An error occurred.", 2))
+						print(self._tab("An error occurred.", 3))
 						continue
 					self.stats.add(*test.to_xml())
 
