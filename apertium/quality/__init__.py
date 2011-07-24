@@ -266,12 +266,14 @@ class Webpage(object):
 		regs = self.stats.get('regression')
 		
 		for title, reg in regs.items():
-			t = "%s\n%s" % (title, "Passes over time")
+			t = "%s\n%s" % (title, "Passes Over Time")
 			plt.title(t)
-			plt.xlabel('Test ID')
+			plt.xlabel('Revision')
 			plt.ylabel('Passes (%)')
 			
-			x = range(len(reg))
+			x = list(reg.keys())
+			x.insert(0, 0)
+			
 			y = [[], [], [], []]
 			
 			for rev, vals in reg.items():
@@ -281,6 +283,8 @@ class Webpage(object):
 				y[3].append(vals['Fails'])
 
 			plt.plot(x, y[0])
+			plt.ylim(ymin=0, ymax=100)
+			plt.xlim(xmin=int(x[1]), xmax=int(x[-1]))
 			png = "%s.png" % self.space.sub('_', t)
 			plt.savefig(pjoin(self.fdir, png))
 			out.append(png)
@@ -288,9 +292,10 @@ class Webpage(object):
 
 			t = "%s\n%s" % (title, "Statistics")
 			plt.title(t)
-			plt.ylabel('Quantity')
+			plt.ylabel('Passes (Green) - Fails (Red)')
 
 			plt.plot(x, y[1], 'b', x, y[2], 'g', x, y[3], 'r')
+			plt.xlim(xmin=int(x[1]), xmax=int(x[-1]))
 			png = "%s.png" % self.space.sub('_', t)
 			plt.savefig(pjoin(self.fdir, png))
 			out.append(png)
