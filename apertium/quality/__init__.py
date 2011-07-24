@@ -345,7 +345,7 @@ class Statistics(object):
 		
 		old_node = None
 		new_node = etree.XML(xml)
-		parent_node = self.root.find(ns + parent) or SubElement(ns + self.root, ns + parent)
+		parent_node = self.root.find(ns + parent) or SubElement(self.root, ns + parent)
 		for i in parent_node.getiterator(ns + new_node.tag):
 			if self.node_equal(new_node, i):
 				old_node = i
