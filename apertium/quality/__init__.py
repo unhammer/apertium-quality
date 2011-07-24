@@ -376,7 +376,7 @@ class Statistics(object):
 		if not tag in self.elements:
 			raise AttributeError("Element not supported.")
 		
-		root = self.root.find(tag)
+		root = self.root.find(self.ns + tag)
 		if root is None:
 			return dict()
 		
@@ -389,17 +389,17 @@ class Statistics(object):
 	def get_regression(self, root):
 		regressions = defaultdict(dict)
 		
-		for d in root.getiterator("title"):
+		for d in root.getiterator(self.ns + "title"):
 			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
-			for ts in d.getiterator('revision'):
+			for ts in d.getiterator(self.ns + 'revision'):
 				tsv = from_isoformat(ts.attrib['value'])
 				
 				regressions[title][tsv] = {
 					"Timestamp": ts.attrib["timestamp"],
-					"Percent": ts.find("percent").text,
-					"Total": ts.find("total").text,
-					"Passes": ts.find("passes").text,
-					"Fails": ts.find("fails").text
+					"Percent": ts.find(self.ns + "percent").text,
+					"Total": ts.find(self.ns + "total").text,
+					"Passes": ts.find(self.ns + "passes").text,
+					"Fails": ts.find(self.ns + "fails").text
 				}
 
 		out = dict()
@@ -410,19 +410,19 @@ class Statistics(object):
 	
 	def get_coverage(self, root):	
 		coverages = defaultdict(dict)	
-		for d in root.getiterator("dictionary"):
+		for d in root.getiterator(self.ns + "dictionary"):
 			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("revision"):
+			for ts in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(ts.attrib['value'])
-				c = ts.find("corpus")
+				c = ts.find(self.ns + "corpus")
 			
 				coverages[dct][tsv] = OrderedDict({
 					"Timestamp": ts.attrib["timestamp"],
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
-					"Percent": ts.find("percent").text,
-					"Total": ts.find("total").text,	
-					"Known": ts.find("known").text,	
-					"Unknown": ts.find("unknown").text,
+					"Percent": ts.find(self.ns + "percent").text,
+					"Total": ts.find(self.ns + "total").text,	
+					"Known": ts.find(self.ns + "known").text,	
+					"Unknown": ts.find(self.ns + "unknown").text,
 					#'':'',
 					#"Top words:": ''#OrderedDict()
 				})
@@ -440,16 +440,16 @@ class Statistics(object):
 	def get_ambiguity(self, root):
 		ambiguities = defaultdict(dict)
 		
-		for d in root.getiterator("dictionary"):
+		for d in root.getiterator(self.ns + "dictionary"):
 			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("revision"):
+			for ts in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(ts.attrib['value'])
 
 				ambiguities[dct][tsv] = {
 					"Timestamp": ts.attrib["timestamp"],
-					"Surface forms": ts.find("surface-forms").text,
-					"Analyses": ts.find("analyses").text,
-					"Average": ts.find("average").text
+					"Surface forms": ts.find(self.ns + "surface-forms").text,
+					"Analyses": ts.find(self.ns + "analyses").text,
+					"Average": ts.find(self.ns + "average").text
 				}
 
 		out = dict()
@@ -461,12 +461,12 @@ class Statistics(object):
 	def get_morph(self, root):
 		morphs = defaultdict(dict)
 		
-		for d in root.getiterator("config"):
+		for d in root.getiterator(self.ns + "config"):
 			cfg = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator("revision"):
+			for ts in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(ts.attrib['value'])
-				g = ts.find("gen")
-				m = ts.find("morph")
+				g = ts.find(self.ns + "gen")
+				m = ts.find(self.ns + "morph")
 			
 				morphs[cfg][tsv] = {
 					"Timestamp": ts.attrib["timestamp"],
@@ -474,9 +474,9 @@ class Statistics(object):
 					"Morph": "%s__%s" % (m.attrib['value'], m.attrib["checksum"]),
 					'':'',
 					#"Tests": OrderedDict(),
-					"Total": ts.find("total").text,
-					"Passes": ts.find("passes").text,
-					"Fails": ts.find("fails").text
+					"Total": ts.find(self.ns + "total").text,
+					"Passes": ts.find(self.ns + "passes").text,
+					"Fails": ts.find(self.ns + "fails").text
 				}
 			
 			#for j in i.find("tests").getiterator("test"):
