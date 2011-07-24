@@ -295,6 +295,7 @@ class Statistics(object):
 	def node_equal(a, b):
 		for i in (a, b):
 			if not (hasattr(i, "tag") and hasattr(i, "attrib")):
+				raise
 				return False
 		return a.tag == b.tag and a.attrib == b.attrib
 	
