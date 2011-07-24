@@ -321,11 +321,12 @@ class Statistics(object):
 		else:
 			kwargs = {
 				"type": Statistics.type,
-				"version": Statistics.version,
-				"xmlns": Statistics.xmlns
+				"version": Statistics.version
 			}
 			if etree.__name__ == "lxml.etree":
 				kwargs['nsmap'] = {None: Statistics.xmlns}
+			else:
+				kwargs["xmlns"] = Statistics.xmlns
 			
 			self.root = Element(Statistics.ns + "statistics", **kwargs)
 			self.tree = etree.ElementTree(self.root)
