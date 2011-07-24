@@ -329,11 +329,7 @@ class Statistics(object):
 			self.tree = etree.ElementTree(self.root)
 	
 	def write(self):
-		try: 
-			self.tree.write(self.f, encoding="utf-8", xml_declaration=True, pretty_print=True)
-		except:
-			raise
-			self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
+		self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
 
 	def add(self, parent, xml):
 		ns = self.ns
