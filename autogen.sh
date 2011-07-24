@@ -112,7 +112,7 @@ fi
 
 # BEGIN INSTALLATION
 _install_nltk_prefixed() {
-	$PYTHON -c 'import nltk' ${_VERBOSE} && return
+	eval $PYTHON -c 'import nltk' ${_VERBOSE} && return
 	wget https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
@@ -122,7 +122,7 @@ _install_nltk_prefixed() {
 }
 
 _install_nltk() {
-	$PYTHON -c 'import nltk' ${_VERBOSE} && return
+	eval $PYTHON -c 'import nltk' ${_VERBOSE} && return
 	wget -c https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
@@ -137,7 +137,7 @@ _install_standalone() {
 }
 
 _install_lxml() {
-	$PYTHON -c 'import lxml' ${_VERBOSE} && return
+	eval $PYTHON -c 'import lxml' ${_VERBOSE} && return
 	echo "[-] lxml not found. ElementTree will be used."
 }
 
@@ -161,7 +161,7 @@ _install_prefixed() {
 	fi
 
 	if [ x"$rc" != 'x' ] ; then
-		grep ".apertium-quality" $rc
+		grep ".apertium-quality" $rc 2&>/dev/null
 		if [ $? = 1 ] ; then
 			echo "source $HOME/.apertium-quality" >> $rc
 		fi
