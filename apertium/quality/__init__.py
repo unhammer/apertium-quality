@@ -104,8 +104,7 @@ class Webpage(object):
 				"Overall average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
-			stat_cksum = "Revision: %s" % stat_cksum
+			stat_title_human, stat_cksum = cfg, rev['Checksum']
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
@@ -139,7 +138,7 @@ class Webpage(object):
 				"Overall average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
+			stat_title_human, stat_cksum = cfg, rev['Checksum']
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
@@ -174,7 +173,7 @@ class Webpage(object):
 				"Overall average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
+			stat_title_human, stat_cksum = cfg, rev['Checksum']
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
@@ -203,7 +202,7 @@ class Webpage(object):
 				"Last test": last
 			}
 			
-			stat_title_human, stat_cksum = cfg.rsplit("__", 1)
+			stat_title_human, stat_cksum = cfg, rev['Checksum']
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
@@ -249,7 +248,7 @@ class Webpage(object):
 			x = range(len(reg))
 			y = [[], [], [], []]
 			
-			for ts, vals in reg.items():
+			for rev, vals in reg.items():
 				y[0].append(vals['Percent'])
 				y[1].append(vals['Total'])
 				y[2].append(vals['Passes'])
@@ -384,16 +383,17 @@ class Statistics(object):
 		regressions = defaultdict(dict)
 		
 		for d in root.getiterator(self.ns + "title"):
-			title = "%s__%s" % (d.attrib['value'], d.attrib["revision"])
-			for ts in d.getiterator(self.ns + 'revision'):
-				tsv = from_isoformat(ts.attrib['value'])
+			title = d.attrib['value']
+			for rev in d.getiterator(self.ns + 'revision'):
+				tsv = from_isoformat(rev.attrib['timestamp'])
 				
-				regressions[title][tsv] = {
-					"Timestamp": ts.attrib["timestamp"],
-					"Percent": ts.find(self.ns + "percent").text,
-					"Total": ts.find(self.ns + "total").text,
-					"Passes": ts.find(self.ns + "passes").text,
-					"Fails": ts.find(self.ns + "fails").text
+				regressions[title][rev] = {
+					"Checksum": rev.attrib["checksum"],
+					"Timestamp": tsv,
+					"Percent": rev.find(self.ns + "percent").text,
+					"Total": rev.find(self.ns + "total").text,
+					"Passes": rev.find(self.ns + "passes").text,
+					"Fails": rev.find(self.ns + "fails").text
 				}
 
 		out = dict()
@@ -405,25 +405,26 @@ class Statistics(object):
 	def get_coverage(self, root):	
 		coverages = defaultdict(dict)	
 		for d in root.getiterator(self.ns + "dictionary"):
-			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(ts.attrib['value'])
-				c = ts.find(self.ns + "corpus")
+			dct = d.attrib["value"]
+			for rev in d.getiterator(self.ns + "revision"):
+				tsv = from_isoformat(rev.attrib['timestamp'])
+				c = rev.find(self.ns + "corpus")
 			
-				coverages[dct][tsv] = OrderedDict({
-					"Timestamp": ts.attrib["timestamp"],
+				coverages[dct][rev] = OrderedDict({
+					"Checksum": rev.attrib["checksum"],
+					"Timestamp": tsv,
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
-					"Percent": ts.find(self.ns + "percent").text,
-					"Total": ts.find(self.ns + "total").text,	
-					"Known": ts.find(self.ns + "known").text,	
-					"Unknown": ts.find(self.ns + "unknown").text,
+					"Percent": rev.find(self.ns + "percent").text,
+					"Total": rev.find(self.ns + "total").text,	
+					"Known": rev.find(self.ns + "known").text,	
+					"Unknown": rev.find(self.ns + "unknown").text,
 					#'':'',
 					#"Top words:": ''#OrderedDict()
 				})
 			#for j in i.find("top").getiterator("word"):
-			#	coverages[dct][ts][j.text] = j.attrib["count"]
+			#	coverages[dct][rev][j.text] = j.attrib["count"]
 			##for j in i.find("top").getiterator("word"):
-			##	coverages[dct][ts]['top'][j.text] = j.attrib["count"]
+			##	coverages[dct][rev]['top'][j.text] = j.attrib["count"]
 
 		out = dict()
 		for k, v in coverages.items():
@@ -435,15 +436,16 @@ class Statistics(object):
 		ambiguities = defaultdict(dict)
 		
 		for d in root.getiterator(self.ns + "dictionary"):
-			dct = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(ts.attrib['value'])
+			dct = d.attrib["value"]
+			for rev in d.getiterator(self.ns + "revision"):
+				tsv = from_isoformat(rev.attrib['timestamp'])
 
-				ambiguities[dct][tsv] = {
-					"Timestamp": ts.attrib["timestamp"],
-					"Surface forms": ts.find(self.ns + "surface-forms").text,
-					"Analyses": ts.find(self.ns + "analyses").text,
-					"Average": ts.find(self.ns + "average").text
+				ambiguities[dct][rev] = {
+					"Checksum": rev.attrib["checksum"],
+					"Timestamp": tsv,
+					"Surface forms": rev.find(self.ns + "surface-forms").text,
+					"Analyses": rev.find(self.ns + "analyses").text,
+					"Average": rev.find(self.ns + "average").text
 				}
 
 		out = dict()
@@ -456,25 +458,26 @@ class Statistics(object):
 		morphs = defaultdict(dict)
 		
 		for d in root.getiterator(self.ns + "config"):
-			cfg = "%s__%s" % (d.attrib["value"], d.attrib["checksum"])
-			for ts in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(ts.attrib['value'])
-				g = ts.find(self.ns + "gen")
-				m = ts.find(self.ns + "morph")
+			cfg = d.attrib["value"]
+			for rev in d.getiterator(self.ns + "revision"):
+				tsv = from_isoformat(rev.attrib['timestamp'])
+				g = rev.find(self.ns + "gen")
+				m = rev.find(self.ns + "morph")
 			
-				morphs[cfg][tsv] = {
-					"Timestamp": ts.attrib["timestamp"],
+				morphs[cfg][rev] = {
+					"Checksum": rev.attrib["checksum"],
+					"Timestamp": tsv,
 					"Gen": "%s__%s" % (g.attrib['value'], g.attrib["checksum"]),
 					"Morph": "%s__%s" % (m.attrib['value'], m.attrib["checksum"]),
 					'':'',
 					#"Tests": OrderedDict(),
-					"Total": ts.find(self.ns + "total").text,
-					"Passes": ts.find(self.ns + "passes").text,
-					"Fails": ts.find(self.ns + "fails").text
+					"Total": rev.find(self.ns + "total").text,
+					"Passes": rev.find(self.ns + "passes").text,
+					"Fails": rev.find(self.ns + "fails").text
 				}
 			
 			#for j in i.find("tests").getiterator("test"):
-			#	hfsts[cfg][ts]['tests'][j.text] = {
+			#	hfsts[cfg][rev]['tests'][j.text] = {
 			#		"passes": j.attrib['passes'], 
 			#		"fails": j.attrib['fails']
 			#	}
