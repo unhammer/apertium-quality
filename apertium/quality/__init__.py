@@ -363,7 +363,7 @@ class Statistics(object):
 		if old_node is None:
 			parent_node.append(new_node)
 		else:
-			old_node.append(new_node.find(ns + "timestamp"))
+			old_node.append(new_node.find("timestamp"))
 
 	def get_regressions(self):
 		root = self.root.find('regression')
