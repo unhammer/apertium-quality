@@ -291,10 +291,6 @@ class Statistics(object):
 		return a.tag == b.tag and a.attrib == b.attrib
 	
 	def __init__(self, f=None):
-		if f is None:
-			return
-		self.f = f
-		
 		self.elements = {
 			"general": self.get_general,
 			"regression": self.get_regression,
@@ -302,6 +298,10 @@ class Statistics(object):
 			"ambiguity": self.get_ambiguity,
 			"morph": self.get_morph
 		}
+		
+		if f is None:
+			return
+		self.f = f
 		
 		if os.path.exists(f):
 			try:
