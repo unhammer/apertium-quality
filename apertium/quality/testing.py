@@ -293,7 +293,7 @@ class RegressionTest(Test):
 		
 		q = Element('title')
 		q.attrib['value'] = page.find(ns + 'title').text
-		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text)
+		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
 		
 		r = SubElement(q, 'revision', 
 					value=self._svn_revision(self.directory),
