@@ -293,11 +293,6 @@ class Statistics(object):
 	
 	@staticmethod
 	def node_equal(a, b):
-		for i in (a, b):
-			if not (hasattr(i, "tag") and hasattr(i, "attrib")):
-				raise
-				return False
-		print("%s:%s %s:%s" % (a.tag, b.tag, a.attrib, b.attrib))
 		return a.tag == b.tag and a.attrib == b.attrib
 	
 	def __init__(self, f=None):
@@ -350,16 +345,14 @@ class Statistics(object):
 		if not new_node.tag.startswith(ns):
 			new_node.tag = ns + new_node.tag
 		
-		parent_node = self.root.find(ns + parent) or SubElement(self.root, ns + parent)
+		p = self.root.find(ns + parent)
+		parent_node = p or SubElement(self.root, ns + parent)
 		
 		for i in parent_node.getiterator(new_node.tag):
-			print("NODE_EQUAL")
 			if self.node_equal(new_node, i):
 				old_node = i
 				break
 		
-		print(old_node or "None")
-		print(etree.__name__)
 		if old_node is None:
 			parent_node.append(new_node)
 		else:
