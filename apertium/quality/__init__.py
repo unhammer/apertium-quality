@@ -115,8 +115,7 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 			
 	def generate_coverages(self):
-		self.plot_coverage()
-		images = []
+		images = self.plot_coverage()
 		
 		divs = []
 		stat_type = "coverage"
@@ -251,10 +250,6 @@ class Webpage(object):
 			y.insert(0, 0)
 			
 			plt.plot(x, y)
-			print(x[1], x[-1])
-			print(x)
-			print(y)
-			
 			plt.ylim(ymin=0, ymax=100)
 			plt.xlim(xmin=int(x[1]), xmax=int(x[-1]))
 			
