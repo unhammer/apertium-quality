@@ -12,8 +12,12 @@ except:
 	Template = None
 	TemplateLookup = None
 
-from lxml import etree
-from lxml.etree import Element, SubElement
+try:
+	from lxml import etree
+	from lxml.etree import Element, SubElement
+except:
+	import xml.etree.ElementTree as etree
+	from xml.etree.ElementTree import Element, SubElement
 
 from collections import defaultdict, OrderedDict
 import re, os
@@ -281,7 +285,6 @@ class Statistics(object):
 	file_type = "apertium"
 	xmlns = "http://apertium.org/xml/statistics/0.1"
 	ns = "{%s}" % Statistics.xmlns
-	nsmap = {None: Statistics.xmlns}
 
 	elements = [
 		"general", "regression", "coverage",
@@ -318,12 +321,15 @@ class Statistics(object):
 		else:
 			self.root = Element(Statistics.ns + "statistics",
 							type=Statistics.file_type,
-							version=Statistics.version,
-							nsmap=Statistics.nsmap)
+							version=Statistics.version
+							xmlns=Statistics.xmlns)
 			self.tree = etree.ElementTree(self.root)
 	
 	def write(self):
-		self.tree.write(self.f, encoding="utf-8", xml_declaration=True, pretty_print=True)
+		try: 
+			self.tree.write(self.f, encoding="utf-8", xml_declaration=True, pretty_print=True)
+		except:
+			self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
 
 	def add(self, parent, xml):
 		if parent not in self.elements:

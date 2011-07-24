@@ -64,7 +64,7 @@ fi
 
 # BEGIN CONFIG
 if [ 'x'$VERBOSE = 'x' ] ; then
-	_VERBOSE=">/dev/null"	
+	_VERBOSE="2&>/dev/null"	
 else
 	unset _VERBOSE
 fi
@@ -136,6 +136,11 @@ _install_standalone() {
 	echo "Stub"
 }
 
+_install_lxml() {
+	$PYTHON -c 'import lxml' ${_VERBOSE} && return
+	echo "[-] lxml not found. ElementTree will be used."
+}
+
 _install_prefixed() {
 	export PYTHONPATH=$_PKGDIR
 	mkdir -p $PYTHONPATH
@@ -147,6 +152,7 @@ _install_prefixed() {
 
 	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
 	_install_nltk_prefixed
+	_install_lxml
 
 	if [ -f $HOME/.bashrc ] ; then 
 		rc=$HOME/.bashrc

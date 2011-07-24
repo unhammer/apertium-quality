@@ -4,8 +4,12 @@ import os.path, re, yaml
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
 
-from lxml import etree
-from lxml.etree import Element, SubElement
+try:
+	from lxml import etree
+	from lxml.etree import Element, SubElement
+except:
+	import xml.etree.ElementTree as etree
+	from xml.etree.ElementTree import Element, SubElement
 import urllib.request
 import shlex
 import itertools
