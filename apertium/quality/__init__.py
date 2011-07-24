@@ -339,13 +339,14 @@ class Statistics(object):
 			self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
 
 	def add(self, parent, xml):
+		ns = self.ns
 		if parent not in self.elements:
 			raise AttributeError("Element not supported.")
 		
 		old_node = None
 		new_node = etree.XML(xml)
-		parent_node = self.root.find(parent) or SubElement(self.root, parent)
-		for i in parent_node.getiterator(new_node.tag):
+		parent_node = self.root.find(ns + parent) or SubElement(ns + self.root, ns + parent)
+		for i in parent_node.getiterator(ns + new_node.tag):
 			if self.node_equal(new_node, i):
 				old_node = i
 				break
@@ -353,7 +354,7 @@ class Statistics(object):
 		if old_node is None:
 			parent_node.append(new_node)
 		else:
-			old_node.append(new_node.find("timestamp"))
+			old_node.append(new_node.find(ns + "timestamp"))
 
 	def get_regressions(self):
 		root = self.root.find('regression')
