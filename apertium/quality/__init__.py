@@ -244,7 +244,7 @@ class Webpage(object):
 			plt.xlabel("Revision")
 			plt.ylabel("Coverage (%)")
 			
-			x = revisions.keys()
+			x = list(revisions.keys())
 			y = [ i['Percent'] for i in revisions.values() ]
 			
 			x.insert(0, 0)
