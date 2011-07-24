@@ -383,6 +383,9 @@ class Statistics(object):
 		out = defaultdict(dict)
 		return self.elements[tag](root)
 
+	def get_general(self, root):
+		return dict() # stub
+	
 	def get_regression(self, root):
 		regressions = defaultdict(dict)
 		
