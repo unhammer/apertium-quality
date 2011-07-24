@@ -115,8 +115,8 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 			
 	def generate_coverages(self):
-		
-		images = []#self.plot_regressions()
+		self.plot_coverage()
+		images = []
 		
 		divs = []
 		stat_type = "coverage"
@@ -233,7 +233,27 @@ class Webpage(object):
 	'''		
 			
 			
-	
+	def plot_coverage(self):
+		coverage = self.stats.get('coverage')
+		out = []
+		
+		for dictionary, revisions in coverage.items():
+			title = "%s\n%s" % (dictionary, "Coverage Percentage Over Time")
+			
+			plt.title(title)
+			plt.xlabel("Revision")
+			plt.ylabel("Coverage (%)")
+			
+			x = revisions.keys()
+			y = [ i['percent'] for i in revisions.values() ]
+			
+			plt.plot(x, y)
+			png = "%s.png" % self.space.sub('_', title)
+			plt.savefig(pjoin(self.fdir, png))
+			out.append(png)
+			plt.clf()
+		return out
+		
 	def plot_regressions(self):
 		#def 
 		
