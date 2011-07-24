@@ -281,8 +281,8 @@ class Webpage(object):
 	
 
 class Statistics(object):
-	file_version = "0.1"
-	file_type = "apertium"
+	version = "0.1"
+	type = "apertium"
 	xmlns = "http://apertium.org/xml/statistics/0.1"
 	ns = "{%s}" % xmlns
 
@@ -320,7 +320,7 @@ class Statistics(object):
 				raise
 		else:
 			kwargs = {
-				"type": Statistics.file_type,
+				"type": Statistics.type,
 				"version": Statistics.version,
 				"xmlns": Statistics.xmlns
 			}
