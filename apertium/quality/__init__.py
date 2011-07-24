@@ -387,10 +387,10 @@ class Statistics(object):
 			title = d.attrib['value']
 			for rev in d.getiterator(self.ns + 'revision'):
 				r = rev.attrib['value']
-				tsv = from_isoformat(rev.attrib['timestamp'])
+				
 				
 				regressions[title][r] = {
-					"Timestamp": tsv,
+					"Timestamp": rev.attrib['timestamp'],
 					"Percent": rev.find(self.ns + "percent").text,
 					"Total": rev.find(self.ns + "total").text,
 					"Passes": rev.find(self.ns + "passes").text,
@@ -408,13 +408,13 @@ class Statistics(object):
 		for d in root.getiterator(self.ns + "dictionary"):
 			dct = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(rev.attrib['timestamp'])
+				
 				r = rev.attrib['value']
 				c = rev.find(self.ns + "corpus")
 			
 				coverages[dct][r] = OrderedDict({
 					"Checksum": rev.attrib["checksum"],
-					"Timestamp": tsv,
+					"Timestamp": rev.attrib['timestamp'],
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
 					"Percent": rev.find(self.ns + "percent").text,
 					"Total": rev.find(self.ns + "total").text,	
@@ -440,12 +440,12 @@ class Statistics(object):
 		for d in root.getiterator(self.ns + "dictionary"):
 			dct = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(rev.attrib['timestamp'])
+				
 				r = rev.attrib['value']
 
 				ambiguities[dct][r] = {
 					"Checksum": rev.attrib["checksum"],
-					"Timestamp": tsv,
+					"Timestamp": rev.attrib['timestamp'],
 					"Surface forms": rev.find(self.ns + "surface-forms").text,
 					"Analyses": rev.find(self.ns + "analyses").text,
 					"Average": rev.find(self.ns + "average").text
@@ -463,14 +463,14 @@ class Statistics(object):
 		for d in root.getiterator(self.ns + "config"):
 			cfg = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
-				tsv = from_isoformat(rev.attrib['timestamp'])
+				
 				r = rev.attrib['value']
 				g = rev.find(self.ns + "gen")
 				m = rev.find(self.ns + "morph")
 			
 				morphs[cfg][r] = {
 					"Checksum": rev.attrib["checksum"],
-					"Timestamp": tsv,
+					"Timestamp": rev.attrib['timestamp'],
 					"Gen": "%s__%s" % (g.attrib['value'], g.attrib["checksum"]),
 					"Morph": "%s__%s" % (m.attrib['value'], m.attrib["checksum"]),
 					'':'',
