@@ -81,11 +81,11 @@ class Webpage(object):
 		f.close()
 		
 	def generate_regressions(self):
-		data = self.stats.get_regressions()
 		images = self.plot_regressions()
 		
 		divs = []
 		stat_type = "regression"
+		data = self.stats.get(stat_type)
 		stat_type_title = "Regression Tests"
 		
 		for cfg, ts in data.items():
@@ -116,11 +116,11 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 			
 	def generate_coverages(self):
-		data = self.stats.get_coverages()
 		images = []#self.plot_regressions()
 		
 		divs = []
 		stat_type = "coverage"
+		data = self.stats.get(stat_type)
 		stat_type_title = "Coverage Tests"
 		
 		for cfg, ts in data.items():
@@ -151,11 +151,11 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	
 	def generate_ambiguities(self):
-		data = self.stats.get_ambiguities()
 		images = []#self.plot_regressions()
 		
 		divs = []
 		stat_type = "ambiguity"
+		data = self.stats.get(stat_type)
 		stat_type_title = "Ambiguity Tests"
 		
 		for cfg, ts in data.items():
@@ -186,11 +186,11 @@ class Webpage(object):
 		return self.statblock.render(stat_type=stat_type, stat_type_title=stat_type_title, divs=divs)
 	
 	def generate_hfsts(self):
-		data = self.stats.get_hfsts()
 		images = []#self.plot_regressions()
 		
 		divs = []
 		stat_type = "morph"
+		data = self.stats.get(stat_type)
 		stat_type_title = "Morph (HFST) Tests"
 		
 		for cfg, ts in data.items():
@@ -244,7 +244,7 @@ class Webpage(object):
 		#def 
 		
 		out = []
-		regs = self.stats.get_regressions()
+		regs = self.stats.get_regression()
 		
 		for title, reg in regs.items():
 			t = "%s\n%s" % (title, "Passes over time")
