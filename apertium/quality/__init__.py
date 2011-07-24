@@ -247,6 +247,7 @@ class Webpage(object):
 			x = revisions.keys()
 			y = [ i['Percent'] for i in revisions.values() ]
 			
+			print(len(x), len(y))
 			plt.plot(x, y)
 			png = "%s.png" % self.space.sub('_', title)
 			plt.savefig(pjoin(self.fdir, png))
