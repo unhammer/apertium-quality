@@ -345,6 +345,9 @@ class Statistics(object):
 		
 		old_node = None
 		new_node = etree.fromstring(xml)
+		if not new_node.tag.startswith(ns):
+			new_node.tag = ns + new_node.tag
+		
 		parent_node = self.root.find(ns + parent) or SubElement(self.root, ns + parent)
 		
 		for i in parent_node.getiterator(ns + new_node.tag):
