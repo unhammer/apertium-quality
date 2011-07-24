@@ -725,7 +725,7 @@ chronodiv = """
 			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
 				<h1>Chronological Statistics</h1>
 				<ul>
-				% for c, date in enumerate(reversed(chrono_stats.keys())):
+				% for c, date in enumerate(reversed(list(chrono_stats.keys()))):
 					<li>
 						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
 						<div class="cdiv" id="${stat_type}-${stat_title}-chrono-${c}-div">
