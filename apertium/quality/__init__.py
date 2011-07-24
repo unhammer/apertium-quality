@@ -254,7 +254,7 @@ class Webpage(object):
 			print(x[1], x[-1])
 			print(x)
 			print(y)
-			plt.xlim(xmin=x[1])
+			plt.xlim(xmin=x[0])
 			
 			png = "%s.png" % self.space.sub('_', title)
 			plt.savefig(pjoin(self.fdir, png))
