@@ -140,7 +140,7 @@ class Webpage(object):
 				"Average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg, rev['Checksum']
+			stat_title_human, stat_cksum = cfg, last
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
@@ -175,7 +175,7 @@ class Webpage(object):
 				"Overall average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg, rev['Checksum']
+			stat_title_human, stat_cksum = cfg, last
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
@@ -204,7 +204,7 @@ class Webpage(object):
 				"Last test": last
 			}
 			
-			stat_title_human, stat_cksum = cfg, rev['Checksum']
+			stat_title_human, stat_cksum = cfg, last
 			stat_cksum = stat_cksum.upper()
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
