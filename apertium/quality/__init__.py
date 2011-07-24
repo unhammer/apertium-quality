@@ -245,7 +245,7 @@ class Webpage(object):
 			plt.ylabel("Coverage (%)")
 			
 			x = revisions.keys()
-			y = [ i['percent'] for i in revisions.values() ]
+			y = [ i['Percent'] for i in revisions.values() ]
 			
 			plt.plot(x, y)
 			png = "%s.png" % self.space.sub('_', title)
