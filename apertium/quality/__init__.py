@@ -341,8 +341,9 @@ class Statistics(object):
 		if not new_node.tag.startswith(ns):
 			new_node.tag = ns + new_node.tag
 		
-		p = self.root.find(ns + parent)
-		parent_node = p or SubElement(self.root, ns + parent)
+		parent_node = self.root.find(ns + parent)
+		if parent_node is None: 
+			parent_node = SubElement(self.root, ns + parent)
 		
 		for i in parent_node.getiterator(new_node.tag):
 			if self.node_equal(new_node, i):
