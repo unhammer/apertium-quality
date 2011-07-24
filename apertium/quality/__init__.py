@@ -251,6 +251,7 @@ class Webpage(object):
 			y.insert(0, 0)
 			
 			plt.plot(x, y)
+			plt.xlim(xmin=x[1])
 			png = "%s.png" % self.space.sub('_', title)
 			plt.savefig(pjoin(self.fdir, png))
 			out.append(png)
