@@ -45,8 +45,9 @@ class AutoTest(object):
 		
 		for t in files:
 			print(self._tab(t, 1))
-			test = testing.AmbiguityTest(t)
-			try: test.run()
+			try:
+				test = testing.AmbiguityTest(t)
+				test.run()
 			except:
 				print(self._tab("An error occurred.", 2))
 				continue
@@ -65,8 +66,9 @@ class AutoTest(object):
 				print(self._tab(k, 1))
 				for i in v:
 					print ("    :: %s" % i)
-					test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
-					try: test.run()
+					try:
+						test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
+						test.run()
 					except:
 						print(self._tab("An error occurred.", 2))
 						continue
@@ -85,8 +87,9 @@ class AutoTest(object):
 				print(self._tab(k, 1))
 				for i in v:
 					print (self._tab(i, 2))
-					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
-					try: test.run()
+					try:
+						test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
+						test.run()
 					except:
 						print(self._tab("An error occurred.", 3))
 						continue
@@ -98,8 +101,9 @@ class AutoTest(object):
 		
 		for t in tests:
 			print(self._tab(t, 1))
-			test = testing.MorphTest(self._abspath('morph', t))
-			try: test.run()
+			try:
+				test = testing.MorphTest(self._abspath('morph', t))
+				test.run()
 			except: 
 				print(self._tab("An error occurred.", 2))
 				continue
