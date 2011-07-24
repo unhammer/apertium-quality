@@ -54,7 +54,7 @@ fi
 
 OPTSIN="$*"
 get_opt
-eval $GETOPTS
+eval "$GETOPTS"
 
 if [ 'x'$PYTHON = 'x' ] ; then
 	PYTHON=`type -P python`
@@ -112,21 +112,21 @@ fi
 
 # BEGIN INSTALLATION
 _install_nltk_prefixed() {
-	eval $PYTHON -c 'import nltk' ${_VERBOSE} && return
+	eval "$PYTHON -c 'import nltk' ${_VERBOSE}" && return
 	wget -qc https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
-	eval $PYTHON setup-distutils.py install --prefix=${PREFIX} ${_VERBOSE}
+	eval "$PYTHON setup-distutils.py install --prefix=${PREFIX} ${_VERBOSE}"
 	cd ..
 	rm -r nltk-3.0.1.tar.gz
 }
 
 _install_nltk() {
-	eval $PYTHON -c 'import nltk' ${_VERBOSE} && return
+	eval "$PYTHON -c 'import nltk' ${_VERBOSE}" && return
 	wget -qc https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	cd nltk-3.0.1
-	eval $PYTHON setup-distutils.py install ${_VERBOSE}
+	eval "$PYTHON setup-distutils.py install ${_VERBOSE}"
 	cd ..
 	rm -r nltk-3.0.1.tar.gz
 
@@ -137,7 +137,7 @@ _install_standalone() {
 }
 
 _install_lxml() {
-	eval $PYTHON -c 'import lxml' ${_VERBOSE} && return
+	eval "$PYTHON -c 'import lxml' ${_VERBOSE}" && return
 	echo "[-] lxml not found. ElementTree will be used."
 }
 
@@ -150,7 +150,7 @@ _install_prefixed() {
 	fi
 	echo "[*] Installing..."
 
-	eval $PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}
+	eval "$PYTHON setup.py install --prefix=${PREFIX} ${_VERBOSE}"
 	_install_nltk_prefixed
 	_install_lxml
 
@@ -179,8 +179,8 @@ _install_prefixed() {
 
 _install() {
 	echo "[*] Installing..."
+	eval "$PYTHON setup.py install ${_VERBOSE}"
 	_install_nltk
-	eval $PYTHON setup.py install ${_VERBOSE}
 }
 
 if [ $_PREFIXED -gt 0 ] ; then
