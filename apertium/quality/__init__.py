@@ -336,24 +336,38 @@ class Statistics(object):
 		if parent not in self.elements:
 			raise AttributeError("Element not supported.")
 		
+		# Get new node, fix namespace prefix
 		old_node = None
 		new_node = etree.fromstring(xml)
 		if not new_node.tag.startswith(ns):
 			new_node.tag = ns + new_node.tag
 		
+		# If parent node doesn't exist, create it
 		parent_node = self.root.find(ns + parent)
 		if parent_node is None: 
 			parent_node = SubElement(self.root, ns + parent)
 		
+		# Try to find an equal node for second level node
 		for i in parent_node.getiterator(new_node.tag):
 			if self.node_equal(new_node, i):
 				old_node = i
 				break
-		
+	
 		if old_node is None:
 			parent_node.append(new_node)
-		else:
-			old_node.append(new_node.find("timestamp"))
+			return
+		
+		# Try to find an equal node for third level node
+		rev_node = new_node.find("revision")	
+		for i in old_node.getiterator(rev_node.tag):
+			a = i.attrib.get("value")
+			b = rev_node.attrib.get("value")
+			if not None in (a, b) and a == b:
+				i = rev_node # Overwrite old data
+				return
+		
+		# Else append as no override required
+		old_node.append(new_node.find("revision"))
 
 	def get_regressions(self):
 		root = self.root.find('regression')

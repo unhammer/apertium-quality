@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path, re, yaml
+from os.path import dirname
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
 
@@ -24,6 +25,8 @@ from apertium import whereis, destxt, retxt, Dictionary
 ARROW = "\u2192"
 
 # TODO: add self.results dict() to all objects
+class UncleanWorkingDirectoryException(Exception):
+	pass
 
 class Test(object):
 	"""Abstract class for Test objects
@@ -46,6 +49,13 @@ class Test(object):
 		if hasattr(data, 'encode'):
 			data = data.encode('utf-8')
 		return sha1(data).hexdigest()
+	
+	def _svn_revision(self, directory):
+		"""Returns the SVN revision of the given dictionary directory"""
+		res = Popen('svnversion', stdout=PIPE).communicate()[0].decode('utf-8')
+		try: return int(res)
+		except:
+			UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
 	
 	def run(self, *args, **kwargs):
 		"""Runs the actual test
@@ -283,9 +293,11 @@ class RegressionTest(Test):
 		
 		q = Element('title')
 		q.attrib['value'] = page.find(ns + 'title').text
-		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
+		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text)
 		
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		r = SubElement(q, 'revision', 
+					value=self._svn_revision(self.directory),
+					timestamp=datetime.utcnow().isoformat())
 		
 		SubElement(r, 'percent').text = "%.2f" % self.get_total_percent()
 		SubElement(r, 'total').text = str(self.get_total())
@@ -358,7 +370,8 @@ class DictionaryTest(Test):
 		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
 		out.write("Rules: %d\n" % self.dct.get_rule_count())
 		return out.getvalue().strip()
-	
+
+
 class CoverageTest(Test):
 	app = "lt-proc"
 	
@@ -424,9 +437,12 @@ class CoverageTest(Test):
 	def to_xml(self):
 		q = Element('dictionary')
 		q.attrib["value"] = os.path.basename(self.dct)
-		q.attrib["checksum"] = self._checksum(open(self.dct, 'rb').read())
 		
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		
+		r = SubElement(q, "revision", 
+					value=self._svn_revision(dirname(self.dct)),
+					timestamp=datetime.utcnow().isoformat(),
+					checksum=self._checksum(open(self.dct, 'rb').read()))
 		
 		s = SubElement(r, 'corpus')
 		s.attrib["value"] = os.path.basename(self.fn)
@@ -537,9 +553,10 @@ class AmbiguityTest(Test):
 	def to_xml(self):
 		q = Element('dictionary')
 		q.attrib["value"] = self.f
-		q.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
 
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
+					timestamp=datetime.utcnow().isoformat(),
+					checksum=self._checksum(open(self.f, 'rb').read()))
 
 		SubElement(r, 'surface-forms').text = str(self.surface_forms)
 		SubElement(r, 'analyses').text = str(self.total)
@@ -794,9 +811,10 @@ class MorphTest(Test):
 	def to_xml(self):
 		q = Element('config')
 		q.attrib["value"] = self.f
-		q.attrib["checksum"] = self._checksum(open(self.f, 'rb').read())
 		
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
+					timestamp=datetime.utcnow().isoformat(),
+					checksum=self._checksum(open(self.f, 'rb').read()))
 		
 		s = SubElement(r, 'gen')
 		s.attrib["value"] = self.gen

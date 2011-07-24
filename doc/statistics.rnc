@@ -8,8 +8,9 @@ element statistics {
 		element dictionary {
 			attribute value { xsd:string },
 
-			element timestamp {
-				attribute { xsd:dateTime },
+			element revision {
+				attribute value { xsd:positiveInteger },
+				attribute timestamp { xsd:dateTime },
 			
 				element entries { xsd:positiveInteger },
 				element unique-entries { xsd:positiveInteger },
@@ -23,8 +24,9 @@ element statistics {
 			attribute value { xsd:string },
 			attribute revision { xsd:positiveInteger },
 			
-			element timestamp {
-				attribute value { xsd:dateTime },
+			element revision {
+				attribute value { xsd:positiveInteger },
+				attribute timestamp { xsd:dateTime },
 				
 				element percent { xsd:float },
 				element total { xsd:positiveInteger },
@@ -41,10 +43,11 @@ element statistics {
 	element coverage {
 		element dictionary {
 			attribute value { xsd:string },
-			attribute checksum { xsd:string },
 			
-			element timestamp {
-				attribute value { xsd:dateTime },
+			element revision {
+				attribute value { xsd:positiveInteger },
+				attribute timestamp { xsd:dateTime },
+				attribute checksum { xsd:string },
 
 				element corpus {
 					attribute value { xsd:string },
@@ -70,11 +73,12 @@ element statistics {
 	element ambiguity {
 		element dictionary {
 			attribute value { xsd:string },
-			attribute checksum { xsd:string },
 
-			element timestamp {
-				attribute value { xsd:dateTime },
-				
+			element revision {
+				attribute value { xsd:positiveInteger },
+				attribute timestamp { xsd:dateTime },
+				attribute checksum { xsd:string },
+
 				element surface-forms { xsd:string },
 				element analyses { xsd:string },
 				element average { xsd:float },
@@ -88,10 +92,11 @@ element statistics {
 	element morph {
 		element config {
 			attribute value { xsd:string },
-			attribute checksum { xsd:string }
 	
-			element timestamp {
-				attribute value { xsd:dateTime },
+			element revision {
+				attribute value { xsd:positiveInteger },
+				attribute timestamp { xsd:dateTime },
+				attribute checksum { xsd:string },
 
 				element gen {
 					attribute value { xsd:string },
