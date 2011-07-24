@@ -421,14 +421,14 @@ class CoverageTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.fn)
-		q.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
+		q.attrib["value"] = os.path.basename(self.dct)
+		q.attrib["checksum"] = self._checksum(open(self.dct, 'rb').read())
 		
 		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'corpus')
-		s.attrib["value"] = os.path.basename(self.dct)
-		s.attrib["checksum"] = self._checksum(open(self.dct, 'rb').read())
+		s.attrib["value"] = os.path.basename(self.fn)
+		s.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
 		
 		SubElement(r, 'percent').text = "%.2f" % self.get_coverage()
 		SubElement(r, 'total').text = str(len(self.get_words()))

@@ -8,27 +8,14 @@ import apertium.quality.testing as testing
 from apertium.quality import Webpage, Statistics
 
 
-
-class UI(object):
-	def __init__(self):
+class AutoTest(object):
+	def __init__(self, args):
+		self.args = args
 		self.tdir = "tests"
-		
-		ap = argparse.ArgumentParser(
-			description="Attempt all tests with default settings.")
-		ap.add_argument("dictdir", nargs=1, help="Dictionary directory")
-		ap.add_argument("statistics", nargs=1, help="Statistics file")
-		ap.add_argument("-w", "--webpages", dest="outdir", nargs=1, 
-      		help="Output directory for webpages")
-		self.args = dict(ap.parse_args()._get_kwargs())
-		
-		for k, v in self.args.copy().items():
-			if isinstance(v, list) and len(v) == 1:
-				self.args[k] = v[0]
-		
-		self.stats = Statistics(self.args['statistics'])
 		self.args['langpair'] = basename(abspath(self.args['dictdir'])).split('apertium-')[-1]
+		self.stats = Statistics(self.args['statistics'])
 		self.lang1, self.lang2 = self.args['langpair'].split('-')
-	
+		
 	def _tab(self, data, n=0):
 		return "%s:: %s" % ("  "*n, data) 
 	
@@ -111,7 +98,7 @@ class UI(object):
 		self.web = Webpage(self.stats, self.args['outdir'])
 		self.web.generate()
 	
-	def start(self):
+	def run(self):
 		self.ambiguity()
 		self.coverage()
 		self.regression()
@@ -121,6 +108,24 @@ class UI(object):
 			self.webpage()
 		print(self._tab("Done."))
 
+
+class UI(object):
+	def __init__(self):
+		ap = argparse.ArgumentParser(
+			description="Attempt all tests with default settings.")
+		ap.add_argument("dictdir", nargs=1, help="Dictionary directory")
+		ap.add_argument("statistics", nargs=1, help="Statistics file")
+		ap.add_argument("-w", "--webpages", dest="outdir", nargs=1, 
+      		help="Output directory for webpages")
+		self.args = dict(ap.parse_args()._get_kwargs())
+		
+		for k, v in self.args.copy().items():
+			if isinstance(v, list) and len(v) == 1:
+				self.args[k] = v[0]
+		
+	def start(self):
+		self.test = AutoTest(self.args)
+		self.run()
 
 def main():
 	try:
