@@ -95,13 +95,13 @@ class Webpage(object):
 			
 			avg = 0.0
 			for i in rev.values():
-				avg += float(i['Average'])
+				avg += float(i['Percent'])
 			avg /= float(len(rev))
 			
 			gen_stats = {
 				"First test": first,
 				"Last test": last,
-				"Overall average": avg
+				"Average": avg
 			}
 			
 			stat_title_human, stat_cksum = cfg, last
@@ -129,13 +129,13 @@ class Webpage(object):
 			
 			avg = 0.0
 			for i in rev.values():
-				avg += float(i['Average'])
+				avg += float(i['Percent'])
 			avg /= float(len(rev))
 			
 			gen_stats = {
 				"First test": first,
 				"Last test": last,
-				"Overall average": avg
+				"Average": avg
 			}
 			
 			stat_title_human, stat_cksum = cfg, rev['Checksum']
