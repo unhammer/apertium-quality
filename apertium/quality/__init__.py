@@ -385,9 +385,10 @@ class Statistics(object):
 		for d in root.getiterator(self.ns + "title"):
 			title = d.attrib['value']
 			for rev in d.getiterator(self.ns + 'revision'):
+				r = rev.attrib['value']
 				tsv = from_isoformat(rev.attrib['timestamp'])
 				
-				regressions[title][rev] = {
+				regressions[title][r] = {
 					"Timestamp": tsv,
 					"Percent": rev.find(self.ns + "percent").text,
 					"Total": rev.find(self.ns + "total").text,
@@ -407,9 +408,10 @@ class Statistics(object):
 			dct = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(rev.attrib['timestamp'])
+				r = rev.attrib['value']
 				c = rev.find(self.ns + "corpus")
 			
-				coverages[dct][rev] = OrderedDict({
+				coverages[dct][r] = OrderedDict({
 					"Checksum": rev.attrib["checksum"],
 					"Timestamp": tsv,
 					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
@@ -438,8 +440,9 @@ class Statistics(object):
 			dct = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(rev.attrib['timestamp'])
+				r = rev.attrib['value']
 
-				ambiguities[dct][rev] = {
+				ambiguities[dct][r] = {
 					"Checksum": rev.attrib["checksum"],
 					"Timestamp": tsv,
 					"Surface forms": rev.find(self.ns + "surface-forms").text,
@@ -460,10 +463,11 @@ class Statistics(object):
 			cfg = d.attrib["value"]
 			for rev in d.getiterator(self.ns + "revision"):
 				tsv = from_isoformat(rev.attrib['timestamp'])
+				r = rev.attrib['value']
 				g = rev.find(self.ns + "gen")
 				m = rev.find(self.ns + "morph")
 			
-				morphs[cfg][rev] = {
+				morphs[cfg][r] = {
 					"Checksum": rev.attrib["checksum"],
 					"Timestamp": tsv,
 					"Gen": "%s__%s" % (g.attrib['value'], g.attrib["checksum"]),
