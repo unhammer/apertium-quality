@@ -292,7 +292,9 @@ class RegressionTest(Test):
 		SubElement(r, 'passes').text = str(self.get_passes())
 		SubElement(r, 'fails').text = str(self.get_fails())
 		
-		return ("regression", etree.tostring(q))
+		try: out = etree.tostring(q, pretty_print=True)
+		except: out = etree.tostring(q)
+		return ("regression", out)
 
 	def to_string(self):
 		return self.out.getvalue().strip()
@@ -350,7 +352,9 @@ class DictionaryTest(Test):
 		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
 		SubElement(r, 'rules').text = str(self.dct.get_rule_count())
 		
-		return ("general", etree.tostring(q))
+		try: out = etree.tostring(q, pretty_print=True)
+		except: out = etree.tostring(q)
+		return ("general", out)
 	
 	def to_string(self):
 		out = StringIO()
@@ -440,7 +444,9 @@ class CoverageTest(Test):
 		for word, count in self.get_top_unknown_words():
 			SubElement(s, 'word', count=str(count)).text = wrx.search(word).group(1)
 		
-		return ("coverage", etree.tostring(q))
+		try: out = etree.tostring(q, pretty_print=True)
+		except: out = etree.tostring(q)
+		return ("coverage", out)
 
 	def to_string(self):
 		out = StringIO()
@@ -543,7 +549,9 @@ class AmbiguityTest(Test):
 		SubElement(r, 'analyses').text = str(self.total)
 		SubElement(r, 'average').text = str(self.average)
 		
-		return ("ambiguity", etree.tostring(q))
+		try: out = etree.tostring(q, pretty_print=True)
+		except: out = etree.tostring(q)
+		return ("ambiguity", out)
 
 	def to_string(self):
 		out = StringIO("Total surface forms: %d\n" % self.surface_forms)
@@ -815,7 +823,9 @@ class MorphTest(Test):
 			t.attrib['fails'] = str(v["Fail"])
 			t.attrib['passes'] = str(v["Pass"])
 
-		return ("morph", etree.tostring(r))
+		try: out = etree.tostring(q, pretty_print=True)
+		except: out = etree.tostring(q)
+		return ("morph", out)
 
 	def to_string(self):
 		return self.out.getvalue().strip()
