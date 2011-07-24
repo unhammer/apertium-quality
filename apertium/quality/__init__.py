@@ -104,7 +104,7 @@ class Webpage(object):
 				"Overall average": avg
 			}
 			
-			stat_title_human, stat_cksum = cfg, rev['Checksum']
+			stat_title_human, stat_cksum = cfg, last
 			stat_title = self.space.sub('_', stat_title_human.lower())
 			general = self.generaldiv.render(stat_title=stat_title, stat_type=stat_type, gen_stats=gen_stats)
 			chrono = self.chronodiv.render(stat_title=stat_title, stat_type=stat_type, chrono_stats=rev)
@@ -388,7 +388,6 @@ class Statistics(object):
 				tsv = from_isoformat(rev.attrib['timestamp'])
 				
 				regressions[title][rev] = {
-					"Checksum": rev.attrib["checksum"],
 					"Timestamp": tsv,
 					"Percent": rev.find(self.ns + "percent").text,
 					"Total": rev.find(self.ns + "total").text,
