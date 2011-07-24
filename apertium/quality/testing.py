@@ -53,7 +53,9 @@ class Test(object):
 	def _svn_revision(self, directory):
 		"""Returns the SVN revision of the given dictionary directory"""
 		res = Popen('svnversion', stdout=PIPE).communicate()[0].decode('utf-8')
-		try: return int(res)
+		try:
+			int(res) 
+			return res
 		except:
 			UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
 	
