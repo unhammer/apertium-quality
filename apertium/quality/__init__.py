@@ -274,7 +274,7 @@ class Webpage(object):
 			x = list(reg.keys())
 			x.insert(0, 0)
 			
-			y = [[], [], [], []]
+			y = [[0], [0], [0], [0]]
 			
 			for rev, vals in reg.items():
 				y[0].append(vals['Percent'])
