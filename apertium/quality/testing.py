@@ -367,8 +367,10 @@ class CoverageTest(Test):
 		dct = kwargs.get('dct', dct)
 		if None in (f, dct):
 			raise TypeError("f or dct parameter missing.")
-			
+		
+		open(dct) # test existence
 		whereis([self.app])
+		
 		self.fn = f
 		self.f = open(f, 'r')
 		self.dct = dct

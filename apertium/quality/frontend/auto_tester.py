@@ -46,7 +46,10 @@ class AutoTest(object):
 		for t in files:
 			print(self._tab(t, 1))
 			test = testing.AmbiguityTest(t)
-			test.run()
+			try: test.run()
+			except:
+				print(self._tab("An error occurred.", 2))
+				continue
 			self.stats.add(*test.to_xml())
 	
 	def coverage(self):
@@ -63,7 +66,10 @@ class AutoTest(object):
 				for i in v:
 					print ("    :: %s" % i)
 					test = testing.CoverageTest(self._abspath('coverage', k, i), "%s.automorf.bin" % k)
-					test.run()
+					try: test.run()
+					except:
+						print(self._tab("An error occurred.", 2))
+						continue
 					self.stats.add(*test.to_xml())
 
 	def regression(self):
@@ -80,7 +86,10 @@ class AutoTest(object):
 				for i in v:
 					print (self._tab(i, 2))
 					test = testing.RegressionTest(self._abspath('regression', k, i), k, self.args['dictdir'])
-					test.run()
+					try: test.run()
+					except:
+						print(self._tab("An error occurred.", 3))
+						continue
 					self.stats.add(*test.to_xml())
 	
 	def morph(self):
@@ -90,7 +99,10 @@ class AutoTest(object):
 		for t in tests:
 			print(self._tab(t, 1))
 			test = testing.MorphTest(self._abspath('morph', t))
-			test.run()
+			try: test.run()
+			except: 
+				print(self._tab("An error occurred.", 2))
+				continue
 			self.stats.add(*test.to_xml())
 	
 	def webpage(self):
