@@ -244,7 +244,7 @@ class Webpage(object):
 		#def 
 		
 		out = []
-		regs = self.stats.get_regression()
+		regs = self.stats.get('regression')
 		
 		for title, reg in regs.items():
 			t = "%s\n%s" % (title, "Passes over time")
