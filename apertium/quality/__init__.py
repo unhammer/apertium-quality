@@ -89,6 +89,7 @@ class Webpage(object):
 		stat_type_title = "Regression Tests"
 		
 		for cfg, rev in data.items():
+			print(rev)
 			tsk = list(rev.keys())
 			first = tsk[0]
 			last = tsk[-1]
