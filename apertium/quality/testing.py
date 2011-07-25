@@ -52,7 +52,7 @@ class Test(object):
 	
 	def _svn_revision(self, directory):
 		"""Returns the SVN revision of the given dictionary directory"""
-		res = Popen('svnversion', stdout=PIPE).communicate()[0].decode('utf-8').strip()
+		res = Popen('svnversion', stdout=PIPE, close_fds=True).communicate()[0].decode('utf-8').strip()
 		try:
 			int(res) 
 			return res
