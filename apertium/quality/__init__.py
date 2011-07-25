@@ -523,137 +523,122 @@ class Statistics(object):
 
 css = """
 * {
-  border: 0;
+  margin: 0;
   padding: 0; }
 
+html {
+  overflow-y: scroll; }
+
 body {
-  background-color: #777777; }
+  background-color: #585858; }
 
-div {
-  border: 1px solid black;
-  margin: 12px; }
+a {
+  color: #4183c4;
+  text-decoration: none; }
 
-h1, h2 {
-  margin: 0;
-  padding: 0;
-  padding-left: 12px;
-  font-variant: small-caps; }
+a:hover {
+  text-decoration: underline; }
 
-h1 {
-  padding-top: 8px; }
+a:active {
+  outline: none; }
 
-table {
-  border-collapse: collapse; }
-
-/*table, th, td {
-	border: 1px solid black;
-}*/
-div#container {
-  padding: 0;
-  margin: 0 auto;
-  width: 100%; }
-
-div#header {
-  margin-top: 12px;
-  margin-bottom: 12px;
-  margin-left: 6px;
-  margin-right: 6px;
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -webkit-border-radius: 7px;
-  background-color: white; }
-  div#header h1 {
-    margin-top: 6px; }
-
-div#footer {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  color: black;
+#container {
+  width: 800px;
   text-align: center;
-  font-size: 9pt; }
+  margin: 0 auto; }
 
-div.s-container {
-  background-color: white;
-  border: 1px solid black;
-  margin-top: 12px;
-  margin-bottom: 12px;
-  margin-left: 6px;
-  margin-right: 6px;
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -webkit-border-radius: 7px;
-  clear: both; }
-  div.s-container div.s-stats {
-    margin: 0;
-    padding: 0;
-    border: 0; }
-    div.s-container div.s-stats h1 {
-      border-top: 1px dotted black;
-      font-size: 16pt;
-      padding-left: 16px;
-      text-decoration: none; }
-    div.s-container div.s-stats h2 {
-      font-size: 8pt;
-      padding-left: 16px; }
-    div.s-container div.s-stats hr {
-      clear: both;
-      border: 0;
-      margin: 0;
-      padding: 0; }
-    div.s-container div.s-stats div.s-imgs {
-      margin-top: 12px;
-      margin-bottom: 12px;
-      margin-left: 6px;
-      margin-right: 6px;
-      border-radius: 7px;
-      -moz-border-radius: 7px;
-      -webkit-border-radius: 7px; }
-      div.s-container div.s-stats div.s-imgs img {
-        width: 267px;
-        height: 200px;
-        border: 1px solid black;
-        margin: 12px; }
-    div.s-container div.s-stats div.s-data {
-      margin-top: 12px;
-      margin-bottom: 12px;
-      margin-left: 6px;
-      margin-right: 6px;
-      border-radius: 7px;
-      -moz-border-radius: 7px;
-      -webkit-border-radius: 7px; }
-      div.s-container div.s-stats div.s-data h1 {
-        font-size: 14pt;
-        border: 0; }
-      div.s-container div.s-stats div.s-data div.s-general {
-        /*float: left;
-        margin-right: 0;
-        width: 47.75%;*/ }
-        div.s-container div.s-stats div.s-data div.s-general table {
-          margin: 12px; }
-          div.s-container div.s-stats div.s-data div.s-general table tr td {
-            padding-left: 6px;
-            padding-right: 6px;
-            text-align: right; }
-          div.s-container div.s-stats div.s-data div.s-general table tr td:nth-child(2) {
-            text-align: left; }
-      div.s-container div.s-stats div.s-data div.s-chrono {
-        /*float: right;
-        margin-left: 0;
-        width: 47.75%;*/ }
-        div.s-container div.s-stats div.s-data div.s-chrono ul li {
-          margin-left: 24px; }
-          div.s-container div.s-stats div.s-data div.s-chrono ul li div {
-            margin-left: -12px;
-            padding: 6px; }
-            div.s-container div.s-stats div.s-data div.s-chrono ul li div table {
-              margin: 12px; }
-              div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td {
-                padding-left: 6px;
-                padding-right: 6px;
-                text-align: right; }
-              div.s-container div.s-stats div.s-data div.s-chrono ul li div table tr td:nth-child(2) {
-                text-align: left; }
+div.minimal {
+  font-family: sans-serif;
+  text-align: justify;
+  font-size: 10pt;
+  background-color: #f8f8f8;
+  border: 1px solid #e9e9e9;
+  padding: 1.2em; }
+  div.minimal p.info {
+    margin: 0 0 15px 0;
+    padding: 10px;
+    padding-left: 40px;
+    font-size: 12px;
+    color: #333;
+    background: #fbfff4;
+    background-image: url("info.png");
+    background-position: 8px 45%;
+    background-repeat: no-repeat;
+    border: 1px solid #dddddd; }
+  div.minimal p.warning {
+    margin: 0 0 15px 0;
+    padding: 10px;
+    padding-left: 40px;
+    font-size: 12px;
+    color: #333;
+    background: #fff4fb;
+    background-image: url("warning.png");
+    background-position: 8px 45%;
+    background-repeat: no-repeat;
+    border: 1px solid #dddddd;
+    font-weight: bold; }
+  div.minimal h1 {
+    font-size: 170%;
+    border-top: 4px solid #999999;
+    padding-top: 0.5em; }
+  div.minimal h2 {
+    font-size: 150%;
+    margin-top: 1.5em;
+    margin-bottom: 15px;
+    border-top: 4px solid #dddddd;
+    padding-top: 0.5em; }
+  div.minimal h3 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid #dddddd; }
+  div.minimal h4, div.minimal h5, div.minimal h6 {
+    margin-top: 0.4em; }
+  div.minimal p {
+    margin: 1em 0;
+    line-height: 1.5em; }
+  div.minimal ul {
+    margin: 1em 0 1em 1em; }
+  div.minimal ol {
+    margin: 1em 0 1em 1.5em; }
+  div.minimal blockquote {
+    margin: 1em 0;
+    border-left: 5px solid #dddddd;
+    padding-left: 0.6em;
+    color: #555; }
+  div.minimal table {
+    margin: 1em 0; }
+    div.minimal table th {
+      border-bottom: 1px solid #999999;
+      padding: 0.2em 1em; }
+    div.minimal table td {
+      border-bottom: 1px solid #dddddd;
+      padding: 0.2em 1em; }
+  div.minimal pre {
+    font-family: "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
+    font-size: 90%;
+    background-color: #f8f8ff;
+    color: #444;
+    padding: 0 0.5em;
+    border: 1px solid #dedede;
+    overflow-x: scroll;
+    margin: 1em 0;
+    line-height: 1.5em; }
+  div.minimal code {
+    font-family: "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Menlo", monospace;
+    font-size: 90%;
+    background-color: #f8f8ff;
+    color: #444;
+    padding: 0 0.2em;
+    border: 1px solid #dedede; }
+  div.minimal pre.console {
+    margin: 1em 0;
+    font-size: 90%;
+    background-color: #333333;
+    padding: 0.5em;
+    line-height: 1.5em;
+    color: #999999; }
+    div.minimal pre.console span.command {
+      color: #dddddd; }
 """
 
 js = """function toggle(id)
@@ -689,6 +674,7 @@ base = """<!DOCTYPE html>
 </head>
 
 <body>
+<div id="container" class="minimal">
 
 <div id="header">
 	<h1>${dirname}</h1>
@@ -703,7 +689,9 @@ ${div}
 	${footer}
 </div>
 
+</div>
 </body>
+</html>
 """
 
 statblock = """
