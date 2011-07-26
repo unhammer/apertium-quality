@@ -670,16 +670,17 @@ js = """function init() {
 				if(this.values.hasOwnProperty(key)) {
 					var li = $("<li>"+key+"</li>");
 					li.attr('onclick', 'window.titleList.set_title("'+key+'")');
-					dropdown.append(li);
+					this.dropdown.append(li);
 				}
 			}
-			$(node).append(dropdown);
+			$(this.dropdown_id).replaceWith(this.dropdown);
 		}
 		
 		this.set_title = function(key) {
 			$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
 			show('#'+this.values[key]);
 		}
+		
 		this.init_dropdown();
 		this.set_title((function() { for (var i in this.values) { return i } })());
 	}($("div.container > h1"));
