@@ -684,8 +684,8 @@ function create_dropdown(node, dict) {
 
 	for(var key in dict) {
 		if(dict.hasOwnProperty(key)) {
-			var li = $("<li />");
-			li.attr('onclick', 'toggle('+dict[key]+')');
+			var li = $("<li>"+key+"</li>");
+			li.attr('onclick', 'toggle("#'+dict[key]+'")');
 			dropdown.append(li);
 		}
 	}
