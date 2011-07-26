@@ -690,7 +690,7 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	this.set_title = function(key) {
 		$(this.dropdown_id + " > li").removeClass("selected");
 		$("#"+this.values[key]+"-ddl").addClass("selected");
-		$(this.header_id + "> h2").replaceWith("<h2 class="dropdown">"+key+"</h2>");
+		$(this.header_id + "> h2").replaceWith("<h2 class='dropdown'>"+key+"</h2>");
 		hide(".container");
 		show('#'+this.values[key]);
 	}
