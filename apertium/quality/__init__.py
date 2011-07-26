@@ -556,7 +556,11 @@ a:active {
 }
 
 .dropdown:hover {
-	background-color: #EEFFEE;	
+	background-color: #CCC;	
+}
+
+#dropdown li:hover {
+	background-color: #CCC;
 }
 
 #container {
@@ -662,8 +666,8 @@ js = """var debug = true;
 var titleList = null;
 
 function TitleList (heading_jq, dropdown_id, header_id) {
-	this.dropdown_id = dropdown_id || "#dropdown";
-	this.header_id = header_id || "#header";
+	this.dropdown_id = dropdown_id || "dropdown";
+	this.header_id = header_id || "header";
 	this.values = new Object;
 
 	var heading = heading_jq;
@@ -673,6 +677,12 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	}
 	
 	this.init_dropdown = function() {
+		$("#"+this.dropdown_id).parent().hover(function() {
+			$("#"+this.dropdown_id).removeClass("hidden");
+		}, function() {
+			$("#"+this.dropdown_id).addClass("hidden");
+		});
+		
 		this.dropdown = $("<ul />");
 		this.dropdown.attr('id', this.dropdown_id);
 
@@ -684,13 +694,13 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 				this.dropdown.append(li);
 			}
 		}
-		$(this.dropdown_id).replaceWith(this.dropdown);
+		$("#"+this.dropdown_id).replaceWith(this.dropdown);
 	}
 	
 	this.set_title = function(key) {
-		$(this.dropdown_id + " > li").removeClass("selected");
+		$("#"+this.dropdown_id+" > li").removeClass("selected");
 		$("#"+this.values[key]+"-ddl").addClass("selected");
-		$(this.header_id + "> h2").replaceWith("<h2 class='dropdown'>"+key+"</h2>");
+		$("#"+this.header_id+" > h2").replaceWith("<h2 class='dropdown'>"+key+"</h2>");
 		hide(".container");
 		show('#'+this.values[key]);
 	}
