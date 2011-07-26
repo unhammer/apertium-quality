@@ -776,7 +776,7 @@ base = """<!DOCTYPE html>
 
 statblock = """
 <div id="${stat_type}" class="container">
-	<!-- <h1>${stat_type_title}</h1> -->
+	<h1 class="hidden">${stat_type_title}</h1>
 	
 	% for div in divs:
 	${div}
