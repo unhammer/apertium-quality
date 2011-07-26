@@ -671,9 +671,10 @@ function toggle(q, cls) {
 
 function find_titles() {
 	var titles = new Object;
-	var query = $('div.container > h1');
-	for(var i = 0; i < query.length; ++i) {
-		titles[query[i].textContent] = query[i].parent()[0].id;
+	var heading = $('div.container > h1');
+	var parent = heading.parent();
+	for(var i = 0; i < heading.length; ++i) {
+		titles[heading[i].textContent] = parent[i].id;
 	}
 	return titles;
 }
