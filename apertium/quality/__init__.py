@@ -1,9 +1,16 @@
-try:
+from collections import defaultdict, OrderedDict
+import re, os, json
+pjoin = os.path.join
+from io import StringIO
+from textwrap import dedent
+from datetime import datetime
+
+'''try:
 	import matplotlib
 	matplotlib.use('Agg') # stops it from using X11 and breaking
 	import matplotlib.pyplot as plt
 except:
-	matplotlib = None
+	matplotlib = None'''
 
 try:
 	from mako.template import Template
@@ -19,13 +26,8 @@ except:
 	import xml.etree.ElementTree as etree
 	from xml.etree.ElementTree import Element, SubElement
 
-from collections import defaultdict, OrderedDict
-import re, os
-pjoin = os.path.join
-from io import StringIO
-from textwrap import dedent
 
-from datetime import datetime
+
 
 class ParseError(Exception):
 	pass
@@ -33,14 +35,16 @@ class ParseError(Exception):
 def from_isoformat(t):
 	return datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
 
+def iso_to_human(t):
+	datetime.strftime(t, "%Y-%m-%d %H:%M (UTC)")
 
 class Webpage(object):
 	#ns = "{http://www.w3.org/1999/xhtml}"
 	space = re.compile('[ /:\n]')
 	
 	def __init__(self, stats, fdir, title):
-		if not matplotlib:
-			raise ImportError("matplotlib not installed.")
+		#if not matplotlib:
+		#	raise ImportError("matplotlib not installed.")
 		if not Template or not TemplateLookup:
 			raise ImportError("mako not installed.")
 		
@@ -60,6 +64,7 @@ class Webpage(object):
 
 	def generate(self):
 		footer = "Generated: %s" % datetime.utcnow().strftime("%Y-%m-%d %H:%M (UTC)")
+		
 		divs = []
 		divs.append(self.generate_regressions())
 		divs.append(self.generate_coverages())
@@ -542,6 +547,10 @@ a:hover {
 a:active {
   outline: none; }
 
+.hidden {
+	display: none;
+}
+
 #container {
   width: 800px;
   text-align: center;
@@ -641,24 +650,45 @@ div.minimal {
       color: #dddddd; }
 """
 
-js = """function toggle(id)
-{
-	var div = document.getElementById(id);
-	
-	if (div.style.display == 'block') {
-		div.style.display = 'none';
-	}
-	else {
-		div.style.display = 'block';
-	}
+js = """function init() {
+	hide(".container")
+	var titles = find_titles();
+	create_dropdown("#dropdown", titles);
+};
+
+function hide(q) {
+	$(q).addClass("hidden");
 }
 
-function init() 
-{
-	var cdivs = document.getElementsByClassName("cdiv");
-	for (var i = 0; i < cdivs.length; ++i) {
-		cdivs[i].style.display = "none";
+function show(q) {
+	$(q).removeClass("hidden");
+}
+
+function toggle(q, cls) {
+	var c = cls || "hidden";
+	$(q).toggleClass(c);
+}
+
+function find_titles() {
+	var titles = new Object;
+	var query = $('div.container > h1');
+	for(var i = 0; i < query.length; ++i) {
+		titles[query[i].textContent] = query[i].parent()[0].id;
 	}
+	return titles;
+}
+
+function create_dropdown(node, dict) {
+	var dropdown = $("<ul />");
+
+	for(var key in dict) {
+		if(dict.hasOwnProperty(key)) {
+			var li = $("<li />");
+			li.attr('onclick', 'toggle('+dict[key]+')');
+			dropdown.append(li);
+		}
+	}
+	$(node).append(dropdown);
 }
 
 window.addEventListener("load", init, false);
@@ -677,13 +707,16 @@ base = """<!DOCTYPE html>
 <div id="container" class="minimal">
 
 <div id="header">
-	<h1>${dirname}</h1>
+	<h1>Statistics &mdash; ${dirname}</h1>
+	<h2></h2>
+	<span id="dropdown"></span>
 </div>
 
-<!-- divs gonna div -->
-% for div in divs:
-${div}
-% endfor
+<div id="main">
+	% for div in divs:
+	${div}
+	% endfor
+</div>
 
 <div id="footer">
 	${footer}
@@ -695,7 +728,7 @@ ${div}
 """
 
 statblock = """
-<div id="${stat_type}" class="s-container">
+<div id="${stat_type}" class="container">
 	<h1>${stat_type_title}</h1>
 	
 	% for div in divs:
@@ -705,16 +738,16 @@ statblock = """
 """
 
 statdiv = """
-	<div id="${stat_type}-${stat_title}" class="s-stats">
+	<div id="${stat_type}-${stat_title}" class="stats">
 		<h1>${stat_title_human}</h1>
 		<h2>${stat_cksum}</h2>
-		<div id="${stat_type}-${stat_title}-imgs" class="s-imgs">
+		<div id="${stat_type}-${stat_title}-imgs" class="imgs">
 			% for src in images:
 			<a href="${src}"><img src="${src}" /></a>
 			% endfor
 		</div>
 	
-		<div id="${stat_type}-${stat_title}-data" class="s-data">
+		<div id="${stat_type}-${stat_title}-data" class="data">
 
 			${general}
 			
@@ -726,7 +759,7 @@ statdiv = """
 """
 
 generaldiv = """
-			<div id="${stat_type}-${stat_title}-general" class="s-general">
+			<div id="${stat_type}-${stat_title}-general" class="general">
 				<h1>General Statistics</h1>
 				<table>
 				% for left, right in gen_stats.items():
@@ -740,13 +773,13 @@ generaldiv = """
 """
 
 chronodiv = """
-			<div id="${stat_type}-${stat_title}-chrono" class="s-chrono">
+			<div id="${stat_type}-${stat_title}-chrono" class="chrono">
 				<h1>Chronological Statistics</h1>
 				<ul>
 				% for c, date in enumerate(reversed(list(chrono_stats.keys()))):
 					<li>
 						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
-						<div class="cdiv" id="${stat_type}-${stat_title}-chrono-${c}-div">
+						<div class="hidden" id="${stat_type}-${stat_title}-chrono-${c}-div">
 							<table>
 							% for k, v in chrono_stats[date].items():
 								<% 
