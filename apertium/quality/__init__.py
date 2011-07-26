@@ -650,11 +650,9 @@ div.minimal {
       color: #dddddd; }
 """
 
-js = """var titleList;
-
-function init() {
+js = """function init() {
 	hide(".container")
-	titleList = (function (heading_jq, dropdown_id, header_id){
+	var titleList = (function (heading_jq, dropdown_id, header_id){
 		this.dropdown_id = dropdown_id || "#dropdown";
 		this.header_id = header_id || "#header";
 		this.values = new Object;
