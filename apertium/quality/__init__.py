@@ -753,7 +753,7 @@ base = """<!DOCTYPE html>
 
 <div id="header">
 	<h1>Statistics &mdash; ${dirname}</h1>
-	<h2></h2>
+	<h2 class="dropdown"></h2>
 	<div id="ddl-container">
 		<ul id="dropdown"></ul>
 	</div>
