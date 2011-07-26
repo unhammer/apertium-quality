@@ -650,9 +650,11 @@ div.minimal {
       color: #dddddd; }
 """
 
-js = """function init() {
+js = """var titleList;
+
+function init() {
 	hide(".container")
-	window.titleList = function TitleList (heading_jq, dropdown_id, header_id){
+	titleList = (function TitleList (heading_jq, dropdown_id, header_id){
 		this.dropdown_id = dropdown_id || "#dropdown";
 		this.header_id = header_id || "#header";
 		this.values = new Object;
@@ -669,7 +671,7 @@ js = """function init() {
 			for(var key in this.values) {
 				if(this.values.hasOwnProperty(key)) {
 					var li = $("<li>"+key+"</li>");
-					li.attr('onclick', 'window.titleList.set_title("'+key+'")');
+					li.attr('onclick', 'titleList.set_title("'+key+'")');
 					this.dropdown.append(li);
 				}
 			}
@@ -683,8 +685,8 @@ js = """function init() {
 		
 		this.init_dropdown();
 		this.set_title((function() { for (var i in this.values) { return i } })());
-	}($("div.container > h1"));
-};
+	})($("div.container > h1"));
+}
 
 function hide(q) {
 	$(q).addClass("hidden");
