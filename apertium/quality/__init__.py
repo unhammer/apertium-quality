@@ -667,7 +667,7 @@ js = """function init() {
 			this.dropdown = $("<ul />");
 	
 			for(var key in this.values) {
-				if(dict.hasOwnProperty(key)) {
+				if(this.values.hasOwnProperty(key)) {
 					var li = $("<li>"+key+"</li>");
 					li.attr('onclick', 'window.titleList.set_title("'+key+'")');
 					dropdown.append(li);
