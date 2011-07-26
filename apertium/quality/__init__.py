@@ -677,12 +677,6 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	}
 	
 	this.init_dropdown = function() {
-		$("#"+this.dropdown_id).parent().hover(function() {
-			$("#"+this.dropdown_id).removeClass("hidden");
-		}, function() {
-			$("#"+this.dropdown_id).addClass("hidden");
-		});
-		
 		this.dropdown = $("<ul />");
 		this.dropdown.attr('id', this.dropdown_id);
 
@@ -700,7 +694,11 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	this.set_title = function(key) {
 		$("#"+this.dropdown_id+" > li").removeClass("selected");
 		$("#"+this.values[key]+"-ddl").addClass("selected");
-		$("#"+this.header_id+" > h2").replaceWith("<h2 class='dropdown'>"+key+"</h2>");
+		
+		var heading = $("<h2 class='dropdown'>"+key+"</h2>");
+		heading.attr('onclick', 'toggle('+this.dropdown_id+')');
+		$("#"+this.header_id+" > h2").replaceWith(heading);
+		
 		hide(".container");
 		show('#'+this.values[key]);
 	}
