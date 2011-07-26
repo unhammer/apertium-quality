@@ -679,11 +679,16 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	
 	this.set_title = function(key) {
 		$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
-		show('#'+this.values[key]);
+		toggle('#'+this.values[key]);
 	}
 	
+	this.first_key = function() {
+		for (var i in this.values) { 
+			return i;
+		}
+	}
 	this.init_dropdown();
-	this.set_title((function() { for (var i in this.values) { return i } })());
+	this.set_title(this.first_key());
 }
 
 function init() {
