@@ -650,42 +650,45 @@ div.minimal {
       color: #dddddd; }
 """
 
-js = """function init() {
-	hide(".container")
-	var titleList = (function (heading_jq, dropdown_id, header_id){
-		this.dropdown_id = dropdown_id || "#dropdown";
-		this.header_id = header_id || "#header";
-		this.values = new Object;
+js = """var debug = true;
+var titleList = null;
+
+function TitleList (heading_jq, dropdown_id, header_id) {
+	this.dropdown_id = dropdown_id || "#dropdown";
+	this.header_id = header_id || "#header";
+	this.values = new Object;
+
+	var heading = heading_jq;
+	var parent = heading.parent();
+	for(var i = 0; i < heading.length; ++i) {
+		this.values[heading[i].textContent] = parent[i].id;
+	}
 	
-		var heading = heading_jq;
-		var parent = heading.parent();
-		for(var i = 0; i < heading.length; ++i) {
-			this.values[heading[i].textContent] = parent[i].id;
-		}
-		
-		this.init_dropdown = function() {
-			this.dropdown = $("<ul />");
-	
-			for(var key in this.values) {
-				if(this.values.hasOwnProperty(key)) {
-					var li = $("<li>"+key+"</li>");
-					li.attr('onclick', 'titleList.set_title("'+key+'")');
-					this.dropdown.append(li);
-				}
+	this.init_dropdown = function() {
+		this.dropdown = $("<ul />");
+
+		for(var key in this.values) {
+			if(this.values.hasOwnProperty(key)) {
+				var li = $("<li>"+key+"</li>");
+				li.attr('onclick', 'titleList.set_title("'+key+'")');
+				this.dropdown.append(li);
 			}
-			$(this.dropdown_id).replaceWith(this.dropdown);
 		}
-		
-		this.set_title = function(key) {
-			$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
-			show('#'+this.values[key]);
-		}
-		
-		this.init_dropdown();
-		this.set_title((function() { for (var i in this.values) { return i } })());
-		
-		return this;
-	})($("div.container > h1"));
+		$(this.dropdown_id).replaceWith(this.dropdown);
+	}
+	
+	this.set_title = function(key) {
+		$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
+		show('#'+this.values[key]);
+	}
+	
+	this.init_dropdown();
+	this.set_title((function() { for (var i in this.values) { return i } })());
+}
+
+function init() {
+	hide(".container")
+	titleList = new TitleList($("div.container > h1"));
 }
 
 function hide(q) {
@@ -789,7 +792,7 @@ chronodiv = """
 				<ul>
 				% for c, date in enumerate(reversed(list(chrono_stats.keys()))):
 					<li>
-						<a href="javascript:toggle('${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
+						<a href="javascript:toggle('#${stat_type}-${stat_title}-chrono-${c}-div')">${date}</a>
 						<div class="hidden" id="${stat_type}-${stat_title}-chrono-${c}-div">
 							<table>
 							% for k, v in chrono_stats[date].items():
