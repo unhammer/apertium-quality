@@ -652,8 +652,37 @@ div.minimal {
 
 js = """function init() {
 	hide(".container")
-	var titles = find_titles();
-	create_dropdown("#dropdown", titles);
+	window.titleList = function TitleList (heading_jq, dropdown_id, header_id){
+		this.dropdown_id = dropdown_id || "#dropdown";
+		this.header_id = header_id || "#header";
+		this.values = new Object;
+	
+		var heading = heading_jq;
+		var parent = heading.parent();
+		for(var i = 0; i < heading.length; ++i) {
+			this.values[heading[i].textContent] = parent[i].id;
+		}
+		
+		this.init_dropdown = function() {
+			this.dropdown = $("<ul />");
+	
+			for(var key in this.values) {
+				if(dict.hasOwnProperty(key)) {
+					var li = $("<li>"+key+"</li>");
+					li.attr('onclick', 'window.titleList.set_title("'+key+'")');
+					dropdown.append(li);
+				}
+			}
+			$(node).append(dropdown);
+		}
+		
+		this.set_title = function(key) {
+			$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
+			show('#'+this.values[key]);
+		}
+		this.init_dropdown();
+		this.set_title((function() { for (var i in this.values) { return i } })());
+	}($("div.container > h1"));
 };
 
 function hide(q) {
@@ -667,29 +696,6 @@ function show(q) {
 function toggle(q, cls) {
 	var c = cls || "hidden";
 	$(q).toggleClass(c);
-}
-
-function find_titles() {
-	var titles = new Object;
-	var heading = $('div.container > h1');
-	var parent = heading.parent();
-	for(var i = 0; i < heading.length; ++i) {
-		titles[heading[i].textContent] = parent[i].id;
-	}
-	return titles;
-}
-
-function create_dropdown(node, dict) {
-	var dropdown = $("<ul />");
-
-	for(var key in dict) {
-		if(dict.hasOwnProperty(key)) {
-			var li = $("<li>"+key+"</li>");
-			li.attr('onclick', 'toggle("#'+dict[key]+'")');
-			dropdown.append(li);
-		}
-	}
-	$(node).append(dropdown);
 }
 
 window.addEventListener("load", init, false);
