@@ -684,6 +684,7 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	this.init_dropdown = function() {
 		this.dropdown = $("<ul />");
 		this.dropdown.attr('id', this.dropdown_id);
+		this.dropdown.addClass('hidden');
 
 		for(var key in this.values) {
 			if(this.values.hasOwnProperty(key)) {
@@ -754,7 +755,7 @@ base = """<!DOCTYPE html>
 	<h1>Statistics &mdash; ${dirname}</h1>
 	<h2></h2>
 	<div id="ddl-container">
-		<ul id="dropdown" class="hidden"></ul>
+		<ul id="dropdown"></ul>
 	</div>
 </div>
 
