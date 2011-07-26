@@ -654,7 +654,7 @@ js = """var titleList;
 
 function init() {
 	hide(".container")
-	titleList = (function TitleList (heading_jq, dropdown_id, header_id){
+	titleList = (function (heading_jq, dropdown_id, header_id){
 		this.dropdown_id = dropdown_id || "#dropdown";
 		this.header_id = header_id || "#header";
 		this.values = new Object;
