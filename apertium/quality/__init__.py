@@ -683,6 +683,8 @@ js = """function init() {
 		
 		this.init_dropdown();
 		this.set_title((function() { for (var i in this.values) { return i } })());
+		
+		return this;
 	})($("div.container > h1"));
 }
 
