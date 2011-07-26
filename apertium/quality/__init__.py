@@ -551,6 +551,14 @@ a:active {
 	display: none;
 }
 
+.selected {
+	background-color: #EEFFEE;
+}
+
+.dropdown:hover {
+	background-color: #EEFFEE;	
+}
+
 #container {
   width: 800px;
   text-align: center;
@@ -666,10 +674,12 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	
 	this.init_dropdown = function() {
 		this.dropdown = $("<ul />");
+		this.dropdown.attr('id', this.dropdown_id);
 
 		for(var key in this.values) {
 			if(this.values.hasOwnProperty(key)) {
 				var li = $("<li>"+key+"</li>");
+				li.attr('id', this.values[key]+"-ddl");
 				li.attr('onclick', 'titleList.set_title("'+key+'")');
 				this.dropdown.append(li);
 			}
@@ -678,8 +688,11 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 	}
 	
 	this.set_title = function(key) {
-		$(this.header_id + "> h2").replaceWith("<h2>"+key+"</h2>");
-		toggle('#'+this.values[key]);
+		$(this.dropdown_id + " > li").removeClass("selected");
+		$("#"+this.values[key]+"-ddl").addClass("selected");
+		$(this.header_id + "> h2").replaceWith("<h2 class="dropdown">"+key+"</h2>");
+		hide(".container");
+		show('#'+this.values[key]);
 	}
 	
 	this.first_key = function() {
@@ -692,7 +705,6 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 }
 
 function init() {
-	hide(".container")
 	titleList = new TitleList($("div.container > h1"));
 }
 
