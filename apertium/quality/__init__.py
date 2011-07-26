@@ -555,6 +555,10 @@ a:active {
 	background-color: #EEFFEE;
 }
 
+#dropdown {
+	width: 200px;
+}
+
 .dropdown:hover {
 	background-color: #CCC;	
 }
@@ -696,7 +700,7 @@ function TitleList (heading_jq, dropdown_id, header_id) {
 		$("#"+this.values[key]+"-ddl").addClass("selected");
 		
 		var heading = $("<h2 class='dropdown'>"+key+"</h2>");
-		heading.attr('onclick', 'toggle('+this.dropdown_id+')');
+		heading.attr('onclick', 'toggle(#'+this.dropdown_id+')');
 		$("#"+this.header_id+" > h2").replaceWith(heading);
 		
 		hide(".container");
