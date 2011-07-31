@@ -502,10 +502,11 @@ class VocabularyTest(Test):
 		cmd = """lt-expand {dix} |\
         awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' |\
                               tee {f0} |\
-        transfer            | tee {f1} |\
+        {transfer}          | tee {f1} |\
         lt-proc -d {bin}  >     {f2}""".format(
 			dix=self.anadix,
 			bin=self.genbin,
+			transfer=self.transfer_cmd,
 			alph=self.alphabet,
 			f0=self.tmp[0].name,
 			f1=self.tmp[1].name,
