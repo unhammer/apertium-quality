@@ -499,11 +499,7 @@ class VocabularyTest(Test):
 		
 	def run(self):
 		#TODO: pythonise the awk command
-		cmd = r"""lt-expand {dix} |\
-        awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' |\
-                              tee {f0} |\
-        {transfer}          | tee {f1} |\
-        lt-proc -d {bin}  >     {f2}""".format(
+		cmd = r"""lt-expand {dix} | awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' | tee {f0} | {transfer} | tee {f1} | lt-proc -d {bin} > {f2}""".format(
 			dix=self.anadix,
 			bin=self.genbin,
 			transfer=self.transfer_cmd,
@@ -512,7 +508,7 @@ class VocabularyTest(Test):
 			f1=self.tmp[1].name,
 			f2=self.tmp[2].name
 		)
-		
+		print(self.alphabet)
 		print(self.tmp)
 		for i in range(3):
 			self.tmp[i] = open(self.tmp[i].name, 'r')
@@ -533,7 +529,7 @@ class VocabularyTest(Test):
 		# TODO: allow saving this
 		for i in self.tmp:
 			i.close()
-			os.unlink(i.name)
+			#os.unlink(i.name)
 	
 	def to_xml(self):
 		return NotImplemented
