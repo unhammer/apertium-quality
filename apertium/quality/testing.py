@@ -485,7 +485,6 @@ class VocabularyTest(Test):
 		self.lang1 = lang1
 		self.lang2 = lang2
 		
-		self.out = StringIO()
 		self.tmp = []
 		for i in range(3):
 			self.tmp.append(NamedTemporaryFile(delete=False))
@@ -508,29 +507,25 @@ class VocabularyTest(Test):
 			f1=self.tmp[1].name,
 			f2=self.tmp[2].name
 		)
-		print(self.alphabet)
-		print(self.tmp)
+
 		for i in range(3):
 			self.tmp[i] = open(self.tmp[i].name, 'r')
-		print(self.tmp)
+
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 		res, err = p.communicate()
-		print(res)
-		print(err)
 		
-		out = StringIO()
+		self.out = StringIO()
 		arrow_output = "'{:<24} {A} {:<24} {A} {:<24}\n"
 		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
-			print(a,b,c)
 			for i in (a,b,c):
 				i = regex.sub("", i)
-			out.write(arrow_output.format(a, b, c, A=ARROW))
+			self.out.write(arrow_output.format(a, b, c, A=ARROW))
 		
 		# TODO: allow saving this
 		for i in self.tmp:
 			i.close()
-			#os.unlink(i.name)
+			os.unlink(i.name)
 	
 	def to_xml(self):
 		return NotImplemented
