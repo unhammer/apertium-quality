@@ -514,7 +514,7 @@ class VocabularyTest(Test):
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 		res, err = p.communicate()
 		
-		self.out = NamedTemporaryFile(delete=False)
+		self.out = NamedTemporaryFile(mode="w+", delete=False)
 		arrow_output = "'{:<24} {A} {:<24} {A} {:<24}\n"
 		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
