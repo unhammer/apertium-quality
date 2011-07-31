@@ -522,6 +522,7 @@ class VocabularyTest(Test):
 		out = StringIO()
 		arrow_output = "'{:<24} {a} {:<24} {a} {:<24}\n"
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
+			print(a, b, c)
 			out.write(arrow_output.format(a, b, c, ARROW))
 		
 		# TODO: allow saving this
