@@ -518,6 +518,8 @@ class VocabularyTest(Test):
 		print(self.tmp)
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 		res, err = p.communicate()
+		print(res)
+		print(err)
 		
 		out = StringIO()
 		arrow_output = "'{:<24} {a} {:<24} {a} {:<24}\n"
