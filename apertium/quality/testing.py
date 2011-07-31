@@ -472,7 +472,7 @@ class CoverageTest(Test):
 		return out.getvalue().strip()
 
 
-class VocabularyTest(object):
+class VocabularyTest(Test):
 	def __init__(self, lang1, lang2, fdir="."):
 		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
 		
