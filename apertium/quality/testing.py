@@ -512,9 +512,10 @@ class VocabularyTest(Test):
 			f2=self.tmp[2].name
 		)
 		
+		print(self.tmp)
 		for i in range(2):
 			self.tmp[i] = open(self.tmp[i].name, 'r')
-
+		print(self.tmp)
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 		res, err = p.communicate()
 		
