@@ -33,6 +33,7 @@ setup(
 	aq-morftest = apertium.quality.frontend.morph_tester:main
 	aq-covtest = apertium.quality.frontend.coverage_tester:main
 	aq-regtest = apertium.quality.frontend.regression_tester:main
+	aq-voctest = apertium.quality.frontend.vocabulary_tester:main
 	aq-gentest = apertium.quality.frontend.generation_tester:main
 	aq-ambtest = apertium.quality.frontend.ambiguity_tester:main
 	aq-htmlgen = apertium.quality.frontend.website_generator:main

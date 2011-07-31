@@ -83,10 +83,20 @@ class Dictionary(object):
 
 	def __init__(self, f):
 		self.f = f
-		self.dix = open(get_dix(f), 'rb')
+		self.dix = open(get_dix(f), 'r')
 		self.lemmas = None
 		self.rules = None
-		
+		self.alphabet = None
+	
+	def get_alphabet(self):
+		if not self.alphabet:
+			for line in self.dix:
+				if "<alphabet>" in line:
+					self.alphabet = line.split("<alphabet>")[-1].split("</alphabet>")[0]
+					break
+			self.dix.seek(0)
+		return self.alphabet
+	
 	def get_entries(self):
 		if not self.lemmas:
 			parser = make_parser()

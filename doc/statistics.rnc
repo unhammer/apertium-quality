@@ -4,48 +4,48 @@ element statistics {
 	attribute type { "apertium" },
 	attribute version { "0.1" },
 	
-	element general {
+	( element general {
 		element dictionary {
 			attribute value { xsd:string },
 
 			element revision {
-				attribute value { xsd:positiveInteger },
+				attribute value { xsd:unsignedInt },
 				attribute timestamp { xsd:dateTime },
 			
-				element entries { xsd:positiveInteger },
-				element unique-entries { xsd:positiveInteger },
-				element rules { xsd:positiveInteger }
+				element entries { xsd:unsignedInt },
+				element unique-entries { xsd:unsignedInt },
+				element rules { xsd:unsignedInt }
 			}*
 		}* 
-	} &
+	}?
 
-	element regression {
+	& element regression {
 		element title {
 			attribute value { xsd:string },
-			attribute revision { xsd:positiveInteger },
+			attribute revision { xsd:unsignedInt },
 			
 			element revision {
-				attribute value { xsd:positiveInteger },
+				attribute value { xsd:unsignedInt },
 				attribute timestamp { xsd:dateTime },
 				
-				element percent { xsd:float },
-				element total { xsd:positiveInteger },
-				element passes { xsd:positiveInteger },
-				element fails { xsd:positiveInteger }
+				element percent { xsd:decimal },
+				element total { xsd:unsignedInt },
+				element passes { xsd:unsignedInt },
+				element fails { xsd:unsignedInt },
 
 				element system {
-					element speed { xsd:float }
-				}
+					element speed { xsd:decimal }
+				}?
 			}*
 		}*
-	} &
+	}?
 
-	element coverage {
+	& element coverage {
 		element dictionary {
 			attribute value { xsd:string },
 			
 			element revision {
-				attribute value { xsd:positiveInteger },
+				attribute value { xsd:unsignedInt },
 				attribute timestamp { xsd:dateTime },
 				attribute checksum { xsd:string },
 
@@ -53,48 +53,48 @@ element statistics {
 					attribute value { xsd:string },
 					attribute checksum { xsd:string }
 				},
-				element percent { xsd:float },
-				element total { xsd:positiveInteger },
-				element known { xsd:positiveInteger },
-				element unknown { xsd:positiveInteger },
+				element percent { xsd:decimal },
+				element total { xsd:unsignedInt },
+				element known { xsd:unsignedInt },
+				element unknown { xsd:unsignedInt },
 				element top {
 					element word {
 						xsd:string,
-						attribute count { xsd:positiveInteger }
+						attribute count { xsd:unsignedInt }
 					}*
 				},
 				element system {
-					element speed { xsd:float }
-				}
+					element speed { xsd:decimal }
+				}?
 			}*
 		}*
-	} &
+	}?
 
-	element ambiguity {
+	& element ambiguity {
 		element dictionary {
 			attribute value { xsd:string },
 
 			element revision {
-				attribute value { xsd:positiveInteger },
+				attribute value { xsd:unsignedInt },
 				attribute timestamp { xsd:dateTime },
 				attribute checksum { xsd:string },
 
 				element surface-forms { xsd:string },
 				element analyses { xsd:string },
-				element average { xsd:float },
+				element average { xsd:decimal },
 				element system {
-					element speed { xsd:float }
-				}
+					element speed { xsd:decimal }
+				}?
 			}*
 		}*
-	} &
+	}?
 
-	element morph {
+	& element morph {
 		element config {
 			attribute value { xsd:string },
 	
 			element revision {
-				attribute value { xsd:positiveInteger },
+				attribute value { xsd:unsignedInt },
 				attribute timestamp { xsd:dateTime },
 				attribute checksum { xsd:string },
 
@@ -106,21 +106,21 @@ element statistics {
 					attribute value { xsd:string },
 					attribute checksum { xsd:string }
 				},
-				element total { xsd:positiveInteger },
-				element passes { xsd:positiveInteger },
-				element fails { xsd:positiveInteger },
+				element total { xsd:unsignedInt },
+				element passes { xsd:unsignedInt },
+				element fails { xsd:unsignedInt },
 				element tests {
 					element test {
 						xsd:string,
-						attribute passes { xsd:positiveInteger },
-						attribute fails { xsd:positiveInteger }
+						attribute passes { xsd:unsignedInt },
+						attribute fails { xsd:unsignedInt }
 					}*
 				},
 				element system {
-					element speed { xsd:float }
-				}
+					element speed { xsd:decimal }
+				}?
 			}*
 		}*
-	}
+	}?)
 }
 

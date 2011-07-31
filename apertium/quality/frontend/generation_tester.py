@@ -5,7 +5,9 @@ class UI(Frontend, GenerationTest):
 	def __init__(self):
 		Frontend.__init__(self)
 		self.description = "Test generation."
-		self.add_argument("directory", nargs=1, help="Dictionary directory")
+		self.add_argument("-d", "--dict", dest="directory", nargs='?',
+			const=['.'], default=['.'],
+			help="Directory of dictionary (Default: current directory)")
 		self.add_argument("mode", nargs=1, help="Language mode (eg, br-fr)")
 		self.add_argument("corpus", nargs=1, help="Corpus text file")
 		self.args = self.parse_args()

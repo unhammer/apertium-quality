@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os.path, re, yaml
+import os, os.path, re, yaml
 from os.path import dirname
 pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
@@ -19,6 +19,7 @@ from subprocess import Popen, PIPE
 from io import StringIO
 from datetime import datetime
 from hashlib import sha1
+from tempfile import NamedTemporaryFile
 
 from apertium import whereis, destxt, retxt, Dictionary
 
@@ -471,53 +472,69 @@ class CoverageTest(Test):
 		return out.getvalue().strip()
 
 
-'''class VocabularyTest(object):
-	class DIXHandler(ContentHandler):
-		def __init__(self):
-			self.alph = None
+class VocabularyTest(object):
+	def __init__(self, lang1, lang2, fdir="."):
+		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
 		
-		def startElement(self, tag, attrs):
-			if tag == "alphabet":
-				self.tag == "alphabet"
-
-		def characters(self, ch):
-			if self.tag == "alphabet":
-				self.alph = ch.strip()
-
-	def get_alphabet(self, f):
-		parser = make_parser()
-		handler = self.DIXHandler()
-		parser.setContentHandler(handler)
-		parser.parse(f)
-		self.alph = hander.alph
-	
-	def __init__(self, lang1, lang2, transfer, fdir="."):
-		self.out = StringIO()
-		self.fdir = fdir
+		self.transfer_cmd = """apertium-pretransfer |\
+			 apertium-transfer \
+			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
+			 {0}/apertium-{1}-{2}.t1x.bin \
+			 {0}/apertium-{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
+		
 		self.lang1 = lang1
 		self.lang2 = lang2
-		self.transfer = transfer
-		self.prefix = prefix = "%s-%s" % (lang1, lang2)
-		self.basename = basename = "apertium-%s" % self.prefix
-
-		self.anadix = pjoin(fdir, "%s.%s.dix" % (basename, lang1))
-		self.genbin = pjoin(fdir, "%s.autogen.bin" % prefix)
-
-		self.get_alphabet(anadix)
-		self.delim = re.compile("[%s]:(>:)?[%s]" % (self.alph, self.alph))
-
-		#TODO whereis binaries
+		
+		self.out = StringIO()
+		self.tmp = []
+		for i in range(3):
+			self.tmp.append(NamedTemporaryFile(delete=False))
+			self.tmp[i].close()
+		
+		self.fdir = fdir
+		self.anadix = pjoin(fdir, "apertium-{0}-{1}.{0}.dix".format(lang1, lang2))
+		self.genbin = pjoin(fdir, "{0}-{1}.autogen.bin".format(lang1, lang2))
+		
+		self.alphabet = Dictionary(self.anadix).get_alphabet()
 		
 	def run(self):
-		p = Popen(['lt-expand', self.anadix], stdout=PIPE)
-		dixout = p.communicate()[0]
+		#TODO: pythonise the awk command
+		cmd = """lt-expand {dix} |\
+        awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN { gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }' |\
+                              tee {f0} |\
+        transfer            | tee {f1} |\
+        lt-proc -d {bin}  >     {f2}""".format(
+			dix=self.anadix,
+			bin=self.genbin,
+			alph=self.alphabet,
+			f0=self.tmp[0].name,
+			f1=self.tmp[1].name,
+			f2=self.tmp[2].name
+		)
+		
+		for i in range(2):
+			self.tmp[i] = open(self.tmp[i].name, 'r')
+
+		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+		res, err = p.communicate()
+		
+		out = StringIO()
+		arrow_output = "'{:<24} {a} {:<24} {a} {:<24}\n"
+		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
+			out.write(arrow_output.format(a, b, c, ARROW))
+		
+		# TODO: allow saving this
+		for i in self.tmp:
+			i.close()
+			os.unlink(i.name)
 	
-	def save_statistics(self, f):
+	def to_xml(self):
 		return NotImplemented
 
-	def get_output(self):
-		return NotImplemented
-'''
+	def to_string(self):
+		# TODO: add stats output here
+		return self.out.getvalue()
+
 
 
 class AmbiguityTest(Test):
