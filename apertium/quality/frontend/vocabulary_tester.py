@@ -10,7 +10,7 @@ class UI(Frontend, VocabularyTest):
             help="Directory of dictionary (Default: current directory)")
         self.add_argument("langpair", nargs=1, help="Language pair (eg, br-fr)")
         self.args = self.parse_args()
-        lang1, lang2 = self.args.langpair.split('-')
+        lang1, lang2 = self.args.langpair[0].split('-')
         VocabularyTest.__init__(self, lang1, lang2, self.args.dictdir[0])
         
 def main():
