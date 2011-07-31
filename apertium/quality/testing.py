@@ -480,7 +480,7 @@ class VocabularyTest(Test):
 			 apertium-transfer \
 			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
 			 {0}/apertium-{1}-{2}.t1x.bin \
-			 {0}/apertium-{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
+			 {0}/{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
 		
 		self.lang1 = lang1
 		self.lang2 = lang2
@@ -524,8 +524,10 @@ class VocabularyTest(Test):
 		
 		out = StringIO()
 		arrow_output = "'{:<24} {a} {:<24} {a} {:<24}\n"
+		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
-			print(a, b, c)
+			for i in (a,b,c):
+				i = regex.sub("", i)
 			out.write(arrow_output.format(a, b, c, ARROW))
 		
 		# TODO: allow saving this
