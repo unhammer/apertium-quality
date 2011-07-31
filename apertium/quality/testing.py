@@ -519,7 +519,7 @@ class VocabularyTest(Test):
 		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
 			for i in (a,b,c):
-				i = regex.sub("", i)
+				i = regex.sub("", i).strip()
 			self.out.write(arrow_output.format(a, b, c, A=ARROW))
 		
 		# TODO: allow saving this
