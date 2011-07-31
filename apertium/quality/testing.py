@@ -473,7 +473,7 @@ class CoverageTest(Test):
 
 
 class VocabularyTest(Test):
-	def __init__(self, lang1, lang2, fdir="."):
+	def __init__(self, lang1, lang2, output, fdir="."):
 		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
 		
 		self.transfer_cmd = """apertium-pretransfer |\
@@ -484,6 +484,7 @@ class VocabularyTest(Test):
 		
 		self.lang1 = lang1
 		self.lang2 = lang2
+		self.out = open(output, 'w')
 		
 		self.tmp = []
 		for i in range(3):
@@ -514,7 +515,6 @@ class VocabularyTest(Test):
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 		res, err = p.communicate()
 		
-		self.out = NamedTemporaryFile(mode="w+", delete=False)
 		arrow_output = "'{:<24} {A} {:<24} {A} {:<24}\n"
 		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
 		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
@@ -526,14 +526,15 @@ class VocabularyTest(Test):
 		for i in self.tmp:
 			i.close()
 			os.unlink(i.name)
+		
+		self.out.close()
 	
 	def to_xml(self):
 		return NotImplemented
 
 	def to_string(self):
 		# TODO: add stats output here
-		self.out.seek(0)
-		return self.out.read()
+		return "Done."
 	
 
 
