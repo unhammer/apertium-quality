@@ -479,7 +479,7 @@ class VocabularyTest(Test):
 		self.transfer_cmd = """apertium-pretransfer |\
 			 apertium-transfer \
 			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
-			 {0}/apertium-{1}-{2}.t1x.bin \
+			 {0}/{1}-{2}.t1x.bin \
 			 {0}/{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
 		
 		self.lang1 = lang1
