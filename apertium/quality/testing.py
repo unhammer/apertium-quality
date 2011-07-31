@@ -500,7 +500,7 @@ class VocabularyTest(Test):
 	def run(self):
 		#TODO: pythonise the awk command
 		cmd = """lt-expand {dix} |\
-        awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN { gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }' |\
+        awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' |\
                               tee {f0} |\
         transfer            | tee {f1} |\
         lt-proc -d {bin}  >     {f2}""".format(
