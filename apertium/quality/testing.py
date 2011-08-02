@@ -117,7 +117,7 @@ class GenerationTest(Test):
 		return out.getvalue().split('\n')
 					
 	def run(self):
-		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE)
+		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
 		#app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
 		#		stdin=PIPE, stdout=PIPE, shell=True)
 		res = app.communicate()[0].decode('utf-8')
@@ -128,7 +128,7 @@ class GenerationTest(Test):
 			stripped.write("%d\t%s\n" % (count, word))
 		stripped = stripped.getvalue()
 		
-		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE)
+		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
 		
@@ -248,7 +248,7 @@ class RegressionTest(Test):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
 			args = '\n'.join(self.tests[side].keys())
-			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 			app.stdin.write(args.encode('utf-8'))
 			res = app.communicate()[0]
 			self.results = str(res.decode('utf-8')).split('\n')
@@ -399,7 +399,7 @@ class CoverageTest(Test):
 			self.f.seek(0)
 
 			output = destxt(f).encode('utf-8')
-			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE)
+			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE, close_fds=True)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
 			output = retxt(output) 
 			
@@ -512,7 +512,7 @@ class VocabularyTest(Test):
 		for i in range(3):
 			self.tmp[i] = open(self.tmp[i].name, 'r')
 
-		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
 		res, err = p.communicate()
 		
 		arrow_output = "{:<24} {A} {:<24} {A} {:<24}\n"
@@ -549,7 +549,7 @@ class AmbiguityTest(Test):
 		whereis([self.program])
 	
 	def get_results(self):
-		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE)
+		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE, close_fds=True)
 		res = str(app.communicate()[0].decode('utf-8'))
 		self.results = self.delim.sub(":", res).split('\n')
 
@@ -718,7 +718,7 @@ class MorphTest(Test):
 
 		def parser(self, d, f, tests):
 			keys = tests.keys()
-			app = Popen(self.program + [f], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			app = Popen(self.program + [f], stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 			args = '\n'.join(keys) + '\n'
 			
 			res, err = app.communicate(args.encode('utf-8'))
