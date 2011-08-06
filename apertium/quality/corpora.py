@@ -1,18 +1,18 @@
-#!/usr/bin/env python
-#-*- coding: utf-8 -*-
-
-import sys, os
-import re, logging, string
-import xml.sax
-import xml.sax.handler
 from xml.sax import SAXException
 from multiprocessing import Process, Pool, Queue, cpu_count
-import multiprocessing
 from io import StringIO
 from queue import Empty
+import sys
+import os
+#import re
+#import logging
+import string
+#import xml.sax
+import xml.sax.handler
+#import multiprocessing
 
-import nltk.data
 from mwtools import MediawikiHandler
+import nltk.data
 
 class CorpusExtractor(object):
 	class Handler(xml.sax.handler.ContentHandler):
@@ -102,7 +102,6 @@ class CorpusExtractor(object):
 		self._start_processes()
 
 	def _make_processes(self, fin, fout, max_sentences):
-		#print("Threads: ", cpu_count())
 		self.parser = Process(target=self._parser, args=(fin,))
 		self.parser.daemon = True
 		self.workers = [Process(target=self.worker) for i in range(self.cores or cpu_count())]
@@ -129,7 +128,6 @@ class CorpusExtractor(object):
 		parser.parse(f)
 		f.close()
 		del parser
-		#print("XML parser done, exiting [PID %d]" % pid)
 	
 	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
 		punc = "#$%&\'()*+-/:;<=>?@[\\]^_`{|}~"
@@ -169,7 +167,6 @@ class CorpusExtractor(object):
 				del parsed
 		except Empty:
 			pass
-			#print("Mediawiki parser done, exiting [PID %d]" % pid)
 	
 	def output_worker(self, fn, maxsentences=0):
 		pid = os.getpid()
@@ -193,5 +190,4 @@ class CorpusExtractor(object):
 			sys.stdout.flush()
 		except Empty:
 			pass
-			#print("Output worker done, exiting [PID %d]" % pid)
 

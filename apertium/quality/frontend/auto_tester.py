@@ -1,11 +1,11 @@
 from os.path import abspath, basename
-import os
-pjoin = os.path.join
 import argparse
-from glob import glob
+import os
 
 import apertium.quality.testing as testing
 from apertium.quality import Webpage, Statistics
+
+pjoin = os.path.join
 
 
 class AutoTest(object):

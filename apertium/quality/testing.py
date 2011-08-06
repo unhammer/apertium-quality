@@ -1,29 +1,31 @@
-# -*- coding: utf-8 -*-
-
-import os, os.path, re, yaml
 from os.path import dirname
-pjoin = os.path.join
 from collections import defaultdict, Counter, OrderedDict
-
-try:
-	from lxml import etree
-	from lxml.etree import Element, SubElement
-except:
-	import xml.etree.ElementTree as etree
-	from xml.etree.ElementTree import Element, SubElement
-import urllib.request
-import shlex
-import itertools
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
 from io import StringIO
 from datetime import datetime
 from hashlib import sha1
 from tempfile import NamedTemporaryFile
+import os
+import os.path
+import re
+import urllib.request
+import shlex
+import itertools
+
+import yaml
+try:
+	from lxml import etree
+	from lxml.etree import Element, SubElement
+except:
+	import xml.etree.ElementTree as etree
+	from xml.etree.ElementTree import Element, SubElement
 
 from apertium import whereis, destxt, retxt, Dictionary
 
+pjoin = os.path.join
 ARROW = "\u2192"
+
 
 # TODO: add self.results dict() to all objects
 class UncleanWorkingDirectoryException(Exception):
@@ -86,232 +88,61 @@ class Test(object):
 		"""
 		raise NotImplementedError("Required method `to_string` was not implemented.")
 
-class GenerationTest(Test):
-	def __init__(self, direc=None, mode=None, corpus=None, **kwargs):
-		self.directory = kwargs.get('direc', direc)
-		self.mode = kwargs.get('mode', mode)
-		self.corpus = kwargs.get('corpus', corpus)
-		if None in (self.directory, self.mode, self.corpus):
-			raise ValueError("direc, mode or corpus missing.")
-		
-		self.lang = '-'.join(self.mode.rsplit('-')[0:2])
-		whereis(["apertium", "lt-proc"])
-	
-	def get_transfer(self, data):
-		count = Counter()
-		out = StringIO()
-		buf = StringIO()
-		in_word = False
-		
-		for i in data:
-			if i == "^":
-				in_word = True
-			elif i == "$":
-				out.write("%s$\n" % buf.getvalue())
-				count[buf.getvalue()] += 1
-				buf = StringIO()
-				in_word = False
-			if in_word:
-				buf.write(i)
-		
-		return out.getvalue().split('\n')
-					
-	def run(self):
-		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
-		#app = Popen("cat %s | apertium -d %s %s" % (self.corpus, self.directory, self.mode), 
-		#		stdin=PIPE, stdout=PIPE, shell=True)
-		res = app.communicate()[0].decode('utf-8')
-		transfer = self.get_transfer(res)
-		
-		stripped = StringIO()
-		for word, count in Counter(transfer).most_common():
-			stripped.write("%d\t%s\n" % (count, word))
-		stripped = stripped.getvalue()
-		
-		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
-		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
-		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
-		
-		gen_errors = StringIO()
-		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
-			gen_errors.write("{:<16}{:<16}".format(*list(str(x) for x in i)))
-		gen_errors = gen_errors.getvalue().split('\n')
+class AmbiguityTest(Test):
+	delim = re.compile(":[<>]:")
 
-		multiform = []
-		multibidix = []
-		tagmismatch = []
-		
-		for i in gen_errors:
-			if "#" in i:
-				if re.search(r'[0-9] #.*\/', i):
-					multibidix.append(i)
-				elif re.search(r'[0-9] #', i) and not '/' in i:
-					tagmismatch.append(i)
-			elif "/" in i:
-				multiform.append(i)
-		
-		print("DEBUG:")
-		print("raw:\n%s\n" % res)
-		print("transfer:\n%s\n" % transfer)
-		print("stripped:\n%s\n" % stripped)
-		print("surface:\n%s\n" % surface)
-		print("nofreq:\n%s\n" % nofreq)
-		print('\nmultiform: %s' % multiform)
-		print('multibidix: %s' % multibidix)
-		print("tagmismatch %s" % tagmismatch)
-		
-		self.multiform = multiform
-		self.multibidix = multibidix
-		self.tagmismatch = tagmismatch
-
-	#def to_xml(self):
-	#	pass
-	
-	def to_string(self):
-		out = StringIO()
-		border = "=" * 80
-		
-		out.write(border + "\n")
-		out.write("Multiple surface forms for a single lexical form\n")
-		out.write(border + "\n")
-		out.write("\n".join(self.multiform)+'\n\n')
-		
-		out.write(border + "\n")
-		out.write("Multiple bidix entries for a single source language lexical form\n")
-		out.write(border + "\n")
-		out.write("\n".join(self.multibidix)+"\n\n")
-		
-		out.write(border + "\n")
-		out.write("Tag mismatch between transfer and generation\n")
-		out.write(border + "\n")
-		out.write("\n".join(self.tagmismatch)+"\n\n")
-		
-		out.write(border + "\n")
-		out.write("Summary\n")
-		out.write(border + "\n")
-		
-		out.write("%6d %s\n" % (len(self.multiform), "multiform"))
-		out.write("%6d %s\n" % (len(self.multibidix), "multibidix"))
-		out.write("%6d %s\n" % (len(self.tagmismatch), "tagmismatch"))
-		out.write("Total: %d\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
-		
-		return out.getvalue()
-		
-		
-class RegressionTest(Test):
-	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
-	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
-	program = "apertium"
-	
-	def __init__(self, url=None, mode=None, directory=".", **kwargs):
-		url = kwargs.get('url', url)
-		mode = kwargs.get('mode', mode)
-		directory = kwargs.get('directory', directory)
-		if None in (url, mode):
-			raise ValueError("Url or mode parameter missing.")
-
+	def __init__(self, f, **kwargs):
+		self.f = kwargs.get('f', f)
+		self.program = "lt-expand"
 		whereis([self.program])
-		#if not "Special:Export" in url:
-		#	print("Warning: URL did not contain Special:Export.")
-		self.mode = mode
-		
-		self.directory = directory
-		if url.startswith('http'):
-			self.tree = etree.parse(urllib.request.urlopen(url))
-		else:
-			self.tree = etree.parse(open(url))
-		
-		self.passes = 0
+	
+	def get_results(self):
+		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE, close_fds=True)
+		res = str(app.communicate()[0].decode('utf-8'))
+		self.results = self.delim.sub(":", res).split('\n')
+
+	def get_ambiguity(self):
+		self.h = defaultdict(lambda: 0)
+		self.surface_forms = 0
 		self.total = 0
-		text = None
-		for e in self.tree.getroot().getiterator():
-			if e.tag == self.ns + "title":
-				self.title = e.text
-			if e.tag == self.ns + "revision":
-				self.revision = e[0].text # should be <id>
-			if e.tag == self.ns + "text":
-				text = e.text
-		if not text:
-			raise AttributeError("No text element?")
+
+		for line in self.results:
+			row = line.split(":")
+			if not row[0] in self.h:
+				self.surface_forms += 1
+			self.h[row[0]] += 1
+			self.total += 1
 		
-		self.tests = defaultdict(OrderedDict)
-		rtests = text.split('\n')
-		rtests = [self.wrg.search(j) for j in rtests if self.wrg.search(j)]
-		for i in rtests:
-			lang, left, right = i.group(1), i.group(2), i.group(3)
-			if not left.endswith('.'):
-				left += '[_].'
-			self.tests[lang.strip()][left.strip()] = right.strip()
-		self.out = StringIO()
-	
+		self.average = float(self.total) / float(self.surface_forms)
+
 	def run(self):
-		for side in self.tests:
-			self.out.write("Now testing: %s\n" % side)
-			args = '\n'.join(self.tests[side].keys())
-			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-			app.stdin.write(args.encode('utf-8'))
-			res = app.communicate()[0]
-			self.results = str(res.decode('utf-8')).split('\n')
-			if app.returncode > 0:
-				return app.returncode
-
-			for n, test in enumerate(self.tests[side].items()):
-				if n >= len(self.results):
-					#raise AttributeError("More tests than results.")
-					self.out.write("WARNING: more tests than results!\n")
-					continue
-				res = self.results[n].split("[_]")[0].strip()
-				orig = test[0].split("[_]")[0].strip()
-				targ = test[1].strip()
-				self.out.write("%s\t  %s\n" % (self.mode, orig))
-				if res == targ:
-					self.out.write("WORKS\t  %s\n" % res)
-					self.passes += 1
-				else:
-					self.out.write("\t- %s\n" % targ)
-					self.out.write("\t+ %s\n" % res)
-				self.total += 1
-				self.out.write('\n')
-			self.out.write("Passes: %d/%d, Success rate: %.2f%%\n" 
-					% (self.passes, self.total, self.get_total_percent()))
+		self.get_results()
+		self.get_ambiguity()
 		return 0
-
-	def get_passes(self):
-		return self.passes
-
-	def get_fails(self):
-		return self.total - self.passes
-
-	def get_total(self):
-		return self.total
-	
-	def get_total_percent(self):
-		if self.get_total() == 0:
-			return 0
-		return float(self.passes)/float(self.total)*100
 	
 	def to_xml(self):
-		ns = self.ns
-		page = self.tree.getroot().find(ns + "page")
+		q = Element('dictionary')
+		q.attrib["value"] = self.f
+
+		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
+					timestamp=datetime.utcnow().isoformat(),
+					checksum=self._checksum(open(self.f, 'rb').read()))
+
+		SubElement(r, 'surface-forms').text = str(self.surface_forms)
+		SubElement(r, 'analyses').text = str(self.total)
+		SubElement(r, 'average').text = str(self.average)
 		
-		q = Element('title')
-		q.attrib['value'] = page.find(ns + 'title').text
-		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
-		
-		r = SubElement(q, 'revision', 
-					value=self._svn_revision(self.directory),
-					timestamp=datetime.utcnow().isoformat())
-		
-		SubElement(r, 'percent').text = "%.2f" % self.get_total_percent()
-		SubElement(r, 'total').text = str(self.get_total())
-		SubElement(r, 'passes').text = str(self.get_passes())
-		SubElement(r, 'fails').text = str(self.get_fails())
-		
-		return ("regression", etree.tostring(q))
+		return ("ambiguity", etree.tostring(q))
 
 	def to_string(self):
-		return self.out.getvalue().strip()
+		out = StringIO("Total surface forms: %d\n" % self.surface_forms)
+		out.write("Total analyses: %d\n" % self.total)
+		out.write("Average ambiguity: %.2f" % self.average)
+		return out.getvalue().strip()
 
+
+		
+		
 '''
 class HfstCoverageTest(CoverageTest):
 	app = "hfst-lookup"
@@ -341,38 +172,6 @@ class HfstCoverageTest(CoverageTest):
 						ding = False
 						#blah
 '''						
-					
-class DictionaryTest(Test):
-	def __init__(self, f=None, **kwargs):
-		f = kwargs.get('f', f)
-		if f is None:
-			raise ValueError('f parameter missing.')
-		self.f = f
-		
-	def run(self):
-		self.dct = Dictionary(self.f)
-		self.dct.get_entries()
-		self.dct.get_rules()
-	
-	def to_xml(self):
-		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.dct.f)
-		#q.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
-		
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
-		
-		SubElement(r, 'entries').text = str(len(self.dct.gen_entries()))
-		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
-		SubElement(r, 'rules').text = str(self.dct.get_rule_count())
-		
-		return ("general", etree.tostring(q))
-	
-	def to_string(self):
-		out = StringIO()
-		out.write("Entries: %d\n" % len(self.dct.get_entries()))
-		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
-		out.write("Rules: %d\n" % self.dct.get_rule_count())
-		return out.getvalue().strip()
 
 
 class CoverageTest(Test):
@@ -471,126 +270,148 @@ class CoverageTest(Test):
 		out.write(self.get_top_unknown_words_string())
 		return out.getvalue().strip()
 
-
-class VocabularyTest(Test):
-	def __init__(self, lang1, lang2, output, fdir="."):
-		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
-		
-		self.transfer_cmd = """apertium-pretransfer |\
-			 apertium-transfer \
-			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
-			 {0}/{1}-{2}.t1x.bin \
-			 {0}/{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
-		
-		self.lang1 = lang1
-		self.lang2 = lang2
-		self.out = open(output, 'w')
-		
-		self.tmp = []
-		for i in range(3):
-			self.tmp.append(NamedTemporaryFile(delete=False))
-			self.tmp[i].close()
-		
-		self.fdir = fdir
-		self.anadix = pjoin(fdir, "apertium-{0}-{1}.{0}.dix".format(lang1, lang2))
-		self.genbin = pjoin(fdir, "{0}-{1}.autogen.bin".format(lang1, lang2))
-		
-		self.alphabet = Dictionary(self.anadix).get_alphabet()
+			
+class DictionaryTest(Test):
+	def __init__(self, f=None, **kwargs):
+		f = kwargs.get('f', f)
+		if f is None:
+			raise ValueError('f parameter missing.')
+		self.f = f
 		
 	def run(self):
-		#TODO: pythonise the awk command
-		cmd = r"""lt-expand {dix} | awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' | tee {f0} | {transfer} | tee {f1} | lt-proc -d {bin} > {f2}""".format(
-			dix=self.anadix,
-			bin=self.genbin,
-			transfer=self.transfer_cmd,
-			alph=self.alphabet,
-			f0=self.tmp[0].name,
-			f1=self.tmp[1].name,
-			f2=self.tmp[2].name
-		)
-
-		for i in range(3):
-			self.tmp[i] = open(self.tmp[i].name, 'r')
-
-		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
-		res, err = p.communicate()
-		
-		arrow_output = "{:<24} {A} {:<24} {A} {:<24}\n"
-		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
-		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
-			a = regex.sub("", a).strip()
-			b = regex.sub("", b).strip()
-			c = regex.sub("", c).strip()
-			self.out.write(arrow_output.format(a, b, c, A=ARROW))
-		
-		# TODO: allow saving this
-		for i in self.tmp:
-			i.close()
-			os.unlink(i.name)
-		
-		self.out.close()
-	
-	def to_xml(self):
-		return NotImplemented
-
-	def to_string(self):
-		# TODO: add stats output here
-		return "Done."
-	
-
-
-
-class AmbiguityTest(Test):
-	delim = re.compile(":[<>]:")
-
-	def __init__(self, f, **kwargs):
-		self.f = kwargs.get('f', f)
-		self.program = "lt-expand"
-		whereis([self.program])
-	
-	def get_results(self):
-		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE, close_fds=True)
-		res = str(app.communicate()[0].decode('utf-8'))
-		self.results = self.delim.sub(":", res).split('\n')
-
-	def get_ambiguity(self):
-		self.h = defaultdict(lambda: 0)
-		self.surface_forms = 0
-		self.total = 0
-
-		for line in self.results:
-			row = line.split(":")
-			if not row[0] in self.h:
-				self.surface_forms += 1
-			self.h[row[0]] += 1
-			self.total += 1
-		
-		self.average = float(self.total) / float(self.surface_forms)
-
-	def run(self):
-		self.get_results()
-		self.get_ambiguity()
-		return 0
+		self.dct = Dictionary(self.f)
+		self.dct.get_entries()
+		self.dct.get_rules()
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = self.f
-
-		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
-					timestamp=datetime.utcnow().isoformat(),
-					checksum=self._checksum(open(self.f, 'rb').read()))
-
-		SubElement(r, 'surface-forms').text = str(self.surface_forms)
-		SubElement(r, 'analyses').text = str(self.total)
-		SubElement(r, 'average').text = str(self.average)
+		q.attrib["value"] = os.path.basename(self.dct.f)
+		#q.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
 		
-		return ("ambiguity", etree.tostring(q))
-
+		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		
+		SubElement(r, 'entries').text = str(len(self.dct.gen_entries()))
+		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
+		SubElement(r, 'rules').text = str(self.dct.get_rule_count())
+		
+		return ("general", etree.tostring(q))
+	
 	def to_string(self):
-		out = StringIO("Total surface forms: %d\n" % self.surface_forms)
-		out.write("Total analyses: %d\n" % self.total)
-		out.write("Average ambiguity: %.2f" % self.average)
+		out = StringIO()
+		out.write("Entries: %d\n" % len(self.dct.get_entries()))
+		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
+		out.write("Rules: %d\n" % self.dct.get_rule_count())
 		return out.getvalue().strip()
+
+
+class GenerationTest(Test):
+	def __init__(self, direc=None, mode=None, corpus=None, **kwargs):
+		self.directory = kwargs.get('direc', direc)
+		self.mode = kwargs.get('mode', mode)
+		self.corpus = kwargs.get('corpus', corpus)
+		if None in (self.directory, self.mode, self.corpus):
+			raise ValueError("direc, mode or corpus missing.")
+		
+		self.lang = '-'.join(self.mode.rsplit('-')[0:2])
+		whereis(["apertium", "lt-proc"])
+	
+	def get_transfer(self, data):
+		count = Counter()
+		out = StringIO()
+		buf = StringIO()
+		in_word = False
+		
+		for i in data:
+			if i == "^":
+				in_word = True
+			elif i == "$":
+				out.write("%s$\n" % buf.getvalue())
+				count[buf.getvalue()] += 1
+				buf = StringIO()
+				in_word = False
+			if in_word:
+				buf.write(i)
+		
+		return out.getvalue().split('\n')
+					
+	def run(self):
+		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
+		res = app.communicate()[0].decode('utf-8')
+		transfer = self.get_transfer(res)
+		
+		stripped = StringIO()
+		for word, count in Counter(transfer).most_common():
+			stripped.write("%d\t%s\n" % (count, word))
+		stripped = stripped.getvalue()
+		
+		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
+		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
+		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
+		
+		gen_errors = StringIO()
+		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
+			gen_errors.write("{:<16}{:<16}".format(*list(str(x) for x in i)))
+		gen_errors = gen_errors.getvalue().split('\n')
+
+		multiform = []
+		multibidix = []
+		tagmismatch = []
+		
+		for i in gen_errors:
+			if "#" in i:
+				if re.search(r'[0-9] #.*\/', i):
+					multibidix.append(i)
+				elif re.search(r'[0-9] #', i) and not '/' in i:
+					tagmismatch.append(i)
+			elif "/" in i:
+				multiform.append(i)
+		
+		print("DEBUG:")
+		print("raw:\n%s\n" % res)
+		print("transfer:\n%s\n" % transfer)
+		print("stripped:\n%s\n" % stripped)
+		print("surface:\n%s\n" % surface)
+		print("nofreq:\n%s\n" % nofreq)
+		print('\nmultiform: %s' % multiform)
+		print('multibidix: %s' % multibidix)
+		print("tagmismatch %s" % tagmismatch)
+		
+		self.multiform = multiform
+		self.multibidix = multibidix
+		self.tagmismatch = tagmismatch
+
+	#def to_xml(self):
+	#	pass
+	
+	def to_string(self):
+		out = StringIO()
+		border = "=" * 80
+		
+		out.write(border + "\n")
+		out.write("Multiple surface forms for a single lexical form\n")
+		out.write(border + "\n")
+		out.write("\n".join(self.multiform)+'\n\n')
+		
+		out.write(border + "\n")
+		out.write("Multiple bidix entries for a single source language lexical form\n")
+		out.write(border + "\n")
+		out.write("\n".join(self.multibidix)+"\n\n")
+		
+		out.write(border + "\n")
+		out.write("Tag mismatch between transfer and generation\n")
+		out.write(border + "\n")
+		out.write("\n".join(self.tagmismatch)+"\n\n")
+		
+		out.write(border + "\n")
+		out.write("Summary\n")
+		out.write(border + "\n")
+		
+		out.write("%6d %s\n" % (len(self.multiform), "multiform"))
+		out.write("%6d %s\n" % (len(self.multibidix), "multibidix"))
+		out.write("%6d %s\n" % (len(self.tagmismatch), "tagmismatch"))
+		out.write("Total: %d\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
+		
+		return out.getvalue()
 
 
 class MorphTest(Test):
@@ -862,6 +683,186 @@ class MorphTest(Test):
 	def to_string(self):
 		return self.out.getvalue().strip()
 
+
+class RegressionTest(Test):
+	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
+	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
+	program = "apertium"
+	
+	def __init__(self, url=None, mode=None, directory=".", **kwargs):
+		url = kwargs.get('url', url)
+		mode = kwargs.get('mode', mode)
+		directory = kwargs.get('directory', directory)
+		if None in (url, mode):
+			raise ValueError("Url or mode parameter missing.")
+
+		whereis([self.program])
+		#if not "Special:Export" in url:
+		#	print("Warning: URL did not contain Special:Export.")
+		self.mode = mode
+		
+		self.directory = directory
+		if url.startswith('http'):
+			self.tree = etree.parse(urllib.request.urlopen(url))
+		else:
+			self.tree = etree.parse(open(url))
+		
+		self.passes = 0
+		self.total = 0
+		text = None
+		for e in self.tree.getroot().getiterator():
+			if e.tag == self.ns + "title":
+				self.title = e.text
+			if e.tag == self.ns + "revision":
+				self.revision = e[0].text # should be <id>
+			if e.tag == self.ns + "text":
+				text = e.text
+		if not text:
+			raise AttributeError("No text element?")
+		
+		self.tests = defaultdict(OrderedDict)
+		rtests = text.split('\n')
+		rtests = [self.wrg.search(j) for j in rtests if self.wrg.search(j)]
+		for i in rtests:
+			lang, left, right = i.group(1), i.group(2), i.group(3)
+			if not left.endswith('.'):
+				left += '[_].'
+			self.tests[lang.strip()][left.strip()] = right.strip()
+		self.out = StringIO()
+	
+	def run(self):
+		for side in self.tests:
+			self.out.write("Now testing: %s\n" % side)
+			args = '\n'.join(self.tests[side].keys())
+			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+			app.stdin.write(args.encode('utf-8'))
+			res = app.communicate()[0]
+			self.results = str(res.decode('utf-8')).split('\n')
+			if app.returncode > 0:
+				return app.returncode
+
+			for n, test in enumerate(self.tests[side].items()):
+				if n >= len(self.results):
+					#raise AttributeError("More tests than results.")
+					self.out.write("WARNING: more tests than results!\n")
+					continue
+				res = self.results[n].split("[_]")[0].strip()
+				orig = test[0].split("[_]")[0].strip()
+				targ = test[1].strip()
+				self.out.write("%s\t  %s\n" % (self.mode, orig))
+				if res == targ:
+					self.out.write("WORKS\t  %s\n" % res)
+					self.passes += 1
+				else:
+					self.out.write("\t- %s\n" % targ)
+					self.out.write("\t+ %s\n" % res)
+				self.total += 1
+				self.out.write('\n')
+			self.out.write("Passes: %d/%d, Success rate: %.2f%%\n" 
+					% (self.passes, self.total, self.get_total_percent()))
+		return 0
+
+	def get_passes(self):
+		return self.passes
+
+	def get_fails(self):
+		return self.total - self.passes
+
+	def get_total(self):
+		return self.total
+	
+	def get_total_percent(self):
+		if self.get_total() == 0:
+			return 0
+		return float(self.passes)/float(self.total)*100
+	
+	def to_xml(self):
+		ns = self.ns
+		page = self.tree.getroot().find(ns + "page")
+		
+		q = Element('title')
+		q.attrib['value'] = page.find(ns + 'title').text
+		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
+		
+		r = SubElement(q, 'revision', 
+					value=self._svn_revision(self.directory),
+					timestamp=datetime.utcnow().isoformat())
+		
+		SubElement(r, 'percent').text = "%.2f" % self.get_total_percent()
+		SubElement(r, 'total').text = str(self.get_total())
+		SubElement(r, 'passes').text = str(self.get_passes())
+		SubElement(r, 'fails').text = str(self.get_fails())
+		
+		return ("regression", etree.tostring(q))
+
+	def to_string(self):
+		return self.out.getvalue().strip()
+
+
+class VocabularyTest(Test):
+	def __init__(self, lang1, lang2, output, fdir="."):
+		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
+		
+		self.transfer_cmd = """apertium-pretransfer |\
+			 apertium-transfer \
+			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
+			 {0}/{1}-{2}.t1x.bin \
+			 {0}/{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
+		
+		self.lang1 = lang1
+		self.lang2 = lang2
+		self.out = open(output, 'w')
+		
+		self.tmp = []
+		for i in range(3):
+			self.tmp.append(NamedTemporaryFile(delete=False))
+			self.tmp[i].close()
+		
+		self.fdir = fdir
+		self.anadix = pjoin(fdir, "apertium-{0}-{1}.{0}.dix".format(lang1, lang2))
+		self.genbin = pjoin(fdir, "{0}-{1}.autogen.bin".format(lang1, lang2))
+		
+		self.alphabet = Dictionary(self.anadix).get_alphabet()
+		
+	def run(self):
+		#TODO: pythonise the awk command
+		cmd = r"""lt-expand {dix} | awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' | tee {f0} | {transfer} | tee {f1} | lt-proc -d {bin} > {f2}""".format(
+			dix=self.anadix,
+			bin=self.genbin,
+			transfer=self.transfer_cmd,
+			alph=self.alphabet,
+			f0=self.tmp[0].name,
+			f1=self.tmp[1].name,
+			f2=self.tmp[2].name
+		)
+
+		for i in range(3):
+			self.tmp[i] = open(self.tmp[i].name, 'r')
+
+		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+		res, err = p.communicate()
+		
+		arrow_output = "{:<24} {A} {:<24} {A} {:<24}\n"
+		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
+		for a, b, c in zip(self.tmp[0], self.tmp[1], self.tmp[2]):
+			a = regex.sub("", a).strip()
+			b = regex.sub("", b).strip()
+			c = regex.sub("", c).strip()
+			self.out.write(arrow_output.format(a, b, c, A=ARROW))
+		
+		# TODO: allow saving this
+		for i in self.tmp:
+			i.close()
+			os.unlink(i.name)
+		
+		self.out.close()
+	
+	def to_xml(self):
+		return NotImplemented
+
+	def to_string(self):
+		# TODO: add stats output here
+		return "Done."
 
 
 # SUPPORT FUNCTIONS
