@@ -265,6 +265,8 @@ window.onresize = function() {
 		chart_data = {}
 		chart_data.update(self._coverage())
 		chart_data.update(self._regression())
+		chart_data.update(self._ambiguity())
+		chart_data.update(self._general())
 		
 		scripts = OrderedDict((
 				("jquery.js", "http://code.jquery.com/jquery-1.6.2.min.js"),
@@ -306,7 +308,15 @@ window.onresize = function() {
 		out['Regression Testing']['Regressions Over Time'] = self.stats.get_raphael("regression", "Percent", "Passes", "Total")
 		return out
 	
-
+	def _ambiguity(self):
+		out = {'Ambiguity Testing':{}}
+		out['Ambiguity Testing']['Mean Ambiguity Over Time'] = self.stats.get_raphael("ambiguity", "Average", "Average", "Surface Forms")
+		return out
+	
+	def _general(self):
+		out = {'Dictionary Testing':{}}
+		out['Dictionary Testing']['Dictionary Entries Over Time'] = self.stats.get_raphael("general", "Entries", "Entries", "Unique Entries")
+		return out
 
 class Statistics(object):
 	version = "0.1"
@@ -413,14 +423,7 @@ class Statistics(object):
 	def get_raphael(self, tag, data, lines1, lines2):
 		"""Get output suitable for JSONing for Raphael charts"""
 		out = {}
-		
 		dat = self.get(tag)
-		'''if data is None:
-			return None
-		
-		v = data.values()[0]
-		if None in (v.get(data), v.get(lines1), v.get(lines2)):
-			return None'''
 		
 		for key, val in dat.items():
 			out[key] = defaultdict(list)
@@ -435,7 +438,25 @@ class Statistics(object):
 		return out			
 
 	def get_general(self, root):
-		return dict() # stub
+		dicts = defaultdict(dict)
+		
+		for d in root.getiterator(self.ns + "dictionary"):
+			dct = d.attrib['value']
+			for rev in d.getiterator(self.ns + 'revision'):
+				r = rev.attrib['value']
+				
+				dicts[dct][r] = {
+					"Timestamp": rev.attrib['timestamp'],
+					"Entries": rev.find(self.ns + "entries"),
+					"Unique Entries": rev.find(self.ns + "unique-entries"),
+					"Rules": rev.find(self.ns + "rules")
+				}
+		
+		out = dict()
+		for k, v in dicts.items():
+			out[k] = OrderedDict(sorted(v.items()))
+
+		return out
 	
 	def get_regression(self, root):
 		regressions = defaultdict(dict)

@@ -4,18 +4,11 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['lxml', 'pyyaml', 'mwtools']
-#, 'argparse'], 'numpy', 'matplotlib']
+install_requires = ['pyyaml', 'mwtools']
 
-try:
-	import argparse
-except:
-	install_requires.append('argparse')
-
-try:
-	from collections import OrderedDict
-except:
-	install_requires.append('ordereddict')
+# Workaround for Python 3.1's failure to include argparse
+try: import argparse
+except: install_requires.append('argparse')
 
 setup(
 	name = "apertium-quality",
@@ -33,10 +26,11 @@ setup(
 	aq-morftest = apertium.quality.frontend.morph_tester:main
 	aq-covtest = apertium.quality.frontend.coverage_tester:main
 	aq-regtest = apertium.quality.frontend.regression_tester:main
+	aq-dixtest = apertium.quailty.frontend.dictionary_tester:main
 	aq-voctest = apertium.quality.frontend.vocabulary_tester:main
 	aq-gentest = apertium.quality.frontend.generation_tester:main
 	aq-ambtest = apertium.quality.frontend.ambiguity_tester:main
-	aq-htmlgen = apertium.quality.frontend.website_generator:main
+	aq-statgen = apertium.quality.frontend.website_generator:main
 	aq-autotest = apertium.quality.frontend.auto_tester:main
 	aq-wikicrp = apertium.quality.frontend.corpus_extractor:main
 	"""

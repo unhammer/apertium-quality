@@ -251,10 +251,11 @@ class DictionaryTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.dct.f)
-		#q.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
 		
-		r = SubElement(q, "timestamp", value=datetime.utcnow().isoformat())
+		r = SubElement(q, 'revision')
+		r.attrib["value"] = os.path.basename(self.dct.f)
+		r.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
+		r.attrib["timestamp"] = datetime.utcnow().isoformat()
 		
 		SubElement(r, 'entries').text = str(len(self.dct.gen_entries()))
 		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
