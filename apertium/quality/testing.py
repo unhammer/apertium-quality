@@ -141,39 +141,6 @@ class AmbiguityTest(Test):
 		return out.getvalue().strip()
 
 
-		
-		
-'''
-class HfstCoverageTest(CoverageTest):
-	app = "hfst-lookup"
-	
-	def run(self):
-		if not self.result:
-			self.
-			
-			f = '\n'.join(self.f.read().split()) + '\n'
-			self.f.seek(0)
-			
-			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE)
-			output = str(proc.communicate(f)[0].decode('utf-8')).split('\n\n')
-			
-			
-			unfound = []
-			found = 0 
-			
-			ding = False
-			for i in output:
-				for j in i.split('\n'):
-					for k in j.split():
-						if len(k) == 3 and k[-1].strip() == "+?":
-							unfound.append(k[0].strip())
-							ding = True
-					if ding == True:
-						ding = False
-						#blah
-'''						
-
-
 class CoverageTest(Test):
 	app = "lt-proc"
 	
@@ -239,7 +206,6 @@ class CoverageTest(Test):
 	def to_xml(self):
 		q = Element('dictionary')
 		q.attrib["value"] = os.path.basename(self.dct)
-		
 		
 		r = SubElement(q, "revision", 
 					value=self._svn_revision(dirname(self.dct)),
