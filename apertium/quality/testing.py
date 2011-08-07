@@ -259,6 +259,7 @@ class DictionaryTest(Test):
 		self.rlxfiles = glob(pjoin(directory, '*.rlx')) 
 		self.tnxfiles = glob(pjoin(directory, '*.t[1-9]x'))
 		self.rules = None
+		self.entries = None
 	
 	def get_rules(self):
 		if not self.rules:
@@ -288,11 +289,26 @@ class DictionaryTest(Test):
 	
 	def get_rule_count(self):
 		return sum(self.get_rule_counter().values())
-		
+	
+	def get_entries(self):
+		if not self.entries:
+			self.entries = defaultdict(list)
+			
+			for i in self.dixfiles:
+				DixFile(i).get_entries()
+	
+	def get_entry_counter(self):
+		c = Counter()
+		for k, v in self.get_entries().items():
+			c[k] = len(v)
+		return c
+	
+	def get_entry_count(self):
+		return sum(self.get_entry_counter().values())
+	
 	def run(self):
-		self.dct = DixFile(self.f)
-		self.dct.get_entries()
-		self.dct.get_rules()
+		self.get_entries()
+		self.get_rules()
 	
 	def to_xml(self):
 		return NotImplemented
