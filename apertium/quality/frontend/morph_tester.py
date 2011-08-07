@@ -4,7 +4,7 @@ from apertium.quality import Statistics
 
 class UI(Frontend, MorphTest):
 	def __init__(self):
-		Frontend.__init__(self)
+		Frontend.__init__(self, colour=True)
 		self.description="""Test morphological transducers for consistency. 
 			`hfst-lookup` (or Xerox' `lookup` with argument -x) must be
 			available on the PATH."""

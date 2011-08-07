@@ -10,7 +10,7 @@ class UI(Frontend, DictionaryTest):
             help="Directory of dictionary (Default: current directory)")
         self.add_argument("langpair", nargs=1, help="Language pair (eg aa-ab)")
         self.args = self.parse_args()
-        DictionaryTest.__init__(self, self.args.langpair[0], self.args.directory[0])
+        DictionaryTest.__init__(self, self.args.langpair[0], self.args.dictdir[0])
 
 def main():
     try:
