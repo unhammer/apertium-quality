@@ -258,6 +258,7 @@ class DictionaryTest(Test):
 		self.dixfiles = glob(pjoin(self.directory, '*.dix'))
 		self.rlxfiles = glob(pjoin(self.directory, '*.rlx')) 
 		self.tnxfiles = glob(pjoin(self.directory, '*.t[1-9]x'))
+		print(self.dixfiles)
 		self.rules = None
 		self.entries = None
 	
