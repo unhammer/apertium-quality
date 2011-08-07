@@ -274,7 +274,7 @@ class DictionaryTest(Test):
 			
 			ruletypes = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
 			for i in self.tnxfiles:
-				f = open(i, 'rb')
+				f = open(i, 'r')
 				for line in f:
 					if line.startswith(ruletypes):
 						self.rules[i].append(line)
