@@ -255,9 +255,9 @@ class DictionaryTest(Test):
 		if None in (self.directory, self.langpair):
 			raise ValueError("langpair or directory missing.")
 		
-		self.dixfiles = glob(pjoin(directory, '*.dix'))
-		self.rlxfiles = glob(pjoin(directory, '*.rlx')) 
-		self.tnxfiles = glob(pjoin(directory, '*.t[1-9]x'))
+		self.dixfiles = glob(pjoin(self.directory, '*.dix'))
+		self.rlxfiles = glob(pjoin(self.directory, '*.rlx')) 
+		self.tnxfiles = glob(pjoin(self.directory, '*.t[1-9]x'))
 		self.rules = None
 		self.entries = None
 	
@@ -331,12 +331,12 @@ class DictionaryTest(Test):
 	
 	def to_string(self):
 		out = StringIO()
-		out.write("Ordered rule numbers per file:")
+		out.write("Ordered rule numbers per file:\n")
 		for file, count in self.get_rule_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
 		out.write("Total rules: %d\n" % self.get_rule_count())
 		
-		out.write("Ordered entry numbers per file:")
+		out.write("Ordered entry numbers per file:\n")
 		for file, count in self.get_entry_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
 		out.write("Total entries: %d\n" % self.get_entry_count())
