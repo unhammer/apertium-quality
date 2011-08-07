@@ -1,15 +1,15 @@
-import os, os.path, re
-
-from collections import defaultdict
+from collections import defaultdict, Counter
 from os.path import abspath, dirname, basename
 from os import listdir
-
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
-
 from hashlib import sha1
 from datetime import datetime
-#import logging
+import os
+import os.path
+import re
+
+pjoin = os.path.join
 
 
 def whereis(programs):
@@ -34,19 +34,11 @@ def get_file_family(fn):
 def get_files_by_ext(d, ext):
 	return [ i for i in listdir(d) if split_ext(i)[1] == ext ]
 
-def get_dix(fn):
-	f = split_ext(fn)
-	if f[-1].lower() == "dix":
-		return fn
-	if len(split_ext(fn)[0]) != len(fn):
-		return "%s.dix" % f[0]
-	return None	
-
 def is_tnx(ext):
-	return True if (len(ext) == 3 and ext[1] in "123456789") else False
+	return re.match(r't[1-9]x', ext) != None
 
 def is_rlx(ext):
-	return True if (len(ext) == 3 and ext == "rlx") else False
+	return ext == "rlx"
 
 def destxt(data):
 	escape = re.compile(r"[\]\[\\/@<>^${}]")
@@ -63,7 +55,7 @@ def retxt(data):
 	return output
 
 
-class Dictionary(object):
+class DixFile(object):
 	class DIXHandler(ContentHandler):
 		def __init__(self):
 			self.lemmas = []
@@ -72,20 +64,11 @@ class Dictionary(object):
 			if tag == "e":
 				if "lm" in attrs:
 					self.lemmas.append(attrs.get("lm"))
-	
-	class TnXHandler(ContentHandler):
-		def __init__(self):
-			self.rules = []
-
-		def startElement(self, tag, attrs):
-			if tag == "rule":
-				self.rules.append(attrs.get("comment", None))
 
 	def __init__(self, f):
 		self.f = f
-		self.dix = open(get_dix(f), 'r')
+		self.dix = open(f, 'r')
 		self.lemmas = None
-		self.rules = None
 		self.alphabet = None
 	
 	def get_alphabet(self):
@@ -108,35 +91,4 @@ class Dictionary(object):
 	
 	def get_unique_entries(self):	
 		return set(self.get_entries())
-
-	def get_rules(self):
-		if not self.rules:
-			self.rules = {}
-			for i in get_file_family(self.f):
-				ext = split_ext(i)[1]
-				if is_tnx(ext):
-					parser = make_parser()
-					handler = self.TnXHandler()
-					parser.setContentHandler(handler)
-					parser.parse(i)
-					self.rules[ext] = handler.rules
-				elif is_rlx(ext):
-					f = open(i, 'rb')
-					self.rules[ext] = defaultdict(list)
-					rules = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
-					for line in f.xreadlines():
-						if line.startswith(rules):
-							x = line.split(" ", 1)
-							self.rules[ext][x[0]].append(x[1])
-		return self.rules
-	
-	def get_rule_count(self):
-		c = 0
-		for i in self.get_rules().values():
-			if isinstance(i, list):
-				c += len(i)
-			elif isinstance(i, dict):
-				for j in i.values():
-					c += len(j)
-		return c
 

@@ -2,7 +2,10 @@ from os.path import dirname
 from collections import defaultdict, Counter, OrderedDict
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
+from xml.sax import make_parser
+from xml.sax.handler import ContentHandler
 from io import StringIO
+from glob import glob
 from datetime import datetime
 from hashlib import sha1
 from tempfile import NamedTemporaryFile
@@ -21,7 +24,7 @@ except:
 	import xml.etree.ElementTree as etree
 	from xml.etree.ElementTree import Element, SubElement
 
-from apertium import whereis, destxt, retxt, Dictionary
+from apertium import whereis, destxt, retxt, DixFile
 
 pjoin = os.path.join
 ARROW = "\u2192"
@@ -238,18 +241,61 @@ class CoverageTest(Test):
 
 			
 class DictionaryTest(Test):
-	def __init__(self, f=None, **kwargs):
-		f = kwargs.get('f', f)
-		if f is None:
-			raise ValueError('f parameter missing.')
-		self.f = f
+	class TnXHandler(ContentHandler):
+		def __init__(self):
+			self.rules = []
+
+		def startElement(self, tag, attrs):
+			if tag == "rule":
+				self.rules.append(attrs.get("comment", None))
+	
+	def __init__(self, langpair=None, directory=None, **kwargs):
+		self.langpair = kwargs.get("langpair") or langpair
+		self.directory = kwargs.get("directory") or directory or '.'
+		if None in (self.directory, self.langpair):
+			raise ValueError("langpair or directory missing.")
+		
+		self.dixfiles = glob(pjoin(directory, '*.dix'))
+		self.rlxfiles = glob(pjoin(directory, '*.rlx')) 
+		self.tnxfiles = glob(pjoin(directory, '*.t[1-9]x'))
+		self.rules = None
+	
+	def get_rules(self):
+		if not self.rules:
+			self.rules = defaultdict(list)
+			
+			for i in self.rlxfiles:
+				parser = make_parser()
+				handler = self.TnXHandler()
+				parser.setContentHandler(handler)
+				parser.parse(i)
+				self.rules[i] = handler.rules
+			
+			ruletypes = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
+			for i in self.tnxfiles:
+				f = open(i, 'rb')
+				for line in f:
+					if line.startswith(ruletypes):
+						self.rules[i].append(line)
+						
+		return self.rules
+	
+	def get_rule_counter(self):
+		c = Counter()
+		for k, v in self.get_rules().items():
+			c[k] = len(v)
+		return c
+	
+	def get_rule_count(self):
+		return sum(self.get_rule_counter().values())
 		
 	def run(self):
-		self.dct = Dictionary(self.f)
+		self.dct = DixFile(self.f)
 		self.dct.get_entries()
 		self.dct.get_rules()
 	
 	def to_xml(self):
+		return NotImplemented
 		q = Element('dictionary')
 		
 		r = SubElement(q, 'revision')
@@ -265,9 +311,12 @@ class DictionaryTest(Test):
 	
 	def to_string(self):
 		out = StringIO()
+		out.write("Ordered rule numbers per file:")
+		for file, count in self.get_rule_counter().most_common():
+			out.write("%d\t %s\n" % (count, file))
+		out.write("Rules: %d\n" % self.get_rule_count()) 
 		out.write("Entries: %d\n" % len(self.dct.get_entries()))
 		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
-		out.write("Rules: %d\n" % self.dct.get_rule_count())
 		return out.getvalue().strip()
 
 
@@ -652,7 +701,7 @@ class MorphTest(Test):
 
 
 class RegressionTest(Test):
-	wrg = re.compile(r"{{test\|(.*)\|(.*)\|(.*)}}")
+	wrg = re.compile(r"{{test\|([^|]*)\|([^|]*)\|([^|]*)[\|}]")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 	program = "apertium"
 	
@@ -789,7 +838,7 @@ class VocabularyTest(Test):
 		self.anadix = pjoin(fdir, "apertium-{0}-{1}.{0}.dix".format(lang1, lang2))
 		self.genbin = pjoin(fdir, "{0}-{1}.autogen.bin".format(lang1, lang2))
 		
-		self.alphabet = Dictionary(self.anadix).get_alphabet()
+		self.alphabet = DixFile(self.anadix).get_alphabet()
 		
 	def run(self):
 		#TODO: pythonise the awk command
