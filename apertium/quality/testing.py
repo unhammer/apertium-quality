@@ -296,6 +296,7 @@ class DictionaryTest(Test):
 			
 			for i in self.dixfiles:
 				DixFile(i).get_entries()
+		return self.entries
 	
 	def get_entry_counter(self):
 		c = Counter()
@@ -305,6 +306,9 @@ class DictionaryTest(Test):
 	
 	def get_entry_count(self):
 		return sum(self.get_entry_counter().values())
+	
+	def get_unique_entry_count(self):
+		return sum(set(self.get_entry_counter().values()))
 	
 	def run(self):
 		self.get_entries()
@@ -330,9 +334,13 @@ class DictionaryTest(Test):
 		out.write("Ordered rule numbers per file:")
 		for file, count in self.get_rule_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
-		out.write("Rules: %d\n" % self.get_rule_count()) 
-		out.write("Entries: %d\n" % len(self.dct.get_entries()))
-		out.write("Unique entries: %d\n" % len(self.dct.get_unique_entries()))
+		out.write("Total rules: %d\n" % self.get_rule_count())
+		
+		out.write("Ordered entry numbers per file:")
+		for file, count in self.get_entry_counter().most_common():
+			out.write("%d\t %s\n" % (count, file))
+		out.write("Total entries: %d\n" % self.get_entry_count())
+		out.write("Total unique entries: %d\n" % self.get_unique_entry_count())
 		return out.getvalue().strip()
 
 
