@@ -62,8 +62,7 @@ class DixFile(object):
 
 		def startElement(self, tag, attrs):
 			if tag == "e":
-				if "lm" in attrs:
-					self.lemmas.append(attrs.get("lm"))
+				self.lemmas.append(attrs.get("lm", None))
 
 	def __init__(self, f):
 		self.f = f
