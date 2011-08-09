@@ -726,7 +726,7 @@ class MorphTest(Test):
 
 
 class RegressionTest(Test):
-	wrg = re.compile(r"{{test\|([^|]*)\|([^|]*)\|([^|]*)[\|}]")
+	wrg = re.compile(r"{{test\|([^|]*)\|([^|]*)\|([^|]*)(\||}})")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 	program = "apertium"
 	
