@@ -47,6 +47,13 @@ else
 	PYTHON=`type -P $PYTHON`
 fi
 
+DOWNLOADER=`type -P wget`
+if [ 'x'$DOWNLOADER = 'x' ] ; then
+	DOWNLOADER="curl -O"
+else
+	DOWNLOADER="wget -qc"
+fi
+
 SED=`type -P gsed`
 if [ $? -gt 0 ] ; then
 	SED=sed
@@ -113,7 +120,7 @@ fi
 # BEGIN INSTALLATION
 _install_nltk_prefixed() {
 	eval "$PYTHON -c 'import nltk' ${_VERBOSE}" && return
-	wget -qc https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
+	eval $DOWNLOADER http://cloud.github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	pushd nltk-3.0.1
 	eval "$PYTHON setup-distutils.py install --prefix=${PREFIX} ${_VERBOSE}"
@@ -123,7 +130,7 @@ _install_nltk_prefixed() {
 
 _install_nltk() {
 	eval "$PYTHON -c 'import nltk' ${_VERBOSE}" && return
-	wget -qc https://github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
+	eval $DOWNLOADER http://cloud.github.com/downloads/bbqsrc/apertium-quality/nltk-3.0.1.tar.gz
 	tar xf nltk-3.0.1.tar.gz
 	pushd nltk-3.0.1
 	eval "$PYTHON setup-distutils.py install ${_VERBOSE}"

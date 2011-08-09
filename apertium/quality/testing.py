@@ -863,14 +863,29 @@ class RegressionTest(Test):
 
 
 class VocabularyTest(Test):
-	def __init__(self, lang1, lang2, output, fdir="."):
+	def __init__(self, direction, lang1, lang2, output, fdir="."):
 		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
+		dictlang = langpair = "%s-%s" % (lang1, lang2)
+		if direction.lower() == "rl":
+			langpair = "%s-%s" % (lang2, lang1)
 		
-		self.transfer_cmd = """apertium-pretransfer |\
-			 apertium-transfer \
-			 {0}/apertium-{1}-{2}.{1}-{2}.t1x \
-			 {0}/{1}-{2}.t1x.bin \
-			 {0}/{1}-{2}.autobil.bin""".format(fdir, lang1, lang2)
+		tnxcount = len(glob(pjoin(self.fdir, '*.{0}-{1}.t[1-9]x'.format(lang1, lang2))))
+		if tnxcount == 0:
+			raise IOError("No tnx files found. Try compiling your dictionary or something.")
+		
+		cmd = ["apertium-pretransfer"]
+		for i in range(1, tnxcount+1):
+			if i == 1:
+				cmd.append("""apertium-transfer {0}/apertium-{1}.{2}.t1x \
+							{0}/{2}.t1x.bin \
+							{0}/{2}.autobil.bin""".format(fdir, dictlang, langpair))
+			elif i < tnxcount:
+				cmd.append("""apertium-interchunk {0}/apertium-{1}.{2}.t{3}x \
+							{0}/{2}.t{3}x.bin""".format(fdir, dictlang, langpair, i))
+			elif i == tnxcount:
+				cmd.append("""apertium-postchunk {0}/apertium-{1}.{2}.t{3}x \
+							{0}/{2}.t{3}x.bin""".format(fdir, dictlang, langpair, i))
+		self.transfer_cmd = " | ".join(cmd)
 		
 		self.lang1 = lang1
 		self.lang2 = lang2
@@ -882,8 +897,8 @@ class VocabularyTest(Test):
 			self.tmp[i].close()
 		
 		self.fdir = fdir
-		self.anadix = pjoin(fdir, "apertium-{0}-{1}.{0}.dix".format(lang1, lang2))
-		self.genbin = pjoin(fdir, "{0}-{1}.autogen.bin".format(lang1, lang2))
+		self.anadix = pjoin(fdir, "apertium-{0}.{1}.dix".format(dictlang, langpair.split('-')[0]))
+		self.genbin = pjoin(fdir, "{0}.autogen.bin".format(langpair))
 		
 		self.alphabet = DixFile(self.anadix).get_alphabet()
 		
