@@ -319,9 +319,8 @@ window.onresize = function() {
 		return out
 
 class Statistics(object):
-	version = "0.1"
 	type = "apertium"
-	xmlns = "http://apertium.org/xml/statistics/0.1"
+	xmlns = "http://apertium.org/xml/quality/statistics/0.9"
 	ns = "{%s}" % xmlns
 	
 	@staticmethod
@@ -358,8 +357,7 @@ class Statistics(object):
 				raise
 		else:
 			kwargs = {
-				"type": Statistics.type,
-				"version": Statistics.version
+				"type": Statistics.type
 			}
 			if etree.__name__ == "lxml.etree":
 				kwargs['nsmap'] = {None: Statistics.xmlns}

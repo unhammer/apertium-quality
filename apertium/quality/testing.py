@@ -249,18 +249,36 @@ class DictionaryTest(Test):
 			if tag == "rule":
 				self.rules.append(attrs.get("comment", None))
 	
-	def __init__(self, langpair=None, directory=None, **kwargs):
+	def __init__(self, langpair=None, directory=None, corpus=None, **kwargs):
+		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-proc'])
+		
 		self.langpair = kwargs.get("langpair") or langpair
 		self.directory = kwargs.get("directory") or directory or '.'
+		self.corpus = kwargs.get("corpus") or corpus
 		if None in (self.directory, self.langpair):
 			raise ValueError("langpair or directory missing.")
 		
 		self.dixfiles = glob(pjoin(self.directory, '*.dix'))
 		self.rlxfiles = glob(pjoin(self.directory, '*.rlx')) 
 		self.tnxfiles = glob(pjoin(self.directory, '*.t[1-9]x'))
-		print(self.dixfiles)
+		
+		self.trules = None
 		self.rules = None
 		self.entries = None
+	
+	def get_transfer_rule_count(self):
+		if not self.trules:
+			transfer_cmd = """lt-proc {0}/{1}.automorf.bin |\
+				apertium-pretransfer |\
+				apertium-transfer -t \
+				{0}/apertium-{1}.{1}.t1x \
+				{0}/{1}.t1x.bin \
+				{0}/{1}.autobil.bin""".format(self.directory, self.langpair)
+			p = Popen(transfer_cmd, shell=True, close_fds=True, stdout=PIPE)
+			res = p.communicate(destxt(open(self.corpus, 'r').read()))[0].decode('utf-8').split('\n')
+			
+			self.trules = len([i for i in res if i in ": Rule"])
+		return self.trules
 	
 	def get_rules(self):
 		if not self.rules:
@@ -314,6 +332,8 @@ class DictionaryTest(Test):
 	def run(self):
 		self.get_entries()
 		self.get_rules()
+		if self.corpus:
+			self.get_transfer_rule_count()
 	
 	def to_xml(self):
 		return NotImplemented
@@ -332,6 +352,8 @@ class DictionaryTest(Test):
 	
 	def to_string(self):
 		out = StringIO()
+		if self.corpus:
+			out.write("Transfer rules: %s\n" % self.get_transfer_rule_count())
 		out.write("Ordered rule numbers per file:\n")
 		for file, count in self.get_rule_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
