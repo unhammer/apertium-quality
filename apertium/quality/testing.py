@@ -314,7 +314,8 @@ class DictionaryTest(Test):
 			self.entries = defaultdict(list)
 			
 			for i in self.dixfiles:
-				self.rules[i].append(DixFile(i).get_entries())
+				entries = DixFile(i).get_entries()
+				self.rules[i].append(entries)
 		return self.entries
 	
 	def get_entry_counter(self):
