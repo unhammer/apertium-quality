@@ -1,4 +1,4 @@
-from os.path import dirname
+from os.path import dirname, basename		
 from collections import defaultdict, Counter, OrderedDict
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
@@ -289,14 +289,14 @@ class DictionaryTest(Test):
 				handler = self.TnXHandler()
 				parser.setContentHandler(handler)
 				parser.parse(i)
-				self.rules[i] = handler.rules
+				self.rules[basename(i)] = handler.rules
 			
 			ruletypes = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
 			for i in self.rlxfiles:
 				f = open(i, 'r')
 				for line in f:
 					if line.startswith(ruletypes):
-						self.rules[i].append(line)
+						self.rules[basename(i)].append(line)
 						
 		return self.rules
 	
@@ -314,8 +314,7 @@ class DictionaryTest(Test):
 			self.entries = defaultdict(list)
 			
 			for i in self.dixfiles:
-				entries = DixFile(i).get_entries()
-				self.entries[i].append(entries)
+				self.entries[i].append(DixFile(i).get_entries())
 		return self.entries
 	
 	def get_entry_counter(self):
@@ -358,7 +357,7 @@ class DictionaryTest(Test):
 		out.write("Ordered rule numbers per file:\n")
 		for file, count in self.get_rule_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
-		out.write("Total rules: %d\n" % self.get_rule_count())
+		out.write("Total rules: %d\n\n" % self.get_rule_count())
 		
 		out.write("Ordered entry numbers per file:\n")
 		for file, count in self.get_entry_counter().most_common():

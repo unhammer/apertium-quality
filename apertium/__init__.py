@@ -60,10 +60,18 @@ class DixFile(object):
 	class DIXHandler(ContentHandler):
 		def __init__(self):
 			self.lemmas = []
+			self.in_section = False
 
 		def startElement(self, tag, attrs):
-			if tag == "e":
+			if tag == "section":
+				self.in_section = True
+			
+			if tag == "e" and self.in_section:
 				self.lemmas.append(attrs.get("lm", None))
+		
+		def endElement(self, tag):
+			if tag == "section":
+				self.in_section = False
 
 	def __init__(self, f):
 		self.f = f
@@ -86,7 +94,7 @@ class DixFile(object):
 			handler = self.DIXHandler()
 			parser.setContentHandler(handler)
 			try:
-				parser.parse(self.dix)
+				parser.parse(self.f)
 				self.lemmas = handler.lemmas
 			except Exception as e:
 				print("File %s caused an exception:" % self.f)
