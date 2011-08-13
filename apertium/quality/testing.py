@@ -1,4 +1,4 @@
-from os.path import dirname, basename		
+from os.path import dirname, basename, abspath
 from collections import defaultdict, Counter, OrderedDict
 from multiprocessing import Process, Manager
 from subprocess import Popen, PIPE
@@ -15,6 +15,7 @@ import re
 import urllib.request
 import shlex
 import itertools
+import traceback
 
 import yaml
 try:
@@ -25,6 +26,7 @@ except:
 	from xml.etree.ElementTree import Element, SubElement
 
 from apertium import whereis, destxt, retxt, DixFile
+from apertium.quality import Statistics, Webpage
 
 pjoin = os.path.join
 ARROW = "\u2192"
@@ -58,6 +60,7 @@ class Test(object):
 	
 	def _svn_revision(self, directory):
 		"""Returns the SVN revision of the given dictionary directory"""
+		whereis(['svnversion'])
 		res = Popen('svnversion', stdout=PIPE, close_fds=True).communicate()[0].decode('utf-8').strip()
 		try:
 			int(res) 
@@ -142,6 +145,149 @@ class AmbiguityTest(Test):
 		out.write("Total analyses: %d\n" % self.total)
 		out.write("Average ambiguity: %.2f" % self.average)
 		return out.getvalue().strip()
+
+
+class AutoTest(Test):
+	xmlns = "http://apertium.org/xml/apertium/config/0.1"
+	ns = "{%s}" % xmlns
+	
+	def __init__(self, stats=None, webdir=None, aqx=None, **kwargs):
+		self.stats = kwargs.get('stats', stats)
+		self.webdir = kwargs.get('webdir', webdir)
+		self.aqx = kwargs.get('aqx', aqx)
+		if self.aqx is None:
+			raise ValueError('A configuration file is required')
+		
+		self.langpair = dirname(abspath('.')).split('apertium-')[-1]
+		self.lang1, self.lang2 = self.langpair.split('-')
+		
+		if self.stats:
+			self.stats = Statistics(self.stats)
+		
+		if self.aqx:
+			self.root = etree.parse(self.aqx).getroot()
+	
+	def ambiguity(self):
+		dixen = glob("apertium-%s-*.dix" % self.langpair)
+		print("[-] Ambiguity Tests")
+		for d in dixen:
+			print("[-] * %s" % d)
+			try:
+				test = AmbiguityTest(d)
+				test.run()
+			except:
+				print("[!] Error:")
+				traceback.print_exc()
+				continue
+			self.stats.add(*test.to_xml())
+	
+	def coverage(self):
+		corpora = self.root.find("coverage")
+		if corpora is None:
+			return 
+		
+		print("[-] Coverage Tests")
+		for corpus in corpora.iter("corpus"):
+			path = corpus.attrib.get("path", "")
+			lang = corpus.attrib.get("language", "")
+			gen = corpus.attrib.get("generator", "")
+			
+			if "" in (path, lang):
+				print("[!] No path or language set.")
+				continue
+			
+			print("[-] File: %s" % basename(path))
+			
+			if not os.path.isfile(path):
+				if gen != "":
+					p = Popen(gen, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+					res, err = p.communicate()
+					if p.returncode != 0:
+						print("[!] Return code was %s." % p.returncode)
+						continue
+					elif os.path.isfile(path):
+						print("[!] File at %s does not exist after generation." % path)
+						continue
+				else:
+					print("[!] No generator and file does not exist at %s." % path)
+					continue
+			
+			try:
+				test = CoverageTest(path, "%s.automorf.bin" % lang)
+				test.run()
+			except:
+				print("[!] Error:")
+				traceback.print_exc()
+				continue
+			self.stats.add(*test.to_xml())
+					
+	def morph(self):
+		tests = self.root.find("morph")
+		if tests is None:
+			return 
+		
+		print("[!] No tests found.")
+		for test in tests.iter('test'):
+			path = test.attrib.get("path")
+			if path is None:
+				print("[!] No path value set." % path)
+				continue
+			
+			print("[-] File: %s" % path)
+			if not os.path.isfile(path):
+				print("[!] File at %s does not exist." % path)
+				continue
+				
+			try:
+				test = MorphTest(path)
+				test.run()
+			except:
+				print("[!] Error:")
+				traceback.print_exc()
+				continue
+			self.stats.add(*test.to_xml())
+
+	def regression(self):
+		tests = self.root.find("regression")
+		if tests is None:
+			#print derp
+			return
+		
+		for test in tests.iter('test'):
+			path = test.attrib.get("path")
+			language = test.attrib.get("language")
+			
+			if None in (path, language):
+				print("[!] ")
+				continue
+			
+			if not os.path.isfile(path):
+				#print(
+				continue
+				
+			try:
+				test = RegressionTest(path, language)
+				test.run()
+			except:
+				print("[!] Error:")
+				traceback.print_exc()
+				continue
+			self.stats.add(*test.to_xml())
+
+	def webpage(self):
+		#print(self._tab("Generating webpages..."))
+		self.web = Webpage(self.stats, self.webdir)
+		self.web.generate()
+	
+	def run(self):
+		self.ambiguity()
+		self.coverage()
+		self.regression()
+		self.morph()
+		self.stats.write()
+		if self.webdir:
+			self.webpage()
+		#print(self._tab("Done."))
 
 
 class CoverageTest(Test):

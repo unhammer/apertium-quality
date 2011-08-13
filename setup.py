@@ -4,7 +4,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 from os import listdir
 
-install_requires = ['pyyaml', 'mwtools']
+install_requires = ['PyYAML', 'mwtools']
 
 # Workaround for Python 3.1's failure to include argparse
 try: import argparse
