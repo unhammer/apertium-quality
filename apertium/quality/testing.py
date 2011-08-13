@@ -284,7 +284,7 @@ class DictionaryTest(Test):
 		if not self.rules:
 			self.rules = defaultdict(list)
 			
-			for i in self.rlxfiles:
+			for i in self.tnxfiles:
 				parser = make_parser()
 				handler = self.TnXHandler()
 				parser.setContentHandler(handler)
@@ -292,7 +292,7 @@ class DictionaryTest(Test):
 				self.rules[i] = handler.rules
 			
 			ruletypes = ("SELECT", "REMOVE", "MAP", "SUBSTITUTE")
-			for i in self.tnxfiles:
+			for i in self.rlxfiles:
 				f = open(i, 'r')
 				for line in f:
 					if line.startswith(ruletypes):
