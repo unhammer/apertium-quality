@@ -315,7 +315,7 @@ class DictionaryTest(Test):
 			
 			for i in self.dixfiles:
 				entries = DixFile(i).get_entries()
-				self.rules[i].append(entries)
+				self.entries[i].append(entries)
 		return self.entries
 	
 	def get_entry_counter(self):
@@ -331,8 +331,8 @@ class DictionaryTest(Test):
 		return sum(set(self.get_entry_counter().values()))
 	
 	def run(self):
-		self.get_entries()
 		self.get_rules()
+		self.get_entries()
 		if self.corpus:
 			self.get_transfer_rule_count()
 	
