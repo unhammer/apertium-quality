@@ -75,7 +75,7 @@ class DixFile(object):
 
 	def __init__(self, f):
 		self.f = f
-		self.dix = open(f, 'rb')
+		self.dix = open(f, 'r')
 		self.lemmas = None
 		self.alphabet = None
 	
