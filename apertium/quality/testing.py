@@ -295,7 +295,7 @@ class DictionaryTest(Test):
 			for i in self.rlxfiles:
 				f = open(i, 'r')
 				for line in f:
-					if line.startswith(ruletypes):
+					if line.strip().startswith(ruletypes):
 						self.rules[basename(i)].append(line)
 						
 		return self.rules
@@ -314,7 +314,7 @@ class DictionaryTest(Test):
 			self.entries = defaultdict(list)
 			
 			for i in self.dixfiles:
-				self.entries[basename(i)].append(DixFile(i).get_entries())
+				self.entries[basename(i)] += DixFile(i).get_entries()
 		return self.entries
 	
 	def get_entry_counter(self):
