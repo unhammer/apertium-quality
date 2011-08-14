@@ -56,7 +56,7 @@ class Test(object):
 		"""
 		if hasattr(data, 'encode'):
 			data = data.encode('utf-8')
-		return str(sha1(data).hexdigest())
+		return sha1(data).hexdigest()
 	
 	def _svn_revision(self, directory):
 		"""Returns the SVN revision of the given dictionary directory"""
@@ -130,9 +130,9 @@ class AmbiguityTest(Test):
 		q = Element('dictionary')
 		q.attrib["value"] = self.f
 
-		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
-					timestamp=datetime.utcnow().isoformat(),
-					checksum=self._checksum(open(self.f, 'rb').read()))
+		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)))
+		r.attrib['timestamp'] = datetime.utcnow().isoformat()
+		r.attrib['checksum'] = self._checksum(open(self.f, 'rb').read())
 
 		SubElement(r, 'surface-forms').text = str(self.surface_forms)
 		SubElement(r, 'analyses').text = str(self.total)
