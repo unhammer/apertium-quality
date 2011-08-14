@@ -182,12 +182,12 @@ class AutoTest(Test):
 			self.stats.add(*test.to_xml())
 	
 	def coverage(self):
-		corpora = self.root.find("coverage")
+		corpora = self.root.find(self.ns + "coverage")
 		if corpora is None:
 			return 
 		
 		print("[-] Coverage Tests")
-		for corpus in corpora.iter("corpus"):
+		for corpus in corpora.iter(self.ns + "corpus"):
 			path = corpus.attrib.get("path", "")
 			lang = corpus.attrib.get("language", "")
 			gen = corpus.attrib.get("generator", "")
@@ -222,12 +222,12 @@ class AutoTest(Test):
 			self.stats.add(*test.to_xml())
 					
 	def morph(self):
-		tests = self.root.find("morph")
+		tests = self.root.find(self.ns + "morph")
 		if tests is None:
 			return 
 		
 		print("[-] Morph Tests")
-		for test in tests.iter('test'):
+		for test in tests.iter(self.ns + 'test'):
 			path = test.attrib.get("path")
 			if path is None:
 				print("[!] No path value set." % path)
@@ -248,12 +248,12 @@ class AutoTest(Test):
 			self.stats.add(*test.to_xml())
 
 	def regression(self):
-		tests = self.root.find("regression")
+		tests = self.root.find(self.ns + "regression")
 		if tests is None:
 			return
 		
 		print("[-] Regression Tests")
-		for test in tests.iter('test'):
+		for test in tests.iter(self.ns + 'test'):
 			path = test.attrib.get("path")
 			language = test.attrib.get("language")
 			
@@ -285,9 +285,10 @@ class AutoTest(Test):
 		self.coverage()
 		self.regression()
 		self.morph()
-		self.stats.write()
-		if self.webdir:
-			self.webpage()
+		if self.stats:
+			self.stats.write()
+			if self.webdir:
+				self.webpage()
 		print("[-] Done!")
 
 class CoverageTest(Test):
