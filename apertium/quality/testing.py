@@ -993,7 +993,7 @@ class RegressionTest(Test):
 				continue
 			comment = None
 			if len(test) >= 3:
-				lang, left, right = test[0:2]
+				lang, left, right = test[0:3]
 				if not left.endswith('.'):
 					left += '[_].'
 			if len(test) >= 4:
