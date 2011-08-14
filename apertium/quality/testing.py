@@ -573,7 +573,7 @@ class GenerationTest(Test):
 		for i in data:
 			if i == "^":
 				in_word = True
-			elif i == "$":
+			if i == "$":
 				out.write("%s$\n" % buf.getvalue())
 				count[buf.getvalue()] += 1
 				buf = StringIO()
@@ -584,13 +584,14 @@ class GenerationTest(Test):
 		return out.getvalue().split('\n')
 					
 	def run(self):
-		app = Popen(['apertium', '-d', self.directory, '%s' % self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
-		res = app.communicate()[0].decode('utf-8')
-		transfer = self.get_transfer(res)
+		app = Popen(['apertium', '-d', self.directory, self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
+		raw = app.communicate()[0].decode('utf-8')
+		transfer = self.get_transfer(raw)
+		del raw
 		
 		stripped = StringIO()
 		for word, count in Counter(transfer).most_common():
-			stripped.write("%d\t%s\n" % (count, word))
+			stripped.write("{:>6} {1}\n".format(count, word))
 		stripped = stripped.getvalue()
 		
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
