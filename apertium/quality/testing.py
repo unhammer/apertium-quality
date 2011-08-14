@@ -988,7 +988,9 @@ class RegressionTest(Test):
 		rtests = text.split('\n')
 		rtests = [self.wrg.search(j) for j in rtests if self.wrg.search(j)]
 		for i in rtests:
-			test = i.split('|')
+			test = i.group(1).split('|')
+			if len(test) < 3:
+				continue
 			comment = None
 			if len(test) >= 3:
 				lang, left, right = test[0:2]
