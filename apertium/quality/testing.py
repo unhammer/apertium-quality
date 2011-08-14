@@ -596,8 +596,8 @@ class GenerationTest(Test):
 		
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
-		print(surface)
-		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
+		nofreq = re.sub(r'[\s\t]*\d*\s*\^', '^', stripped)
+		print(nofreq)
 		
 		gen_errors = StringIO()
 		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
