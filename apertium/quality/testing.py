@@ -607,7 +607,6 @@ class GenerationTest(Test):
 		multibidix = []
 		tagmismatch = []
 		
-		gen_errors.seek(0)
 		for i in gen_errors:
 			if "#" in i:
 				if re.search(r'[0-9] #.*\/', i):
@@ -618,14 +617,15 @@ class GenerationTest(Test):
 				multiform.append(i)
 		
 		print("DEBUG:")
-		print("raw:\n%s\n" % res)
-		print("transfer:\n%s\n" % transfer)
-		print("stripped:\n%s\n" % stripped)
-		print("surface:\n%s\n" % surface)
-		print("nofreq:\n%s\n" % nofreq)
-		print('\nmultiform: %s' % multiform)
-		print('multibidix: %s' % multibidix)
-		print("tagmismatch %s" % tagmismatch)
+		#print("raw:\n%s\n" % res)
+		#print("transfer:\n%s\n" % transfer)
+		#print("stripped:\n%s\n" % stripped)
+		#print("surface:\n%s\n" % surface)
+		#print("nofreq:\n%s\n" % nofreq)
+		#print('\nmultiform: %s' % multiform)
+		#print('multibidix: %s' % multibidix)
+		#print("tagmismatch %s" % tagmismatch)
+		print(gen_errors)
 		
 		self.multiform = multiform
 		self.multibidix = multibidix
