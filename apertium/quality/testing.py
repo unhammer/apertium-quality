@@ -66,7 +66,7 @@ class Test(object):
 			int(res) # will raise error if it can't be int'd
 			return str(res)
 		except:
-			UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
+			raise UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
 	
 	def run(self, *args, **kwargs):
 		"""Runs the actual test
