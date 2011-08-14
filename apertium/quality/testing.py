@@ -171,7 +171,7 @@ class AutoTest(Test):
 		dixen = glob("apertium-%s-*.dix" % self.langpair)
 		print("[-] Ambiguity Tests")
 		for d in dixen:
-			print("[-] * %s" % d)
+			print("[-] File: %s" % d)
 			try:
 				test = AmbiguityTest(d)
 				test.run()
@@ -261,6 +261,7 @@ class AutoTest(Test):
 				print("[!] No path or language set.")
 				continue
 			
+			print("[-] File: %s" % path)
 			if not os.path.isfile(path):
 				print("[!] No file exists at %s" % path)
 				continue
@@ -597,7 +598,6 @@ class GenerationTest(Test):
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
 		nofreq = re.sub(r'[\s\t]*\d*\s*\^', '^', stripped)
-		print(nofreq)
 		
 		gen_errors = StringIO()
 		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
@@ -1053,7 +1053,8 @@ class RegressionTest(Test):
 
 
 class VocabularyTest(Test):
-	def __init__(self, direction, lang1, lang2, output, fdir="."):
+	def __init__(self, direction, lang1, lang2, output, 
+				fdir=".", ana=None, gen=None):
 		whereis(['apertium-transfer', 'apertium-pretransfer', 'lt-expand'])
 		dictlang = langpair = "%s-%s" % (lang1, lang2)
 		if direction.lower() == "rl":
@@ -1087,8 +1088,8 @@ class VocabularyTest(Test):
 			self.tmp[i].close()
 		
 		self.fdir = fdir
-		self.anadix = pjoin(fdir, "apertium-{0}.{1}.dix".format(dictlang, langpair.split('-')[0]))
-		self.genbin = pjoin(fdir, "{0}.autogen.bin".format(langpair))
+		self.anadix = ana or pjoin(fdir, "apertium-{0}.{1}.dix".format(dictlang, langpair.split('-')[0]))
+		self.genbin = gen or pjoin(fdir, "{0}.autogen.bin".format(langpair))
 		
 		self.alphabet = DixFile(self.anadix).get_alphabet()
 		

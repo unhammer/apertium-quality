@@ -9,7 +9,7 @@ class UI(Frontend, AutoTest):
 		self.add_argument("-X", "--statistics", dest="stats", 
                           nargs='?', const='quality-stats.xml', default=None,
                           help="XML file that statistics are to be stored in")
-		self.add_argument("-h", "--html", dest="outdir", nargs=1, 
+		self.add_argument("-H", "--html", dest="outdir", nargs=1, 
       					  help="Output directory for HTML content")
 		self.add_argument("aqx", nargs=1, help="Apertium Quality XML configuration file")
 		self.args = args = self.parse_args()
