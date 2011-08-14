@@ -56,7 +56,7 @@ class Test(object):
 		"""
 		if hasattr(data, 'encode'):
 			data = data.encode('utf-8')
-		return sha1(data).hexdigest()
+		return str(sha1(data).hexdigest())
 	
 	def _svn_revision(self, directory):
 		"""Returns the SVN revision of the given dictionary directory"""
