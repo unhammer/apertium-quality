@@ -172,6 +172,7 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		try:
 			count = 0
+			f = None
 			while True:
 				if maxsentences > 0 and count >= maxsentences: 
 					break
@@ -183,11 +184,41 @@ class CorpusExtractor(object):
 					if(self.heuristics(s.strip())):
 						f.write("%s\n" % s.strip())
 						count += 1
-				f.close()
+				f.flush()
 				sys.stdout.write('\r%d' % count)
 				sys.stdout.flush()
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
+			f.close()
 		except Empty:
 			pass
-
+	
+	def xml_output_worker(self, fn, language, maxsentences=0):
+		pid = os.getpid()
+		try:
+			count = 0
+			# TODO set namespace
+			# TODO test this shit yo
+			root = Element("corpus", language=language, 
+						name="Generated %s Wikipedia Corpus" % language, 
+						tags="generator:aq-wikicrp %s" % language)
+			while True:
+				if maxsentences > 0 and count >= maxsentences: 
+					break
+				sentencelist = self.outq.get(block=True, timeout=5)
+				el = SubElement(root, "entry")
+				el.text = ""
+				for s in sentencelist:
+					if maxsentences > 0 and count >= maxsentences: 
+						break
+					if(self.heuristics(s.strip())):
+						el.text += s.strip() + '\n'
+						count += 1
+				sys.stdout.write('\r%d' % count)
+				sys.stdout.flush()
+			ElementTree(root).write(fn)
+			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
+			sys.stdout.flush()
+		except Empty:
+			pass
+		

@@ -10,6 +10,7 @@ class UI(Frontend, DictionaryTest):
             help="Directory of dictionary (Default: current directory)")
         # TODO add direction
         # TODO add trules option
+        # should allow LR, RL and both at same time with multiple flags
         self.add_argument("langpair", nargs=1, help="Language pair (eg aa-ab)")
         self.args = self.parse_args()
         DictionaryTest.__init__(self, self.args.langpair[0], self.args.dictdir[0])
