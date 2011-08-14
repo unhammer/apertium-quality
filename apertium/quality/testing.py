@@ -296,7 +296,7 @@ class AutoTest(Test):
 
 	def webpage(self):
 		print("[-] Generating HTML content")
-		self.web = Webpage(self.stats, self.webdir)
+		self.web = Webpage(self.stats, self.webdir, self.langpair)
 		self.web.generate()
 	
 	def run(self):
