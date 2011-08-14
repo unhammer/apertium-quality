@@ -158,8 +158,8 @@ class AutoTest(Test):
 		if self.aqx is None:
 			raise ValueError('A configuration file is required')
 		
-		self.langpair = dirname(abspath('.')).split('apertium-')[-1]
-		self.lang1, self.lang2 = self.langpair.split('-')
+		self.langpair = abspath('.').split('apertium-')[-1]
+		self.lang1, self.lang2 = self.langpair.split('-',1)
 		
 		if self.stats:
 			self.stats = Statistics(self.stats)
