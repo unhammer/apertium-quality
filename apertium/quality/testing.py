@@ -596,6 +596,7 @@ class GenerationTest(Test):
 		
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
 		surface = app.communicate(stripped.encode('utf-8'))[0].decode('utf-8')
+		print(surface)
 		nofreq = re.sub(r'^ *[0-9]* \^', '^', stripped)
 		
 		gen_errors = StringIO()
@@ -615,18 +616,7 @@ class GenerationTest(Test):
 					tagmismatch.append(i)
 			elif "/" in i:
 				multiform.append(i)
-		
-		print("DEBUG:")
-		#print("raw:\n%s\n" % res)
-		#print("transfer:\n%s\n" % transfer)
-		#print("stripped:\n%s\n" % stripped)
-		#print("surface:\n%s\n" % surface)
-		#print("nofreq:\n%s\n" % nofreq)
-		#print('\nmultiform: %s' % multiform)
-		#print('multibidix: %s' % multibidix)
-		#print("tagmismatch %s" % tagmismatch)
-		print(gen_errors)
-		
+
 		self.multiform = multiform
 		self.multibidix = multibidix
 		self.tagmismatch = tagmismatch
