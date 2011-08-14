@@ -14,7 +14,7 @@ class UI(Frontend, AutoTest):
       					  help="Output directory for HTML content")
 		self.add_argument("aqx", nargs=1, help="Apertium Quality XML configuration file")
 		self.args = args = self.parse_args()
-		AutoTest.__init__(self, self.args.stats, self.args.outdir[0], self.args.aqx[0])
+		AutoTest.__init__(self, self.args.stats, self.args.outdir, self.args.aqx[0])
 		
 	def start(self):
 		self.run()
