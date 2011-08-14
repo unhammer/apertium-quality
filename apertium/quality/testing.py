@@ -226,7 +226,7 @@ class AutoTest(Test):
 		if tests is None:
 			return 
 		
-		print("[!] No tests found.")
+		print("[-] Morph Tests")
 		for test in tests.iter('test'):
 			path = test.attrib.get("path")
 			if path is None:
@@ -250,19 +250,19 @@ class AutoTest(Test):
 	def regression(self):
 		tests = self.root.find("regression")
 		if tests is None:
-			#print derp
 			return
 		
+		print("[-] Regression Tests")
 		for test in tests.iter('test'):
 			path = test.attrib.get("path")
 			language = test.attrib.get("language")
 			
 			if None in (path, language):
-				print("[!] ")
+				print("[!] No path or language set.")
 				continue
 			
 			if not os.path.isfile(path):
-				#print(
+				print("[!] No file exists at %s" % path)
 				continue
 				
 			try:
@@ -275,7 +275,7 @@ class AutoTest(Test):
 			self.stats.add(*test.to_xml())
 
 	def webpage(self):
-		#print(self._tab("Generating webpages..."))
+		print("[-] Generating HTML content")
 		self.web = Webpage(self.stats, self.webdir)
 		self.web.generate()
 	
@@ -287,8 +287,7 @@ class AutoTest(Test):
 		self.stats.write()
 		if self.webdir:
 			self.webpage()
-		#print(self._tab("Done."))
-
+		print("[-] Done!")
 
 class CoverageTest(Test):
 	app = "lt-proc"
@@ -894,7 +893,7 @@ class MorphTest(Test):
 
 
 class RegressionTest(Test):
-	wrg = re.compile(r"{{test\|([^|]*)\|([^|]*)\|([^|]*)(\||}})")
+	wrg = re.compile(r"{{test\|(.*)}}")
 	ns = "{http://www.mediawiki.org/xml/export-0.3/}"
 	program = "apertium"
 	
@@ -933,19 +932,26 @@ class RegressionTest(Test):
 		rtests = text.split('\n')
 		rtests = [self.wrg.search(j) for j in rtests if self.wrg.search(j)]
 		for i in rtests:
-			lang, left, right = i.group(1), i.group(2), i.group(3)
-			if not left.endswith('.'):
-				left += '[_].'
-			self.tests[lang.strip()][left.strip()] = right.strip()
+			test = i.split('|')
+			comment = None
+			if len(test) >= 3:
+				lang, left, right = test[0:2]
+				if not left.endswith('.'):
+					left += '[_].'
+			if len(test) >= 4:
+				comment = test[3].strip()
+			self.tests[lang.strip()][left.strip()] = [right.strip(), comment]
 		self.out = StringIO()
 	
 	def run(self):
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
+			
 			args = '\n'.join(self.tests[side].keys())
 			app = Popen([self.program, '-d', self.directory, self.mode], stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 			app.stdin.write(args.encode('utf-8'))
 			res = app.communicate()[0]
+			
 			self.results = str(res.decode('utf-8')).split('\n')
 			if app.returncode > 0:
 				return app.returncode
@@ -955,16 +961,21 @@ class RegressionTest(Test):
 					#raise AttributeError("More tests than results.")
 					self.out.write("WARNING: more tests than results!\n")
 					continue
+				
 				res = self.results[n].split("[_]")[0].strip()
 				orig = test[0].split("[_]")[0].strip()
-				targ = test[1].strip()
+				targ = test[1][0].strip()
+				
 				self.out.write("%s\t  %s\n" % (self.mode, orig))
 				if res == targ:
 					self.out.write("WORKS\t  %s\n" % res)
+					if not test[1][1] is None:
+						self.out.write("//\t  %s\n" % test[1][1].strip())
 					self.passes += 1
 				else:
 					self.out.write("\t- %s\n" % targ)
 					self.out.write("\t+ %s\n" % res)
+				
 				self.total += 1
 				self.out.write('\n')
 			self.out.write("Passes: %d/%d, Success rate: %.2f%%\n" 
