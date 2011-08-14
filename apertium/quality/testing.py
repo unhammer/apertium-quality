@@ -63,7 +63,7 @@ class Test(object):
 		whereis(['svnversion'])
 		res = Popen('svnversion', stdout=PIPE, close_fds=True).communicate()[0].decode('utf-8').strip()
 		try:
-			int(res) 
+			int(res) # will raise error if it can't be int'd
 			return str(res)
 		except:
 			UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
@@ -130,7 +130,7 @@ class AmbiguityTest(Test):
 		q = Element('dictionary')
 		q.attrib["value"] = self.f
 
-		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)))
+		r = SubElement(q, "revision", value=str(self._svn_revision(dirname(self.f))))
 		r.attrib['timestamp'] = datetime.utcnow().isoformat()
 		r.attrib['checksum'] = self._checksum(open(self.f, 'rb').read())
 
@@ -380,7 +380,7 @@ class CoverageTest(Test):
 		q.attrib["value"] = os.path.basename(self.dct)
 		
 		r = SubElement(q, "revision", 
-					value=self._svn_revision(dirname(self.dct)),
+					value=str(self._svn_revision(dirname(self.dct))),
 					timestamp=datetime.utcnow().isoformat(),
 					checksum=self._checksum(open(self.dct, 'rb').read()))
 		
@@ -919,7 +919,7 @@ class MorphTest(Test):
 		q = Element('config')
 		q.attrib["value"] = self.f
 		
-		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)),
+		r = SubElement(q, "revision", value=str(self._svn_revision(dirname(self.f))),
 					timestamp=datetime.utcnow().isoformat(),
 					checksum=self._checksum(open(self.f, 'rb').read()))
 		
@@ -1063,7 +1063,7 @@ class RegressionTest(Test):
 		q.attrib['revision'] = page.find(ns + 'revision').find(ns + 'id').text
 		
 		r = SubElement(q, 'revision', 
-					value=self._svn_revision(self.directory),
+					value=str(self._svn_revision(self.directory)),
 					timestamp=datetime.utcnow().isoformat())
 		
 		SubElement(r, 'percent').text = "%.2f" % self.get_total_percent()
