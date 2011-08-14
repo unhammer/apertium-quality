@@ -183,7 +183,9 @@ class AutoTest(Test):
 				print("[!] Error:")
 				traceback.print_exc()
 				continue
-			self.stats.add(*test.to_xml())
+			
+			if self.stats:
+				self.stats.add(*test.to_xml())
 	
 	def coverage(self):
 		corpora = self.root.find(self.ns + "coverage")
@@ -224,7 +226,9 @@ class AutoTest(Test):
 				print("[!] Error:")
 				traceback.print_exc()
 				continue
-			self.stats.add(*test.to_xml())
+			
+			if self.stats:
+				self.stats.add(*test.to_xml())
 					
 	def morph(self):
 		tests = self.root.find(self.ns + "morph")
@@ -251,7 +255,9 @@ class AutoTest(Test):
 				print("[!] Error:")
 				traceback.print_exc()
 				continue
-			self.stats.add(*test.to_xml())
+			
+			if self.stats:
+				self.stats.add(*test.to_xml())
 
 	def regression(self):
 		tests = self.root.find(self.ns + "regression")
@@ -280,7 +286,9 @@ class AutoTest(Test):
 				print("[!] Error:")
 				traceback.print_exc()
 				continue
-			self.stats.add(*test.to_xml())
+			
+			if self.stats:
+				self.stats.add(*test.to_xml())
 
 	def webpage(self):
 		print("[-] Generating HTML content")
