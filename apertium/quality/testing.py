@@ -607,6 +607,7 @@ class GenerationTest(Test):
 		multibidix = []
 		tagmismatch = []
 		
+		gen_errors.seek(0)
 		for i in gen_errors:
 			if "#" in i:
 				if re.search(r'[0-9] #.*\/', i):
