@@ -159,7 +159,7 @@ class AutoTest(Test):
 			raise ValueError('A configuration file is required')
 		
 		self.langpair = abspath('.').split('apertium-')[-1]
-		self.lang1, self.lang2 = self.langpair.split('-',1)
+		self.lang1, self.lang2 = self.langpair.split('-')
 		
 		if self.stats:
 			self.stats = Statistics(self.stats)
@@ -168,7 +168,11 @@ class AutoTest(Test):
 			self.root = etree.parse(self.aqx).getroot()
 	
 	def ambiguity(self):
-		dixen = glob("apertium-%s-*.dix" % self.langpair)
+		dixen = glob("apertium-%s.*.dix" % self.langpair)
+		if dixen == []:
+			print("[!] No .dix files")
+			return
+		
 		print("[-] Ambiguity Tests")
 		for d in dixen:
 			print("[-] File: %s" % d)
@@ -184,6 +188,7 @@ class AutoTest(Test):
 	def coverage(self):
 		corpora = self.root.find(self.ns + "coverage")
 		if corpora is None:
+			print("[!] No coverage tests")
 			return 
 		
 		print("[-] Coverage Tests")
@@ -224,6 +229,7 @@ class AutoTest(Test):
 	def morph(self):
 		tests = self.root.find(self.ns + "morph")
 		if tests is None:
+			print("[!] No morph tests")
 			return 
 		
 		print("[-] Morph Tests")
@@ -250,6 +256,7 @@ class AutoTest(Test):
 	def regression(self):
 		tests = self.root.find(self.ns + "regression")
 		if tests is None:
+			print("[!] No regression tests")
 			return
 		
 		print("[-] Regression Tests")
@@ -290,6 +297,9 @@ class AutoTest(Test):
 			if self.webdir:
 				self.webpage()
 		print("[-] Done!")
+	
+	def to_string(self): pass
+	def to_xml(self): raise Exception()
 
 class CoverageTest(Test):
 	app = "lt-proc"
