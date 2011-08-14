@@ -64,7 +64,7 @@ class Test(object):
 		res = Popen('svnversion', stdout=PIPE, close_fds=True).communicate()[0].decode('utf-8').strip()
 		try:
 			int(res) 
-			return res
+			return str(res)
 		except:
 			UncleanWorkingDirectoryException("Unclean working directory. Result: %s" % res)
 	
@@ -130,7 +130,7 @@ class AmbiguityTest(Test):
 		q = Element('dictionary')
 		q.attrib["value"] = self.f
 
-		r = SubElement(q, "revision", value=str(self._svn_revision(dirname(self.f))))
+		r = SubElement(q, "revision", value=self._svn_revision(dirname(self.f)))
 		r.attrib['timestamp'] = datetime.utcnow().isoformat()
 		r.attrib['checksum'] = self._checksum(open(self.f, 'rb').read())
 
