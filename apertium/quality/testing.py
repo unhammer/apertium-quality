@@ -591,7 +591,7 @@ class GenerationTest(Test):
 		
 		stripped = StringIO()
 		for word, count in Counter(transfer).most_common():
-			stripped.write("{:>6} {1}\n".format(count, word))
+			stripped.write("{:>6} {:<}\n".format(count, word))
 		stripped = stripped.getvalue()
 		
 		app = Popen(['lt-proc', '-d', "%s.autogen.bin" % pjoin(self.directory, self.lang)], stdin=PIPE, stdout=PIPE, close_fds=True)
