@@ -148,7 +148,7 @@ class AmbiguityTest(Test):
 
 
 class AutoTest(Test):
-	xmlns = "http://apertium.org/xml/apertium/config/0.1"
+	xmlns = "http://apertium.org/xml/quality/config/0.1"
 	ns = "{%s}" % xmlns
 	
 	def __init__(self, stats=None, webdir=None, aqx=None, **kwargs):

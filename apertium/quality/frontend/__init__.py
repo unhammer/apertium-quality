@@ -19,7 +19,7 @@ class Frontend(Test, ArgumentParser):
     def start(self):
         ret = self.run()
         print(self.to_string())
-        if self.args.statfile:
+        if self.args.get('statfile') and self.args.statfile:
             stats = Statistics(self.args.statfile)
             stats.add(*self.to_xml())
             stats.write()
