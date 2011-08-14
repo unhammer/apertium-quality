@@ -8,6 +8,8 @@ class UI(Frontend, DictionaryTest):
         self.add_argument("-d", "--dict", dest="dictdir", nargs='?',
             const=['.'], default=['.'],
             help="Directory of dictionary (Default: current directory)")
+        # TODO add direction
+        # TODO add trules option
         self.add_argument("langpair", nargs=1, help="Language pair (eg aa-ab)")
         self.args = self.parse_args()
         DictionaryTest.__init__(self, self.args.langpair[0], self.args.dictdir[0])

@@ -411,19 +411,50 @@ class DictionaryTest(Test):
 		self.rules = None
 		self.entries = None
 	
-	def get_transfer_rule_count(self):
+	def get_transfer_command(self, tnxcount, pair1, pair2):
+		cmd = ["lt-proc {0}/{1}.automorf.bin | apertium-pretransfer".format(self.directory, self.langpair)]
+		for i in range(1, tnxcount+1):
+			if i == 1:
+				cmd.append("""apertium-transfer {0}/apertium-{1}.{2}.t1x \
+							{0}/{2}.t1x.bin \
+							{0}/{2}.autobil.bin""".format(self.directory, pair1, pair2))
+			elif i < tnxcount:
+				cmd.append("""apertium-interchunk {0}/apertium-{1}.{2}.t{3}x \
+							{0}/{2}.t{3}x.bin""".format(self.directory, pair1, pair2, i))
+			elif i == tnxcount:
+				cmd.append("""apertium-postchunk {0}/apertium-{1}.{2}.t{3}x \
+							{0}/{2}.t{3}x.bin""".format(self.directory, pair1, pair2, i))
+		return " | ".join(cmd)
+	
+	def get_transfer_rules(self):
 		if not self.trules:
-			transfer_cmd = """lt-proc {0}/{1}.automorf.bin |\
-				apertium-pretransfer |\
-				apertium-transfer -t \
-				{0}/apertium-{1}.{1}.t1x \
-				{0}/{1}.t1x.bin \
-				{0}/{1}.autobil.bin""".format(self.directory, self.langpair)
-			p = Popen(transfer_cmd, shell=True, close_fds=True, stdout=PIPE)
-			res = p.communicate(destxt(open(self.corpus, 'r').read()))[0].decode('utf-8').split('\n')
+			tnxcount = len(glob(pjoin(self.directory, '*.{0}.t[1-9]x'.format(self.langpair))))
+			if tnxcount == 0:
+				raise ValueError("No tnx files found. Try compiling your dictionary or something.")
+			self.trules = defaultdict(list)
 			
-			self.trules = len([i for i in res if i in ": Rule"])
+			for i in range(tnxcount):
+				cmd = self.get_transfer_command(i, self.langpair, self.langpair) # STUB must do btoh language pairs
+				p = Popen(cmd, shell=True, close_fds=True, stdout=PIPE)
+				res = p.communicate(destxt(open(self.corpus, 'r').read()))[0].decode('utf-8').split('\n')
+				fn = "apertium-{0}.{1}.t{2}x".format(self.langpair, self.langpair, tnxcount+1)
+				self.trules[fn] = [i for i in res if i in ": Rule"]
 		return self.trules
+	
+	def get_transfer_rule_counter(self):
+		c = Counter()
+		for k, v in self.get_transfer_rules().items():
+			c[k] = len(v)
+		return c
+	
+	def get_transfer_rule_count(self):
+		return sum(self.get_transfer_rule_counter().values())
+
+	def get_unique_transfer_rule_count(self):
+		c = Counter()
+		for k, v in self.get_transfer_rules().items():
+			c[k] = len(set(v))
+		return sum(c.values())
 	
 	def get_rules(self):
 		if not self.rules:
@@ -472,13 +503,16 @@ class DictionaryTest(Test):
 		return sum(self.get_entry_counter().values())
 	
 	def get_unique_entry_count(self):
-		return sum(set(self.get_entry_counter().values()))
+		c = Counter()
+		for k, v in self.get_entries().items():
+			c[k] = len(set(v))
+		return sum(c.values())
 	
 	def run(self):
 		self.get_rules()
 		self.get_entries()
 		if self.corpus:
-			self.get_transfer_rule_count()
+			self.get_transfer_rules()
 	
 	def to_xml(self):
 		return NotImplemented
@@ -497,18 +531,25 @@ class DictionaryTest(Test):
 	
 	def to_string(self):
 		out = StringIO()
-		if self.corpus:
-			out.write("Transfer rules: %s\n" % self.get_transfer_rule_count())
-		out.write("Ordered rule numbers per file:\n")
+		
+		out.write("Ordered rule count per file:\n")
 		for file, count in self.get_rule_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
 		out.write("Total rules: %d\n\n" % self.get_rule_count())
 		
-		out.write("Ordered entry numbers per file:\n")
+		out.write("Ordered entry count per file:\n")
 		for file, count in self.get_entry_counter().most_common():
 			out.write("%d\t %s\n" % (count, file))
 		out.write("Total entries: %d\n" % self.get_entry_count())
 		out.write("Total unique entries: %d\n" % self.get_unique_entry_count())
+		
+		if self.trules:
+			out.write("Ordered transfer rules count per file:\n")
+			for file, count in self.get_transfer_rule_counter().most_common():
+				out.write("%d\t %s\n" % (count, file))
+			out.write("Total transfer rules: %d\n" % self.get_transfer_rule_count())
+			out.write("Total unique transfer rules: %d\n" % self.get_unique_transfer_rule_count())
+		
 		return out.getvalue().strip()
 
 
@@ -1028,7 +1069,7 @@ class VocabularyTest(Test):
 		
 		tnxcount = len(glob(pjoin(self.fdir, '*.{0}-{1}.t[1-9]x'.format(lang1, lang2))))
 		if tnxcount == 0:
-			raise IOError("No tnx files found. Try compiling your dictionary or something.")
+			raise ValueError("No tnx files found. Try compiling your dictionary or something.")
 		
 		cmd = ["apertium-pretransfer"]
 		for i in range(1, tnxcount+1):
