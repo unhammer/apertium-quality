@@ -16,7 +16,10 @@ class UI(Frontend, AutoTest):
 		self.args = args = self.parse_args()
 		AutoTest.__init__(self, self.args.stats[0], self.args.outdir[0], self.args.aqx[0])
 		
-
+	def start(self):
+        self.run()
+        self.exit()
+        
 def main():
 	try:
 		ui = UI()
