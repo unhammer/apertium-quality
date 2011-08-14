@@ -274,10 +274,14 @@ class AutoTest(Test):
 				print("[!] No path or language set.")
 				continue
 			
-			print("[-] File: %s" % path)
-			if not os.path.isfile(path):
-				print("[!] No file exists at %s" % path)
-				continue
+			if path.startswith("http"):
+				print("[-] URL: %s" % path)
+				
+			else:
+				print("[-] File: %s" % path)
+				if not os.path.isfile(path):
+					print("[!] No file exists at %s" % path)
+					continue
 				
 			try:
 				test = RegressionTest(path, language)
