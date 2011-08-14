@@ -600,7 +600,7 @@ class GenerationTest(Test):
 		
 		gen_errors = StringIO()
 		for i in itertools.zip_longest(surface.split('\n'), nofreq.split('\n'), fillvalue=""):
-			gen_errors.write("{:<16}{:<16}".format(*list(str(x) for x in i)))
+			gen_errors.write("{:<16}{:<16}\n".format(*list(str(x) for x in i)))
 		gen_errors = gen_errors.getvalue().split('\n')
 
 		multiform = []
