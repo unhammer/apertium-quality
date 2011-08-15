@@ -4,13 +4,17 @@ from io import StringIO
 from queue import Empty
 import sys
 import os
-#import re
-#import logging
 import string
-#import xml.sax
 import xml.sax.handler
-#import multiprocessing
 
+try:
+	from lxml import etree
+	from lxml.etree import Element, SubElement
+except:
+	import xml.etree.ElementTree as etree
+	from xml.etree.ElementTree import Element, SubElement
+
+from apertium.quality import schemas
 from mwtools import MediawikiHandler
 import nltk.data
 
@@ -79,9 +83,10 @@ class CorpusExtractor(object):
 			elif name == "mediawiki":
 				self.inMediawiki = False
 	
-	def __init__(self, fin, fout, cores=0, tokenizer=None, q=None):
+	def __init__(self, fin, fout, cores=0, tokenizer=None, q=None, xml=False):
 		self.fin = fin
 		self.fout = fout
+		self.xml = xml
 		self.cores = int(cores or 0)
 		self.inq = Queue(q or 32)
 		self.outq = Queue()
@@ -107,7 +112,10 @@ class CorpusExtractor(object):
 		self.workers = [Process(target=self.worker) for i in range(self.cores or cpu_count())]
 		for w in self.workers:
 			w.daemon = True
-		self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
+		if self.xml:
+			self.larry = Process(target=self.xml_output_worker, args=(fout, self.language, max_sentences))
+		else:
+			self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
 		self.larry.daemon = True
 	
 	def _start_processes(self):
@@ -195,18 +203,26 @@ class CorpusExtractor(object):
 	
 	def xml_output_worker(self, fn, language, maxsentences=0):
 		pid = os.getpid()
+		ns = "{%s}" % schemas['corpus']
 		try:
 			count = 0
-			# TODO set namespace
-			# TODO test this shit yo
-			root = Element("corpus", language=language, 
-						name="Generated %s Wikipedia Corpus" % language, 
-						tags="generator:aq-wikicrp %s" % language)
+			kwargs = {
+				'language': language, 
+				'name': "Generated %s Wikipedia Corpus" % language, 
+				'tags': "generator:aq-wikicrp %s" % language
+			}
+			
+			if etree.__name__ == "lxml.etree":
+				kwargs['nsmap'] = {None: schemas['corpus']}
+			else:
+				kwargs["xmlns"] = schemas['corpus']
+			
+			root = Element(ns + "corpus", **kwargs)
 			while True:
 				if maxsentences > 0 and count >= maxsentences: 
 					break
 				sentencelist = self.outq.get(block=True, timeout=5)
-				el = SubElement(root, "entry")
+				el = SubElement(root, ns + "entry")
 				el.text = ""
 				for s in sentencelist:
 					if maxsentences > 0 and count >= maxsentences: 
@@ -216,7 +232,7 @@ class CorpusExtractor(object):
 						count += 1
 				sys.stdout.write('\r%d' % count)
 				sys.stdout.flush()
-			ElementTree(root).write(fn)
+			etree.ElementTree(root).write(fn, encoding="utf-8", xml_declaration=True)
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
 		except Empty:

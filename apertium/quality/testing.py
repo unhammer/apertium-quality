@@ -26,7 +26,7 @@ except:
 	from xml.etree.ElementTree import Element, SubElement
 
 from apertium import whereis, destxt, retxt, DixFile
-from apertium.quality import Statistics, Webpage
+from apertium.quality import Statistics, Webpage, schemas
 
 pjoin = os.path.join
 ARROW = "\u2192"
@@ -148,8 +148,7 @@ class AmbiguityTest(Test):
 
 
 class AutoTest(Test):
-	xmlns = "http://apertium.org/xml/quality/config/0.1"
-	ns = "{%s}" % xmlns
+	ns = "{%s}" % schemas['config']
 	
 	def __init__(self, stats=None, webdir=None, aqx=None, **kwargs):
 		self.stats = kwargs.get('stats', stats)
@@ -316,17 +315,32 @@ class AutoTest(Test):
 class CoverageTest(Test):
 	app = "lt-proc"
 	
-	def __init__(self, f=None, dct=None, **kwargs):
-		f = kwargs.get('f', f)
+	def __init__(self, fn=None, dct=None, **kwargs):
+		fn = kwargs.get('fn', fn)
 		dct = kwargs.get('dct', dct)
-		if None in (f, dct):
-			raise TypeError("f or dct parameter missing.")
+		if None in (fn, dct):
+			raise TypeError("fn or dct parameter missing.")
 		
-		open(dct) # test existence
+		try:
+			open(dct) # test existence
+		except:
+			raise
 		whereis([self.app])
 		
-		self.fn = f
-		self.f = open(f, 'r')
+		self.fn = fn
+		try:
+			# Try parsing as XML
+			root = etree.parse(self.fn)
+			ns = "{%s}" % schemas['corpus']
+			out = StringIO()
+			for i in root.iter(ns + "entry"):
+				out.write(i.text + "\n")
+			self.corpus = out.getvalue()
+			del out
+		except:
+			# Turns out it's not XML
+			self.corpus = open(fn, 'r')
+		
 		self.dct = dct
 		self.result = None
 		

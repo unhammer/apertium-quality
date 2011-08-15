@@ -17,6 +17,12 @@ except:
 pjoin = os.path.join
 
 
+schemas = {
+	'config': "http://apertium.org/xml/quality/config/0.1",
+	'corpus': "http://apertium.org/xml/corpus/0.1",
+	'statistics': "http://apertium.org/xml/quality/statistics/0.9"
+}
+
 class ParseError(Exception):
 	"""Exception for parsing errors."""
 	pass
@@ -319,9 +325,7 @@ window.onresize = function() {
 		return out
 
 class Statistics(object):
-	type = "apertium"
-	xmlns = "http://apertium.org/xml/quality/statistics/0.9"
-	ns = "{%s}" % xmlns
+	ns = "{%s}" % schemas['statistics']
 	
 	@staticmethod
 	def node_equal(a, b):
@@ -344,21 +348,13 @@ class Statistics(object):
 			try:
 				self.tree = etree.parse(open(f, 'rb'))
 				if self.tree.getroot().tag == Statistics.ns + "statistics":
-					#if self.tree.getroot().get('version') == "1.0":	
-						#print "[STUB] Do version specific crap here for 1.0"
-					#else:
-						#pass
-						#print "[DEBUG] Version incorrect."
 					self.root = self.tree.getroot()
-					#print "[DEBUG] Imported tree."
 				else:
 					raise ParseError("File does not seem to be a statistics file.")
 			except:
 				raise
 		else:
-			kwargs = {
-				"type": Statistics.type
-			}
+			kwargs = {}
 			if etree.__name__ == "lxml.etree":
 				kwargs['nsmap'] = {None: Statistics.xmlns}
 			else:
@@ -418,7 +414,7 @@ class Statistics(object):
 		
 		return self.elements[tag](root)
 
-	def get_raphael(self, tag, data, lines1, lines2):
+	def get_raphael(self, tag, data, lines1, lines2, x=None):
 		"""Get output suitable for JSONing for Raphael charts"""
 		out = {}
 		dat = self.get(tag)
@@ -428,7 +424,10 @@ class Statistics(object):
 			
 			for k, v in val.items():
 				if len(out[key]) == 0 or out[key].get('data')[-1] != v[data]:
-					out[key]['labels'].append(k)
+					j = None
+					if x: j = v.get(x)
+					
+					out[key]['labels'].append(j or k)
 					out[key]['data'].append(v[data])
 					out[key]['lines1'].append("%s: %s" % (lines1, v[lines1]))
 					out[key]['lines2'].append("%s: %s" % (lines2, v[lines2]))

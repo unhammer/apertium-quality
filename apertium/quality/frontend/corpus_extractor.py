@@ -14,12 +14,15 @@ class UI(object):
             default=[None], help="""Tokeniser to use""")
         ap.add_argument("-q", "--queue", dest="queue", nargs=1, required=False,
             default=[None], help="""Set queue size (for advanced users)""")
+        ap.add_argument("-x", "--xml", dest="xml", action="store_true",
+            help="Output corpora in XML format")
         ap.add_argument("wikidump", nargs=1, help="Wikipedia XML dump")
         ap.add_argument("outfile", nargs=1, help="Output filename")
         
         self.args = ap.parse_args()
         self.corpus = CorpusExtractor(self.args.wikidump[0], 
-                self.args.outfile[0], self.args.cores[0], self.args.tokeniser[0])
+                self.args.outfile[0], self.args.cores[0], self.args.tokeniser[0],
+                self.args.xml)
     
     def start(self):
         self.corpus.generate(int(self.args.count[0]))
