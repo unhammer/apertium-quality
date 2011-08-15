@@ -22,7 +22,7 @@ class UI(object):
         self.args = ap.parse_args()
         self.corpus = CorpusExtractor(self.args.wikidump[0], 
                 self.args.outfile[0], self.args.cores[0], self.args.tokeniser[0],
-                self.args.xml)
+                xml=self.args.xml)
     
     def start(self):
         self.corpus.generate(int(self.args.count[0]))
