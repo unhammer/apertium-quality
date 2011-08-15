@@ -113,7 +113,7 @@ class CorpusExtractor(object):
 		for w in self.workers:
 			w.daemon = True
 		if self.xml:
-			self.larry = Process(target=self.xml_output_worker, args=(fout, self.language, max_sentences))
+			self.larry = Process(target=self.xml_output_worker, args=(fout, self.fin, max_sentences))
 		else:
 			self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
 		self.larry.daemon = True
