@@ -207,9 +207,8 @@ class CorpusExtractor(object):
 		try:
 			count = 0
 			kwargs = {
-				'language': language, 
 				'name': "Generated %s Wikipedia Corpus" % language, 
-				'tags': "generator:aq-wikicrp %s" % language
+				'tags': "generator:aq-wikicrp"
 			}
 			
 			if etree.__name__ == "lxml.etree":
@@ -222,7 +221,7 @@ class CorpusExtractor(object):
 				if maxsentences > 0 and count >= maxsentences: 
 					break
 				sentencelist = self.outq.get(block=True, timeout=5)
-				el = SubElement(root, ns + "entry")
+				el = Element(ns + "entry")
 				el.text = ""
 				for s in sentencelist:
 					if maxsentences > 0 and count >= maxsentences: 
@@ -230,6 +229,8 @@ class CorpusExtractor(object):
 					if(self.heuristics(s.strip())):
 						el.text += s.strip() + '\n'
 						count += 1
+				if el.text != "":
+					root.append(el)
 				sys.stdout.write('\r%d' % count)
 				sys.stdout.flush()
 			etree.ElementTree(root).write(fn, encoding="utf-8", xml_declaration=True)
