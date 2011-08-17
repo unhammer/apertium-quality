@@ -428,6 +428,7 @@ class CoverageTest(Test):
 		out.write("Coverage: %.2f%%\n" % self.get_coverage())
 		out.write("Top unknown words in the corpus:\n")
 		out.write(self.get_top_unknown_words_string())
+		out.write("Translation speed: %s\n" % self.timer)
 		return out.getvalue().strip()
 
 			
