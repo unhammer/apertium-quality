@@ -16,6 +16,7 @@ import urllib.request
 import shlex
 import itertools
 import traceback
+import time
 
 import yaml
 try:
@@ -344,6 +345,7 @@ class CoverageTest(Test):
 		
 		self.dct = dct
 		self.result = None
+		self.timer = None
 		
 	def run(self):
 		if not self.result:
@@ -352,8 +354,10 @@ class CoverageTest(Test):
 			self.f.seek(0)
 
 			output = destxt(f).encode('utf-8')
+			timing_begin = time.time()
 			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE, close_fds=True)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
+			self.timer = time.time() - timing_begin
 			output = retxt(output) 
 			
 			output = delim.sub("$\n^", output)
@@ -412,6 +416,9 @@ class CoverageTest(Test):
 		s = SubElement(r, 'top')
 		for word, count in self.get_top_unknown_words():
 			SubElement(s, 'word', count=str(count)).text = wrx.search(word).group(1)
+		
+		s = SubElement(r, 'system')
+		SubElement(s, 'speed').text = "%.4f" % self.timer
 		
 		return ("coverage", etree.tostring(q))
 
