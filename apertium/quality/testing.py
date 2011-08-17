@@ -316,13 +316,19 @@ class AutoTest(Test):
 
 class CoverageTest(Test):
 	app = "lt-proc"
+	app_args = []
 	
-	def __init__(self, fn=None, dct=None, **kwargs):
+	def __init__(self, fn=None, dct=None, hfst=None, **kwargs):
 		fn = kwargs.get('fn', fn)
 		dct = kwargs.get('dct', dct)
+		hfst = kwargs.get('hfst', hfst)
 		if None in (fn, dct):
 			raise TypeError("fn or dct parameter missing.")
 		
+		if hfst:
+			self.app = "hfst-proc"
+			self.app_args = ['-w']
+			
 		try:
 			open(dct) # test existence
 		except:
@@ -355,7 +361,7 @@ class CoverageTest(Test):
 
 			output = destxt(f).encode('utf-8')
 			timing_begin = time.time()
-			proc = Popen([self.app, self.dct], stdin=PIPE, stdout=PIPE, close_fds=True)
+			proc = Popen([self.app] + self.app_args + [self.dct], stdin=PIPE, stdout=PIPE, close_fds=True)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
 			self.timer = time.time() - timing_begin
 			output = retxt(output) 
