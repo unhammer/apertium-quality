@@ -1,7 +1,8 @@
 import argparse
 from os.path import basename, abspath
 
-from apertium.quality import Webpage, Statistics
+from apertium.quality import Statistics
+from apertium.quality.html import Webpage
 
 #TODO add piping for great interfacing
 
