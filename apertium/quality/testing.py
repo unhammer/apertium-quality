@@ -26,7 +26,8 @@ except:
 	from xml.etree.ElementTree import Element, SubElement
 
 from apertium import whereis, destxt, retxt, DixFile
-from apertium.quality import Statistics, Webpage, schemas
+from apertium.quality import Statistics, schemas
+from apertium.quality.html import Webpage
 
 pjoin = os.path.join
 ARROW = "\u2192"
