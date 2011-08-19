@@ -5,7 +5,7 @@ class UI(Frontend, CoverageTest):
 	def __init__(self):
 		Frontend.__init__(self)
 		self.description = "Test coverage."
-		self.add_argument("-h", "--hfst",
+		self.add_argument("-H", "--hfst",
 			dest="hfst", action="store_true",
 			help="HFST mode")
 		self.add_argument("corpus", nargs=1, help="Corpus text file")
