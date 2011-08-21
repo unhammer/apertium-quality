@@ -162,7 +162,7 @@ class CorpusExtractor(object):
 	def worker(self):
 		pid = os.getpid()
 		try:
-			while True:
+			while 1:
 				ch, title = self.inq.get(block=True)
 				if ch.strip() == "":
 					continue
@@ -181,7 +181,7 @@ class CorpusExtractor(object):
 		try:
 			count = 0
 			f = None
-			while True:
+			while 1:
 				if maxsentences > 0 and count >= maxsentences: 
 					break
 				f = open(fn, 'a')
@@ -217,7 +217,7 @@ class CorpusExtractor(object):
 				kwargs["xmlns"] = schemas['corpus']
 			
 			root = Element(ns + "corpus", **kwargs)
-			while True:
+			while 1:
 				if maxsentences > 0 and count >= maxsentences: 
 					break
 				sentencelist = self.outq.get(block=True, timeout=5)
