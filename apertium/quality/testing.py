@@ -1149,7 +1149,7 @@ class VocabularyTest(Test):
 		if direction.lower() == "rl":
 			langpair = "%s-%s" % (lang2, lang1)
 		
-		tnxcount = len(glob(pjoin(self.fdir, '*.{0}-{1}.t[1-9]x'.format(lang1, lang2))))
+		tnxcount = len(glob(pjoin(fdir, '*.{0}-{1}.t[1-9]x'.format(lang1, lang2))))
 		if tnxcount == 0:
 			raise ValueError("No tnx files found. Try compiling your dictionary or something.")
 		
