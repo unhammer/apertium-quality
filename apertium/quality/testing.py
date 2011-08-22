@@ -201,7 +201,6 @@ class AutoTest(Test):
 		except:
 			print("[!] Error:")
 			traceback.print_exc()
-			continue
 		
 		if self.stats:
 			self.stats.add(*test.to_xml())
