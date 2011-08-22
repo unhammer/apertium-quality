@@ -19,13 +19,16 @@ class Frontend(Test, ArgumentParser):
 							  help="XML file that statistics are to be stored in (Default: quality-stats.xml)")
 
 	def start(self):
-		ret = self.run()
-		print(self.to_string())
-		if self.args.statfile:
-			try:
-				stats = Statistics(self.args.statfile)
-				stats.add(*self.to_xml())
-				stats.write()
-			except ParseError:
-				print("ERROR: your statistics file is either an unsupported version or not an XML file.")
-		self.exit(ret)
+		try:
+			ret = self.run()
+			print(self.to_string())
+			if self.args.statfile:
+				try:
+					stats = Statistics(self.args.statfile)
+					stats.add(*self.to_xml())
+					stats.write()
+				except ParseError:
+					print("ERROR: your statistics file is either an unsupported version or not an XML file.")
+			self.exit(ret)
+		except KeyboardInterrupt:
+			sys.exit()

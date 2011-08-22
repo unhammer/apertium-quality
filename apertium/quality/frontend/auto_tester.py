@@ -17,7 +17,10 @@ class UI(Frontend, AutoTest):
 		AutoTest.__init__(self, self.args.stats, self.args.outdir, self.args.aqx[0])
 		
 	def start(self):
-		self.run()
+		try:
+			self.run()
+		except KeyboardInterrupt:
+			self.exit()
 		self.exit()
 
 def main():
