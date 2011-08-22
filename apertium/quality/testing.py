@@ -464,7 +464,7 @@ class CoverageTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(dirname(self.dct))
+		q.attrib["value"] = basename(dirname(self.dct))
 		
 		r = SubElement(q, "revision", 
 					value=str(self._svn_revision(dirname(self.dct))),
@@ -472,7 +472,7 @@ class CoverageTest(Test):
 					checksum=self._checksum(open(self.dct, 'rb').read()))
 		
 		s = SubElement(r, 'corpus')
-		s.attrib["value"] = os.path.basename(self.fn)
+		s.attrib["value"] = basename(self.fn)
 		s.attrib["checksum"] = self._checksum(open(self.fn, 'rb').read())
 		
 		SubElement(r, 'percent').text = "%.2f" % self.get_coverage()
@@ -631,7 +631,7 @@ class DictionaryTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(dirname(self.dct.f))
+		q.attrib["value"] = basename(abspath(self.directory))
 		
 		r = SubElement(q, 'revision')
 		r.attrib["value"] = str(self._svn_revision(self.directory))
@@ -738,14 +738,14 @@ class GenerationTest(Test):
 
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(dirname(self.directory))
+		q.attrib["value"] = basename(abspath(self.directory))
 		
 		r = SubElement(q, "revision", 
-					value=str(self._svn_revision(self.directory)),
+					value=str(self._svn_revision(basename(abspath(self.directory)))),
 					timestamp=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'corpus')
-		s.attrib["value"] = os.path.basename(self.corpus)
+		s.attrib["value"] = basename(self.corpus)
 		s.attrib["checksum"] = self._checksum(open(self.corpus, 'rb').read())
 		
 		SubElement(r, "total").text = str(len(self.multiform) + len(self.multibidix) + len(self.tagmismatch))
