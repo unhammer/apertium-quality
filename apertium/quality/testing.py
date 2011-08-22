@@ -1169,6 +1169,7 @@ class VocabularyTest(Test):
 		
 		self.lang1 = lang1
 		self.lang2 = lang2
+		self.output = output
 		self.out = open(output, 'w')
 		
 		self.tmp = []
