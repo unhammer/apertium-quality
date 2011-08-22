@@ -53,14 +53,11 @@ class Statistics(object):
 		self.f = f
 		
 		if os.path.exists(f):
-			try:
-				self.tree = etree.parse(open(f, 'rb'))
-				if self.tree.getroot().tag == Statistics.ns + "statistics":
-					self.root = self.tree.getroot()
-				else:
-					raise ParseError("File does not seem to be a statistics file.")
-			except:
-				raise
+			self.tree = etree.parse(open(f, 'rb'))
+			if self.tree.getroot().tag == Statistics.ns + "statistics":
+				self.root = self.tree.getroot()
+			else:
+				raise ParseError("File does not seem to be a statistics file.")
 		else:
 			kwargs = {}
 			if etree.__name__ == "lxml.etree":

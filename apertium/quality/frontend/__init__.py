@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from apertium.quality.testing import Test
-from apertium.quality import Statistics
+from apertium.quality import Statistics, ParseError
 #TODO add piping for great interfacing
 
 class Frontend(Test, ArgumentParser):
@@ -20,7 +20,10 @@ class Frontend(Test, ArgumentParser):
         ret = self.run()
         print(self.to_string())
         if self.args.statfile:
-            stats = Statistics(self.args.statfile)
-            stats.add(*self.to_xml())
-            stats.write()
+            try:
+				stats = Statistics(self.args.statfile)
+				stats.add(*self.to_xml())
+				stats.write()
+			except ParseError:
+				print("ERROR: your statistics file is either an unsupported version or not an XML file.")
         self.exit(ret)
