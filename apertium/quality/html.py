@@ -238,12 +238,17 @@ function generateMenu() {
         }
         
         node_i.append(ul_ii);
+        //ul_i.append(node_i);
         menu.append(node_i);
     } 
     
+    //var li = $("<li><a id='subtitle'>Menu</a></li>");
+    //li.append(ul_i);
+    //menu.append(li);
     $("#menu").replaceWith(menu);
-    $("ul.dropdown li ul li:has(ul)").find("a:first").addClass("arrow");
+    $("ul.dropdown li ul li:has(ul)").find("a:first").addClass("arrow");//.append(" &raquo; ");
 }
+
 
 function saveSvg() {
     $("#chart > svg > desc").remove(); // Raphael, escape your umlauted e's man.
