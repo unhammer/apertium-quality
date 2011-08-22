@@ -61,9 +61,9 @@ class Statistics(object):
 		else:
 			kwargs = {}
 			if etree.__name__ == "lxml.etree":
-				kwargs['nsmap'] = {None: Statistics.xmlns}
+				kwargs['nsmap'] = {None: schemas['statistics']}
 			else:
-				kwargs["xmlns"] = Statistics.xmlns
+				kwargs["xmlns"] = schemas['statistics']
 			
 			self.root = Element(Statistics.ns + "statistics", **kwargs)
 			self.tree = etree.ElementTree(self.root)
