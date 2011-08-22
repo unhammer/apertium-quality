@@ -1,8 +1,10 @@
-import sys
+import sys, codecs
 from argparse import ArgumentParser
 
 from apertium.quality.testing import Test
 from apertium.quality import Statistics, ParseError
+
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 class Frontend(Test, ArgumentParser):
 	def __init__(self, stats=True, colour=False):
@@ -18,7 +20,7 @@ class Frontend(Test, ArgumentParser):
 
 	def start(self):
 		ret = self.run()
-		sys.stdout.buffer.write((self.to_string() + "\n").encode('utf-8'))
+		print(self.to_string())
 		if self.args.statfile:
 			try:
 				stats = Statistics(self.args.statfile)
