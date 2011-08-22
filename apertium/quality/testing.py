@@ -42,8 +42,11 @@ class Test(object):
 	"""Abstract class for Test objects
 	
 	It is recommended that print not be used within a Test class.
-	Use a StringIO instance and .getvalue() in get_output().
+	Use a StringIO instance and .getvalue() in to_string().
 	"""
+	
+	"""Attributes"""
+	timer = None
 	
 	def __str__(self):
 		"""Will return to_string method's content if exists, 
@@ -124,8 +127,10 @@ class AmbiguityTest(Test):
 		self.average = float(self.total) / float(self.surface_forms)
 
 	def run(self):
+		timing_begin = time.time()
 		self.get_results()
 		self.get_ambiguity()
+		self.timer = time.time() - timing_begin
 		return 0
 	
 	def to_xml(self):
@@ -352,7 +357,6 @@ class CoverageTest(Test):
 		
 		self.dct = dct
 		self.result = None
-		self.timer = None
 		
 	def run(self):
 		if not self.result:
@@ -690,6 +694,9 @@ class GenerationTest(Test):
 		SubElement(r, "multibidix").text = str(len(self.multibidix))
 		SubElement(r, "tagmismatch").text = str(len(self.tagmismatch))
 		
+		s = SubElement(r, "system")
+		SubElement(s, "speed").text = "%.4f" % self.timer
+		
 		return ("generation", etree.tostring(q))
 		
 	
@@ -719,7 +726,9 @@ class GenerationTest(Test):
 		out.write("%6d %s\n" % (len(self.multiform), "multiform"))
 		out.write("%6d %s\n" % (len(self.multibidix), "multibidix"))
 		out.write("%6d %s\n" % (len(self.tagmismatch), "tagmismatch"))
-		out.write("Total: %d\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
+		out.write("Total: %d\n\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
+		
+		out.write("Time: %.4f\n" % self.timer) 
 		
 		return out.getvalue()
 
@@ -780,7 +789,9 @@ class MorphTest(Test):
 		self.load_config()
 
 	def run(self):
+		timing_begin = time.time()
 		self.run_tests(self.args['test'])
+		self.timer = time.time() - timing_begin
 		return 0
 
 	def load_config(self):
@@ -987,7 +998,10 @@ class MorphTest(Test):
 			t.text = str(k)
 			t.attrib['fails'] = str(v["Fail"])
 			t.attrib['passes'] = str(v["Pass"])
-
+		
+		s = SubElement(r, "system")
+		SubElement(s, "speed").text = "%.4f" % self.timer
+		
 		return ("morph", etree.tostring(r))
 
 	def to_string(self):
@@ -1046,6 +1060,7 @@ class RegressionTest(Test):
 		self.out = StringIO()
 	
 	def run(self):
+		timing_begin = time.time()
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
 			
@@ -1081,6 +1096,7 @@ class RegressionTest(Test):
 				self.out.write('\n')
 			self.out.write("Passes: %d/%d, Success rate: %.2f%%\n" 
 					% (self.passes, self.total, self.get_total_percent()))
+		self.timer = time.time() - timing_begin
 		return 0
 
 	def get_passes(self):
@@ -1113,6 +1129,9 @@ class RegressionTest(Test):
 		SubElement(r, 'total').text = str(self.get_total())
 		SubElement(r, 'passes').text = str(self.get_passes())
 		SubElement(r, 'fails').text = str(self.get_fails())
+		
+		s = SubElement(r, "system")
+		SubElement(s, "speed").text = "%.4f" % self.timer
 		
 		return ("regression", etree.tostring(q))
 
@@ -1175,9 +1194,11 @@ class VocabularyTest(Test):
 
 		for i in range(3):
 			self.tmp[i] = open(self.tmp[i].name, 'r')
-
+		
+		timing_begin = time.time()
 		p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
 		res, err = p.communicate()
+		self.timer = time.time() - timing_begin
 		
 		arrow_output = "{:<24} {A} {:<24} {A} {:<24}\n"
 		regex = re.compile(r"(\^.<sent>\$|\\| \.$)")
@@ -1193,13 +1214,11 @@ class VocabularyTest(Test):
 			os.unlink(i.name)
 		
 		self.out.close()
-	
-	def to_xml(self):
-		return NotImplemented
 
 	def to_string(self):
 		# TODO: add stats output here
-		return "Done."
+		x = "Speed: %.4f" % self.timer
+		return "%s\nData output to %s." % (x, self.output)
 
 
 # SUPPORT FUNCTIONS
