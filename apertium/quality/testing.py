@@ -193,6 +193,19 @@ class AutoTest(Test):
 			if self.stats:
 				self.stats.add(*test.to_xml())
 	
+	def dictionary(self):
+		print("[-] Dictionary Tests")
+		try:
+			test = DictionaryTest(self.langpair, '.')
+			test.run()
+		except:
+			print("[!] Error:")
+			traceback.print_exc()
+			continue
+		
+		if self.stats:
+			self.stats.add(*test.to_xml())
+	
 	def coverage(self):
 		corpora = self.root.find(self.ns + "coverage")
 		if corpora is None:
@@ -200,7 +213,7 @@ class AutoTest(Test):
 			return 
 		
 		print("[-] Coverage Tests")
-		for corpus in corpora.iter(self.ns + "corpus"):
+		for corpus in corpora.getiterator(self.ns + "corpus"):
 			path = corpus.attrib.get("path", "")
 			lang = corpus.attrib.get("language", "")
 			gen = corpus.attrib.get("generator", "")
@@ -235,7 +248,50 @@ class AutoTest(Test):
 			
 			if self.stats:
 				self.stats.add(*test.to_xml())
-
+	
+	def generation(self):
+		corpora = self.root.find(self.ns + "generation")
+		if corpora is None:
+			print("[!] No generation corpora.")
+			return
+		
+		print("[-] Generation Tests")
+		for corpus in corpora.getiterator(self.ns + "corpus"):
+			path = corpus.attrib.get("path", "")
+			lang = corpus.attrib.get("language", "")
+			gen = corpus.attrib.get("generator", "")
+			
+			if "" in (path, lang):
+				print("[!] No path or language set.")
+				continue
+			
+			print("[-] File: %s" % basename(path))
+			
+			if not os.path.isfile(path):
+				if gen != "":
+					p = Popen(gen, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+					res, err = p.communicate()
+					if p.returncode != 0:
+						print("[!] Return code was %s." % p.returncode)
+						continue
+					elif os.path.isfile(path):
+						print("[!] File at %s does not exist after generation." % path)
+						continue
+				else:
+					print("[!] No generator and file does not exist at %s." % path)
+					continue
+			
+			try:
+				test = GenerationTest(basename('.', lang, path))
+				test.run()
+			except:
+				print("[!] Error:")
+				traceback.print_exc()
+				continue
+			
+			if self.stats:
+				self.stats.add(*test.to_xml())
+	
 	def morph(self):
 		tests = self.root.find(self.ns + "morph")
 		if tests is None:
@@ -243,7 +299,7 @@ class AutoTest(Test):
 			return 
 		
 		print("[-] Morph Tests")
-		for test in tests.iter(self.ns + 'test'):
+		for test in tests.getiterator(self.ns + 'test'):
 			path = test.attrib.get("path")
 			if path is None:
 				print("[!] No path value set." % path)
@@ -272,7 +328,7 @@ class AutoTest(Test):
 			return
 		
 		print("[-] Regression Tests")
-		for test in tests.iter(self.ns + 'test'):
+		for test in tests.getiterator(self.ns + 'test'):
 			path = test.attrib.get("path")
 			language = test.attrib.get("language")
 			
@@ -347,7 +403,7 @@ class CoverageTest(Test):
 			root = etree.parse(self.fn)
 			ns = "{%s}" % schemas['corpus']
 			out = StringIO()
-			for i in root.iter(ns + "entry"):
+			for i in root.getiterator(ns + "entry"):
 				out.write(i.text + "\n")
 			self.corpus = out.getvalue()
 			del out
