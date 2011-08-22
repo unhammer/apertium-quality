@@ -100,12 +100,12 @@ class Webpage(object):
     
     def _ambiguity(self):
         out = {'Ambiguity Testing':{}}
-        out['Ambiguity Testing']['Mean Ambiguity Over Time'] = self.stats.get_raphael("ambiguity", "Average", "Average", "Surface Forms")
+        out['Ambiguity Testing']['Mean Ambiguity Over Time'] = self.stats.get_raphael("ambiguity", "Average", "Average", "Surface forms")
         return out
     
     def _general(self):
         out = {'Dictionary Testing':{}}
-        out['Dictionary Testing']['Dictionary Entries Over Time'] = self.stats.get_raphael("general", "Entries", "Entries", "Unique Entries")
+        out['Dictionary Testing']['Dictionary Entries Over Time'] = self.stats.get_raphael("general", "Entries", "Entries", "Unique entries")
         return out
 
 

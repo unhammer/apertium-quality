@@ -150,7 +150,7 @@ class Statistics(object):
 				dicts[dct][r] = {
 					"Timestamp": rev.attrib['timestamp'],
 					"Entries": rev.find(self.ns + "entries"),
-					"Unique Entries": rev.find(self.ns + "unique-entries"),
+					"Unique entries": rev.find(self.ns + "unique-entries"),
 					"Rules": rev.find(self.ns + "rules")
 				}
 		
