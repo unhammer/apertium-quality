@@ -42,6 +42,7 @@ class Statistics(object):
 	def __init__(self, f=None):
 		self.elements = {
 			"general": self.get_general,
+			"generation": self.get_generation,
 			"regression": self.get_regression,
 			"coverage": self.get_coverage,
 			"ambiguity": self.get_ambiguity,
@@ -74,7 +75,7 @@ class Statistics(object):
 	def add(self, parent, xml):
 		ns = self.ns
 		if parent not in self.elements:
-			raise AttributeError("Element not supported.")
+			raise AttributeError("Element '%s' not supported." % parent)
 		
 		# Get new node, fix namespace prefix
 		old_node = None
@@ -160,6 +161,30 @@ class Statistics(object):
 
 		return out
 	
+	def get_generation(self, root):
+		generations = defaultdict(dict)
+		
+		for d in root.getiterator(self.ns + "dictionary"):
+			dct = d.attrib["value"]
+			for rev in d.getiterator(self.ns + "revision"):
+				r = rev.attrib["value"]
+				c = rev.find("corpus")
+				
+				generations[dct][r] = {
+					"Timestamp": rev.attrib["timestamp"],
+					"Corpus": "%s__%s" % (c.attrib["value"], c.attrib["checksum"]),
+					"Total": rev.find(self.ns + "total").text,
+					"Multiform": rev.find(self.ns + "multiform").text,
+					"Multibidix": rev.find(self.ns + "multibidix").text,
+					"Tag mismatch": rev.find(self.ns + "tagmismatch").text
+				}
+		
+		out = dict()
+		for k, v in generations.items():
+			out[k] = OrderedDict(sorted(v.items()))
+
+		return out
+
 	def get_regression(self, root):
 		regressions = defaultdict(dict)
 		
