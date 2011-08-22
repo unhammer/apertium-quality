@@ -282,7 +282,7 @@ class AutoTest(Test):
 					continue
 			
 			try:
-				test = GenerationTest(basename('.', lang, path))
+				test = GenerationTest('.', lang, path)
 				test.run()
 			except:
 				print("[!] Error:")
