@@ -464,7 +464,7 @@ class CoverageTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.dct)
+		q.attrib["value"] = os.path.basename(dirname(self.dct))
 		
 		r = SubElement(q, "revision", 
 					value=str(self._svn_revision(dirname(self.dct))),
@@ -631,7 +631,7 @@ class DictionaryTest(Test):
 	
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.dct.f)
+		q.attrib["value"] = os.path.basename(dirname(self.dct.f))
 		
 		r = SubElement(q, 'revision')
 		r.attrib["value"] = str(self._svn_revision(self.directory))
@@ -738,7 +738,7 @@ class GenerationTest(Test):
 
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.directory)
+		q.attrib["value"] = os.path.basename(dirname(self.directory))
 		
 		r = SubElement(q, "revision", 
 					value=str(self._svn_revision(self.directory)),
