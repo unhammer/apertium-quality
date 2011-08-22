@@ -30,7 +30,7 @@ setup(
 	aq-voctest = apertium.quality.frontend.vocabulary_tester:main
 	aq-gentest = apertium.quality.frontend.generation_tester:main
 	aq-ambtest = apertium.quality.frontend.ambiguity_tester:main
-	aq-statgen = apertium.quality.frontend.website_generator:main
+	aq-htmlgen = apertium.quality.frontend.website_generator:main
 	aq-autotest = apertium.quality.frontend.auto_tester:main
 	aq-wikicrp = apertium.quality.frontend.corpus_extractor:main
 	"""
