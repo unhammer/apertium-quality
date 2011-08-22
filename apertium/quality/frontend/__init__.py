@@ -1,8 +1,8 @@
+import sys
 from argparse import ArgumentParser
 
 from apertium.quality.testing import Test
 from apertium.quality import Statistics, ParseError
-#TODO add piping for great interfacing
 
 class Frontend(Test, ArgumentParser):
 	def __init__(self, stats=True, colour=False):
@@ -18,7 +18,7 @@ class Frontend(Test, ArgumentParser):
 
 	def start(self):
 		ret = self.run()
-		print(self.to_string())
+		sys.stdout.buffer.write(self.to_string().encode('utf-8'))
 		if self.args.statfile:
 			try:
 				stats = Statistics(self.args.statfile)
