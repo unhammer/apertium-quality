@@ -16,7 +16,7 @@ class Frontend(Test, ArgumentParser):
 		if stats:
 			self.add_argument("-X", "--statistics", dest="statfile", 
 							  nargs='?', const='quality-stats.xml', default=None,
-							  help="XML file that statistics are to be stored in")
+							  help="XML file that statistics are to be stored in (Default: quality-stats.xml)")
 
 	def start(self):
 		ret = self.run()
