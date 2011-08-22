@@ -230,7 +230,7 @@ class AutoTest(Test):
 			
 			if self.stats:
 				self.stats.add(*test.to_xml())
-					
+
 	def morph(self):
 		tests = self.root.find(self.ns + "morph")
 		if tests is None:
@@ -311,8 +311,8 @@ class AutoTest(Test):
 				self.webpage()
 		print("[-] Done!")
 	
-	def to_string(self): pass
-	def to_xml(self): raise Exception()
+	def to_string(self): raise Exception("This class does not support this method.")
+	def to_xml(self): raise Exception("This class does not support this method.")
 
 class CoverageTest(Test):
 	app = "lt-proc"
@@ -568,17 +568,16 @@ class DictionaryTest(Test):
 			self.get_transfer_rules()
 	
 	def to_xml(self):
-		return NotImplemented
 		q = Element('dictionary')
+		q.attrib["value"] = os.path.basename(self.dct.f)
 		
 		r = SubElement(q, 'revision')
-		r.attrib["value"] = os.path.basename(self.dct.f)
-		r.attrib["checksum"] = self._checksum(open(self.dct.f, 'rb').read())
+		r.attrib["value"] = str(self._svn_revision(self.directory))
 		r.attrib["timestamp"] = datetime.utcnow().isoformat()
 		
-		SubElement(r, 'entries').text = str(len(self.dct.gen_entries()))
-		SubElement(r, 'unique-entries').text = str(len(self.dct.get_unique_entries()))
-		SubElement(r, 'rules').text = str(self.dct.get_rule_count())
+		SubElement(r, 'entries').text = str(self.get_entry_count())
+		SubElement(r, 'unique-entries').text = str(self.get_unique_entry_count())
+		SubElement(r, 'rules').text = str(self.get_rule_count())
 		
 		return ("general", etree.tostring(q))
 	
