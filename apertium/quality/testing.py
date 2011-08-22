@@ -415,11 +415,12 @@ class CoverageTest(Test):
 		
 	def run(self):
 		if not self.result:
-			delim = re.compile(r"\$[^^]*\^")			
-			f = self.f.read()
-			self.f.seek(0)
+			delim = re.compile(r"\$[^^]*\^")
+			f = open(self.fn, 'r')			
+			data = f.read()
+			f.close()
 
-			output = destxt(f).encode('utf-8')
+			output = destxt(data).encode('utf-8')
 			timing_begin = time.time()
 			proc = Popen([self.app] + self.app_args + [self.dct], stdin=PIPE, stdout=PIPE, close_fds=True)
 			output = str(proc.communicate(output)[0].decode('utf-8'))
