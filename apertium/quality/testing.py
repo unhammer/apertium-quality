@@ -34,7 +34,6 @@ pjoin = os.path.join
 ARROW = "\u2192"
 
 
-# TODO: add self.results dict() to all objects
 class UncleanWorkingDirectoryException(Exception):
 	pass
 
@@ -739,10 +738,10 @@ class GenerationTest(Test):
 
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = os.path.basename(self.direc)
+		q.attrib["value"] = os.path.basename(self.directory)
 		
 		r = SubElement(q, "revision", 
-					value=str(self._svn_revision(self.direc)),
+					value=str(self._svn_revision(self.directory)),
 					timestamp=datetime.utcnow().isoformat())
 		
 		s = SubElement(r, 'corpus')
