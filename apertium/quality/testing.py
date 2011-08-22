@@ -157,10 +157,12 @@ class AmbiguityTest(Test):
 class AutoTest(Test):
 	ns = "{%s}" % schemas['config']
 	
-	def __init__(self, stats=None, webdir=None, aqx=None, **kwargs):
+	def __init__(self, stats=None, webdir=None, aqx=None, verbose=None, **kwargs):
 		self.stats = kwargs.get('stats', stats)
 		self.webdir = kwargs.get('webdir', webdir)
 		self.aqx = kwargs.get('aqx', aqx)
+		self.verbose = kwargs.get('verbose', verbose)
+		
 		if self.aqx is None:
 			raise ValueError('A configuration file is required')
 		
