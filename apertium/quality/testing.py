@@ -314,6 +314,7 @@ class AutoTest(Test):
 	def to_string(self): raise Exception("This class does not support this method.")
 	def to_xml(self): raise Exception("This class does not support this method.")
 
+
 class CoverageTest(Test):
 	app = "lt-proc"
 	app_args = []
@@ -672,8 +673,25 @@ class GenerationTest(Test):
 		self.multibidix = multibidix
 		self.tagmismatch = tagmismatch
 
-	#def to_xml(self):
-	#	pass
+	def to_xml(self):
+		q = Element('dictionary')
+		q.attrib["value"] = os.path.basename(self.direc)
+		
+		r = SubElement(q, "revision", 
+					value=str(self._svn_revision(self.direc)),
+					timestamp=datetime.utcnow().isoformat())
+		
+		s = SubElement(r, 'corpus')
+		s.attrib["value"] = os.path.basename(self.corpus)
+		s.attrib["checksum"] = self._checksum(open(self.corpus, 'rb').read())
+		
+		SubElement(r, "total").text = str(len(self.multiform) + len(self.multibidix) + len(self.tagmismatch))
+		SubElement(r, "multiform").text = str(len(self.multiform))
+		SubElement(r, "multibidix").text = str(len(self.multibidix))
+		SubElement(r, "tagmismatch").text = str(len(self.tagmismatch))
+		
+		return ("generation", etree.tostring(q))
+		
 	
 	def to_string(self):
 		out = StringIO()
@@ -989,8 +1007,6 @@ class RegressionTest(Test):
 			raise ValueError("Url or mode parameter missing.")
 
 		whereis([self.program])
-		#if not "Special:Export" in url:
-		#	print("Warning: URL did not contain Special:Export.")
 		self.mode = mode
 		
 		self.directory = directory
@@ -1006,7 +1022,7 @@ class RegressionTest(Test):
 			if e.tag == self.ns + "title":
 				self.title = e.text
 			if e.tag == self.ns + "revision":
-				self.revision = e[0].text # should be <id>
+				self.revision = e[0].text
 			if e.tag == self.ns + "text":
 				text = e.text
 		if not text:
@@ -1044,7 +1060,6 @@ class RegressionTest(Test):
 
 			for n, test in enumerate(self.tests[side].items()):
 				if n >= len(self.results):
-					#raise AttributeError("More tests than results.")
 					self.out.write("WARNING: more tests than results!\n")
 					continue
 				
