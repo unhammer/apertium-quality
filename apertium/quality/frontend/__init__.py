@@ -18,7 +18,7 @@ class Frontend(Test, ArgumentParser):
 
 	def start(self):
 		ret = self.run()
-		sys.stdout.buffer.write(self.to_string().encode('utf-8'))
+		sys.stdout.buffer.write((self.to_string() + "\n").encode('utf-8'))
 		if self.args.statfile:
 			try:
 				stats = Statistics(self.args.statfile)

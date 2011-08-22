@@ -641,6 +641,7 @@ class GenerationTest(Test):
 		return out.getvalue().split('\n')
 					
 	def run(self):
+		timing_begin = time.time()
 		app = Popen(['apertium', '-d', self.directory, self.mode], stdin=open(self.corpus), stdout=PIPE, close_fds=True)
 		raw = app.communicate()[0].decode('utf-8')
 		transfer = self.get_transfer(raw)
@@ -676,6 +677,7 @@ class GenerationTest(Test):
 		self.multiform = multiform
 		self.multibidix = multibidix
 		self.tagmismatch = tagmismatch
+		self.timer = time.time() - timing_begin
 
 	def to_xml(self):
 		q = Element('dictionary')
