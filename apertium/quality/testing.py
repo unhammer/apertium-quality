@@ -194,18 +194,6 @@ class AutoTest(Test):
 			if self.stats:
 				self.stats.add(*test.to_xml())
 	
-	def dictionary(self):
-		print("[-] Dictionary Tests")
-		try:
-			test = DictionaryTest(self.langpair, '.')
-			test.run()
-		except:
-			print("[!] Error:")
-			traceback.print_exc()
-		
-		if self.stats:
-			self.stats.add(*test.to_xml())
-	
 	def coverage(self):
 		corpora = self.root.find(self.ns + "coverage")
 		if corpora is None:
@@ -248,6 +236,18 @@ class AutoTest(Test):
 			
 			if self.stats:
 				self.stats.add(*test.to_xml())
+	
+	def dictionary(self):
+		print("[-] Dictionary Tests")
+		try:
+			test = DictionaryTest(self.langpair, '.')
+			test.run()
+		except:
+			print("[!] Error:")
+			traceback.print_exc()
+		
+		if self.stats:
+			self.stats.add(*test.to_xml())
 	
 	def generation(self):
 		corpora = self.root.find(self.ns + "generation")
@@ -364,6 +364,8 @@ class AutoTest(Test):
 	def run(self):
 		self.ambiguity()
 		self.coverage()
+		self.dictionary()
+		self.generation()
 		self.regression()
 		self.morph()
 		if self.stats:
