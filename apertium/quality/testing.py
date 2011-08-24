@@ -1277,6 +1277,7 @@ class VocabularyTest(Test):
 			os.unlink(i.name)
 		
 		self.out.close()
+		self.get_symbol_count()
 		
 	def get_symbol_count(self):
 		c = Counter()
@@ -1295,7 +1296,6 @@ class VocabularyTest(Test):
 		r = SubElement(q, "revision", 
 					value=str(self._svn_revision(basename(abspath(self.directory)))),
 					timestamp=datetime.utcnow().isoformat())
-		
 		
 		SubElement(r, "lines").text = str(self.counter['lines'])
 		SubElement(r, "hashes").text = str(self.counter['#'])
