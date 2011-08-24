@@ -1283,7 +1283,7 @@ class VocabularyTest(Test):
 		c = Counter()
 		f = open(self.output, 'r')
 		for line in f:
-			c['line'] += 1
+			c['lines'] += 1
 			for char in line:
 				if char in ("#", "@"):
 					c[char] += 1
