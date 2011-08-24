@@ -1288,6 +1288,24 @@ class VocabularyTest(Test):
 					c[char] += 1
 		self.counter = c
 
+	def to_xml(self):
+		q = Element('dictionary')
+		q.attrib["value"] = basename(abspath(self.directory))
+		
+		r = SubElement(q, "revision", 
+					value=str(self._svn_revision(basename(abspath(self.directory)))),
+					timestamp=datetime.utcnow().isoformat())
+		
+		
+		SubElement(r, "lines").text = str(self.counter['lines'])
+		SubElement(r, "hashes").text = str(self.counter['#'])
+		SubElement(r, "ats").text = str(self.counter['@'])
+		
+		s = SubElement(r, "system")
+		SubElement(s, "speed").text = "%.4f" % self.timer
+		
+		return ("vocabulary", etree.tostring(q))
+
 	def to_string(self):
 		x = "Lines: %s\n" % self.counter['lines']
 		x += "# count: %s\n" % self.counter['#']
