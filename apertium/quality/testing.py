@@ -180,7 +180,7 @@ class AutoTest(Test):
 			return
 		
 		for command in commands.getiterator(self.ns + "commands"):
-			p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+			p = Popen(command.text, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
 			out, err = p.communicate()
 			out = out.decode('utf-8')
 			err = err.decode('utf-8')
