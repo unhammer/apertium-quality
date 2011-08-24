@@ -1289,11 +1289,11 @@ class VocabularyTest(Test):
 		self.counter = c
 
 	def to_string(self):
-		x = "Lines: %s" % self.counter['lines']
-		x += "# count: %s" % self.counter['#']
-		x += "@ count: %s\n" % self.counter['@']
-		x += "Speed: %.4f" % self.timer
-		return "%s\nData output to %s." % (x, self.output)
+		x = "Lines: %s\n" % self.counter['lines']
+		x += "# count: %s\n" % self.counter['#']
+		x += "@ count: %s\n\n" % self.counter['@']
+		x += "Speed: %.4f\n" % self.timer
+		return "%sData output to %s." % (x, self.output)
 
 
 # SUPPORT FUNCTIONS
