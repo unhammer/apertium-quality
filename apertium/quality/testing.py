@@ -184,6 +184,8 @@ class AutoTest(Test):
 			out, err = p.communicate()
 			out = out.decode('utf-8')
 			err = err.decode('utf-8')
+			
+			print("ERR:", err)
 			if p.returncode != 0 or err.strip() != "":
 				print("[!] Error:")
 				raise Exception(err)
