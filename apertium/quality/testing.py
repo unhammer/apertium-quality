@@ -186,8 +186,7 @@ class AutoTest(Test):
 			err = err.decode('utf-8')
 			if p.returncode != 0 or err.strip() != "":
 				print("[!] Error:")
-				print(err)
-				return False
+				raise Exception(err)
 		return True
 		
 	def ambiguity(self):
@@ -391,7 +390,7 @@ class AutoTest(Test):
 	
 	def run(self):
 		res = self.build()
-		if res is False:
+		if not res:
 			print("[!] Bailing out.")
 			return
 		self.ambiguity()
@@ -406,9 +405,6 @@ class AutoTest(Test):
 			if self.webdir:
 				self.webpage()
 		print("[-] Done!")
-	
-	def to_string(self): raise Exception("This class does not support this method.")
-	def to_xml(self): raise Exception("This class does not support this method.")
 
 
 class CoverageTest(Test):
