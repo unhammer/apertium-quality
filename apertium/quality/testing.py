@@ -17,7 +17,6 @@ import shlex
 import itertools
 import traceback
 import time
-import shlex
 
 import yaml
 try:
@@ -180,19 +179,15 @@ class AutoTest(Test):
 		if commands is None:
 			return
 		
-		for command in commands.getchildren():
-			if command.tag != self.ns + "command":
-				continue
-			p = Popen(shlex.split(command.text), stdout=PIPE, stderr=PIPE, close_fds=True)
+		for command in commands.getiterator(self.ns + "commands"):
+			p = Popen(command.text, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
 			out, err = p.communicate()
 			out = out.decode('utf-8')
 			err = err.decode('utf-8')
-			
 			if p.returncode != 0 or err.strip() != "":
 				print("[!] Error:")
 				print(err)
 				return False
-			
 		return True
 		
 	def ambiguity(self):
