@@ -17,9 +17,9 @@ AM_PATH_PYTHON(3.0)
 # There's probably some fancy autotools way of doing this:
 echo -n "checking for lxml... "
 if $PYTHON -c "import lxml" &>/dev/null; then
-   echo "lxml found, won't have to use ElementTree which is a hack anyway";
+   echo "lxml found";
 else
-   echo "lxml not found, ElementTree hack will be used";
+   echo "lxml not found, ElementTree workaround will be used";
    #echo "Error, lxml is required"; exit 1
 fi
 
