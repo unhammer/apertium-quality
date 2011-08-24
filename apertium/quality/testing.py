@@ -174,6 +174,24 @@ class AutoTest(Test):
 		if self.aqx:
 			self.root = etree.parse(self.aqx).getroot()
 	
+	def build(self):
+		commands = self.root.find(self.ns + "commands")
+		if commands is None:
+			return
+		
+		for command in commands.getiterator(self.ns + "commands"):
+			p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+			out, err = p.communicate()
+			out = out.decode('utf-8')
+			err = err.decode('utf-8')
+			
+			if p.returncode != 0:
+				print("[!] Error:")
+				print(err)
+				return False
+			
+		return True
+		
 	def ambiguity(self):
 		dixen = glob("apertium-%s.*.dix" % self.langpair)
 		if dixen == []:
@@ -356,18 +374,34 @@ class AutoTest(Test):
 			if self.stats:
 				self.stats.add(*test.to_xml())
 
+	def vocabulary(self):
+		print("[-] Vocabulary Tests")
+		try:
+			test = VocabularyTest("lr", self.lang1, self.lang2, "voctest.txt", '.')
+			test.run()
+		except:
+			print("[!] Error:")
+			traceback.print_exc()
+		
+		if self.stats:
+			self.stats.add(*test.to_xml())
+		
 	def webpage(self):
 		print("[-] Generating HTML content")
 		self.web = Webpage(self.stats, self.webdir, self.langpair)
 		self.web.generate()
 	
 	def run(self):
+		if not self.build():
+			print("[!] Bailing out.")
+			return
 		self.ambiguity()
 		self.coverage()
 		self.dictionary()
 		self.generation()
 		self.regression()
 		self.morph()
+		self.vocabulary()
 		if self.stats:
 			self.stats.write()
 			if self.webdir:
