@@ -185,7 +185,7 @@ class AutoTest(Test):
 			out = out.decode('utf-8')
 			err = err.decode('utf-8')
 			
-			if p.returncode != 0:
+			if p.returncode != 0 or err.strip() != "":
 				print("[!] Error:")
 				print(err)
 				return False
