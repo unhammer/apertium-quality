@@ -46,7 +46,8 @@ class Statistics(object):
 			"regression": self.get_regression,
 			"coverage": self.get_coverage,
 			"ambiguity": self.get_ambiguity,
-			"morph": self.get_morph
+			"morph": self.get_morph,
+			"vocabulary": lambda x, y: None
 		}
 		
 		if f is None:
