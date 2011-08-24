@@ -1241,6 +1241,7 @@ class VocabularyTest(Test):
 		self.genbin = gen or pjoin(fdir, "{0}.autogen.bin".format(langpair))
 		
 		self.alphabet = DixFile(self.anadix).get_alphabet()
+		self.counter = None
 		
 	def run(self):
 		#TODO: pythonise the awk command
@@ -1276,10 +1277,22 @@ class VocabularyTest(Test):
 			os.unlink(i.name)
 		
 		self.out.close()
+		
+	def get_symbol_count(self):
+		c = Counter()
+		f = open(self.output, 'r')
+		for line in f:
+			c['line'] += 1
+			for char in line:
+				if char in ("#", "@"):
+					c[char] += 1
+		self.counter = c
 
 	def to_string(self):
-		# TODO: add stats output here
-		x = "Speed: %.4f" % self.timer
+		x = "Lines: %s" % self.counter['lines']
+		x += "# count: %s" % self.counter['#']
+		x += "@ count: %s\n" % self.counter['@']
+		x += "Speed: %.4f" % self.timer
 		return "%s\nData output to %s." % (x, self.output)
 
 

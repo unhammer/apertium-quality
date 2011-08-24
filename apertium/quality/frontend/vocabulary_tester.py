@@ -19,7 +19,7 @@ class UI(Frontend, VocabularyTest):
             help="Dictionary direction (lr, rl)")
         self.add_argument("-o", "--output", dest="output", nargs='?',
             const='voctest.txt', default='voctest.txt',
-            help="Output file for arrows output")
+            help="Output file for arrows output (Default: voctest.txt)")
         self.add_argument("langpair", nargs=1, help="Language pair (eg, br-fr)")
         self.args = self.parse_args()
         lang1, lang2 = self.args.langpair[0].split('-')
