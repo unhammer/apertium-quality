@@ -9,6 +9,7 @@ install:
 		$(PYTHON) setup.py $(_VERBOSE) install; \
 	else \
 		export PYTHONPATH=$(_PKGDIR); \
+		mkdir -p $(_PKGDIR); \
 		$(PYTHON) setup.py $(_VERBOSE) install --prefix $(prefix); \
 		echo '' ;\
 		echo 'IMPORTANT: Remember to add $(_PKGDIR) to your $$PYTHONPATH!'; \
@@ -24,6 +25,7 @@ install-nltk:
 	else \
 		cd nltk-3.0.1 && \
 		export PYTHONPATH=$(_PKGDIR); \
+		mkdir -p $(_PKGDIR); \
 		$(PYTHON) setup-distutils.py $(_VERBOSE) install --prefix $(prefix); \
 		echo '' ;\
 		echo 'IMPORTANT: Remember to add $(_PKGDIR) to your $$PYTHONPATH!'; \
