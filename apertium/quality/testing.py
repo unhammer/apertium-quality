@@ -17,6 +17,7 @@ import shlex
 import itertools
 import traceback
 import time
+import shlex
 
 import yaml
 try:
@@ -180,7 +181,7 @@ class AutoTest(Test):
 			return
 		
 		for command in commands.getiterator(self.ns + "commands"):
-			p = Popen(command.text, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+			p = Popen(shlex.split(command.text), stdout=PIPE, stderr=PIPE, close_fds=True)
 			out, err = p.communicate()
 			out = out.decode('utf-8')
 			err = err.decode('utf-8')
