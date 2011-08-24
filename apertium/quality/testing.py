@@ -1291,10 +1291,10 @@ class VocabularyTest(Test):
 
 	def to_xml(self):
 		q = Element('dictionary')
-		q.attrib["value"] = basename(abspath(self.directory))
+		q.attrib["value"] = basename(abspath(self.fdir))
 		
 		r = SubElement(q, "revision", 
-					value=str(self._svn_revision(basename(abspath(self.directory)))),
+					value=str(self._svn_revision(basename(abspath(self.fdir)))),
 					timestamp=datetime.utcnow().isoformat())
 		
 		SubElement(r, "lines").text = str(self.counter['lines'])
