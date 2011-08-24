@@ -179,7 +179,7 @@ class AutoTest(Test):
 		if commands is None:
 			return
 		
-		for command in commands.getiterator(self.ns + "commands"):
+		for command in commands.getiterator(self.ns + "command"):
 			p = Popen(command.text, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
 			out, err = p.communicate()
 			out = out.decode('utf-8')
