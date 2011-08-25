@@ -152,6 +152,10 @@ class CorpusExtractor(object):
 		for p in punc:
 			if maxpunc < data.count(p):
 				return False
+		if "Wikipedia" in data:
+			return False
+		if re.search(r'\$[0-9]', data):
+			return False
 		count = 0
 		for n in string.digits:
 			count += data.count(n)
