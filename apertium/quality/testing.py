@@ -9,6 +9,7 @@ from glob import glob
 from datetime import datetime
 from hashlib import sha1
 from tempfile import NamedTemporaryFile
+from math import sqrt
 import os
 import os.path
 import re
@@ -465,20 +466,25 @@ class CoverageTest(Test):
 			self.result = output.split('\n')
 		return 0
 
-	def get_words(self):
+	def get_words(self, inrange=lambda i:True):
 		if not self.result:
 			self.run()
-		return [ i.strip() for i in self.result ]
+		return [ w.strip() for i,w in enumerate(self.result)
+			 if inrange(i) ]
 
-	def get_known_words(self):
+	def get_known_words(self, inrange=lambda i:True):
 		if not self.result:
 			self.run()
-		return [ i.strip() for i in self.result if not '*' in i ]
+		return [ w.strip() for i,w in enumerate(self.result)
+			 if not '*' in w
+			 and inrange(i) ]
 
-	def get_unknown_words(self):
+	def get_unknown_words(self, inrange=lambda i:True):
 		if not self.result:
 			self.run()
-		return [ i.strip() for i in self.result if '*' in i ]
+		return [ w.strip() for i,w in enumerate(self.result)
+			 if '*' in w
+			 and inrange(i) ]
 	
 	def get_top_unknown_words(self, c=20):
 		return Counter(self.get_unknown_words()).most_common(c)
@@ -494,6 +500,34 @@ class CoverageTest(Test):
 		a = float(len(self.get_known_words()))
 		b = float(len(self.get_words()))
 		return a / b * 100
+	
+	@staticmethod
+	def mean(sample):
+	    return sum(sample) / len(sample)
+	
+	@staticmethod
+	def sd(sample):
+	    """The sample standard deviation
+
+	    s = \sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i - \overline{x})^2}"""
+	    df = len(sample) - 1
+	    m = CoverageTest.mean(sample)
+	    variance = sum([(x - m)**2 for x in sample]) / df
+	    return sqrt( variance )
+	
+	def get_coverage_nway_split(self, ways=4):
+		if not self.result:
+			self.run()
+		sample = []
+		split = 0
+		while split<len(self.result):
+			nextsplit = split + len(self.result) / ways
+			inrange = lambda i: ( i>=int(split) and i<int(nextsplit) )
+			known = float(len(self.get_known_words(inrange)))
+			unknown = float(len(self.get_words(inrange)))
+			sample.append( known / unknown * 100 )
+			split += len(self.result) / ways
+		return (self.sd(sample), self.mean(sample))
 	
 	def to_xml(self):
 		q = Element('dictionary')
@@ -527,6 +561,7 @@ class CoverageTest(Test):
 		out = StringIO()
 		out.write("Number of tokenised words in the corpus: %s\n" % len(self.get_words()))
 		out.write("Coverage: %.2f%%\n" % self.get_coverage())
+		out.write("Standard deviation based on a four-way split: %.2f\n" % self.get_coverage_nway_split(4)[0])
 		out.write("Top unknown words in the corpus:\n")
 		out.write(self.get_top_unknown_words_string())
 		out.write("Translation speed: %s\n" % self.timer)
