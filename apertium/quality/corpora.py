@@ -3,6 +3,7 @@ from multiprocessing import Process, Pool, Queue, cpu_count
 from io import StringIO
 from queue import Empty
 import sys
+import re
 import os
 import string
 import xml.sax.handler
