@@ -71,8 +71,14 @@ class Statistics(object):
 			self.tree = etree.ElementTree(self.root)
 	
 	def write(self):
-		self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
-
+		try: 
+			self.tree.write(self.f, encoding="utf-8", xml_declaration=True)
+		except:
+			f = open(self.f, 'w')
+			f.write("<?xml version='1.0' encoding='utf-8'?>\n")
+			f.write(etree.tostring(self.tree.getroot()))
+			f.close()
+		
 	def add(self, parent, xml):
 		ns = self.ns
 		if parent not in self.elements:
