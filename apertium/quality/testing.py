@@ -427,7 +427,7 @@ class CoverageTest(Test):
 		try:
 			open(dct) # test existence
 		except:
-			raise
+			raise # TODO: wrap error for output
 		whereis([self.app])
 		
 		self.fn = fn
@@ -529,7 +529,7 @@ class CoverageTest(Test):
 		out.write("Coverage: %.2f%%\n" % self.get_coverage())
 		out.write("Top unknown words in the corpus:\n")
 		out.write(self.get_top_unknown_words_string())
-		out.write("Translation speed: %s\n" % self.timer)
+		out.write("Translation time: %s seconds\n" % self.timer)
 		return out.getvalue().strip()
 
 			
