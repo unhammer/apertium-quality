@@ -440,7 +440,7 @@ class CoverageTest(Test):
 			del out
 		except:
 			# Turns out it's not XML
-			self.corpus = open(fn, 'r')
+			self.corpus = open(self.fn, 'r')
 		
 		try:
 			open(self.dct) # test existence
@@ -1113,12 +1113,14 @@ class RegressionTest(Test):
 
 		whereis([self.program])
 		self.mode = mode
-		
+		self.url = url
 		self.directory = directory
-		if url.startswith('http'):
-			self.tree = etree.parse(urllib.request.urlopen(url))
+	
+	def make_tests(self):
+		if self.url.startswith('http'):
+			self.tree = etree.parse(urllib.request.urlopen(self.url))
 		else:
-			self.tree = etree.parse(open(url))
+			self.tree = etree.parse(open(self.url))
 		
 		self.passes = 0
 		self.total = 0
@@ -1151,6 +1153,7 @@ class RegressionTest(Test):
 		self.out = StringIO()
 	
 	def run(self):
+		self.make_tests()
 		timing_begin = time.time()
 		for side in self.tests:
 			self.out.write("Now testing: %s\n" % side)
@@ -1259,7 +1262,6 @@ class VocabularyTest(Test):
 		self.lang1 = lang1
 		self.lang2 = lang2
 		self.output = output
-		self.out = open(output, 'w')
 		
 		self.tmp = []
 		for i in range(3):
@@ -1270,10 +1272,13 @@ class VocabularyTest(Test):
 		self.anadix = ana or pjoin(fdir, "apertium-{0}.{1}.dix".format(dictlang, langpair.split('-')[0]))
 		self.genbin = gen or pjoin(fdir, "{0}.autogen.bin".format(langpair))
 		
-		self.alphabet = DixFile(self.anadix).get_alphabet()
+		self.out = None
+		self.alphabet = None
 		self.counter = None
 		
 	def run(self):
+		self.out = open(self.output, 'w')
+		self.alphabet = DixFile(self.anadix).get_alphabet()
 		#TODO: pythonise the awk command
 		cmd = r"""lt-expand {dix} | awk -vPATTERN="[{alph}]:(>:)?[{alph}]" -F':|:>:' '$0 ~ PATTERN {{ gsub("/","\\/",$2); print "^" $2 "$ ^.<sent>$"; }}' | tee {f0} | {transfer} | tee {f1} | lt-proc -d {bin} > {f2}""".format(
 			dix=self.anadix,
