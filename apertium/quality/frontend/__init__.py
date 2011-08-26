@@ -24,6 +24,7 @@ class Frontend(Test, ArgumentParser):
 				ret = self.run()
 			except IOError as e:
 				print(e)
+				sys.exit(1)
 			
 			print(self.to_string())
 			if self.args.statfile:
