@@ -20,7 +20,11 @@ class Frontend(Test, ArgumentParser):
 
 	def start(self):
 		try:
-			ret = self.run()
+			try: 
+				ret = self.run()
+			except IOError as e:
+				print(e)
+			
 			print(self.to_string())
 			if self.args.statfile:
 				try:
@@ -30,5 +34,6 @@ class Frontend(Test, ArgumentParser):
 				except ParseError:
 					print("ERROR: your statistics file is either an unsupported version or not an XML file.")
 			self.exit(ret)
+		
 		except KeyboardInterrupt:
 			sys.exit()

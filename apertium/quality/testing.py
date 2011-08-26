@@ -26,7 +26,7 @@ except:
 	import xml.etree.ElementTree as etree
 	from xml.etree.ElementTree import Element, SubElement
 
-from apertium import whereis, destxt, retxt, DixFile
+from apertium import whereis, destxt, retxt, DixFile, process
 from apertium.quality import Statistics, schemas
 from apertium.quality.html import Webpage
 
@@ -107,8 +107,7 @@ class AmbiguityTest(Test):
 		whereis([self.program])
 	
 	def get_results(self):
-		app = Popen([self.program, self.f], stdin=PIPE, stdout=PIPE, close_fds=True)
-		res = str(app.communicate()[0].decode('utf-8'))
+		res, err = process([self.program, self.f])
 		self.results = self.delim.sub(":", res).split('\n')
 
 	def get_ambiguity(self):
@@ -424,13 +423,12 @@ class CoverageTest(Test):
 			self.app = "hfst-proc"
 			self.app_args = ['-w']
 			
-		try:
-			open(dct) # test existence
-		except:
-			raise # TODO: wrap error for output
 		whereis([self.app])
-		
+		self.dct = dct
+		self.result = None
 		self.fn = fn
+		
+	def run(self):
 		try:
 			# Try parsing as XML
 			root = etree.parse(self.fn)
@@ -444,10 +442,11 @@ class CoverageTest(Test):
 			# Turns out it's not XML
 			self.corpus = open(fn, 'r')
 		
-		self.dct = dct
-		self.result = None
+		try:
+			open(self.dct) # test existence
+		except:
+			raise # TODO: wrap error for output
 		
-	def run(self):
 		if not self.result:
 			delim = re.compile(r"\$[^^]*\^")
 			f = open(self.fn, 'r')			
@@ -519,7 +518,7 @@ class CoverageTest(Test):
 			SubElement(s, 'word', count=str(count)).text = wrx.search(word).group(1)
 		
 		s = SubElement(r, 'system')
-		SubElement(s, 'speed').text = "%.4f" % self.timer
+		SubElement(s, 'time').text = "%.4f" % self.timer
 		
 		return ("coverage", etree.tostring(q))
 
@@ -820,7 +819,7 @@ class GenerationTest(Test):
 		out.write("%6d %s\n" % (len(self.tagmismatch), "tagmismatch"))
 		out.write("Total: %d\n\n" % (len(self.multiform) + len(self.multibidix) + len(self.tagmismatch)))
 		
-		out.write("Time: %.4f\n" % self.timer) 
+		out.write("Time: %.4f seconds\n" % self.timer) 
 		
 		return out.getvalue()
 
@@ -1341,7 +1340,7 @@ class VocabularyTest(Test):
 		x = "Lines: %s\n" % self.counter['lines']
 		x += "# count: %s\n" % self.counter['#']
 		x += "@ count: %s\n\n" % self.counter['@']
-		x += "Speed: %.4f\n" % self.timer
+		x += "Time: %.4f seconds\n" % self.timer
 		return "%sData output to %s." % (x, self.output)
 
 
