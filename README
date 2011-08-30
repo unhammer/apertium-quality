@@ -2,27 +2,4 @@
 |               apertium-quality - Quality Assurance Framework                 |
 ================================================================================
 
-== Setup ==
-Installation is very, very easy.
-
-To install by default to your main Python site-packages (in /usr), as root:
-# ./autogen.sh
-
-That's it!
-
-=== Prefixed (Rootless) Installation === 
-For a rootless, prefixed installation:
-$ ./autogen.sh PREFIX=/path/to/prefix prefixed
-
-=== Standalone scripts ===
-If you wish to generate scripts for use elsewhere without using the libraries, then:
-$ ./autogen.sh standalone
-
-This will create a dist/ directory containing the scripts.
-
-### THIS IS NOT CURRENTLY IMPLEMENTED ###
-
-== Extra Options ==
-PREFIX: sets the prefix to be installed to
-PYTHON: the Python binary to use for installation
-
+See http://wiki.apertium.org/wiki/apertium-quality
