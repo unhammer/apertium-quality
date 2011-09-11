@@ -206,11 +206,11 @@ class CorpusExtractor(object):
 		except KeyboardInterrupt:
 			pass
 		finally:
-			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
+			sys.stdout.write("\r%d sentences written to %s.\n" % (count, f.name))
 			sys.stdout.flush()
 			f.close()
 	
-	def xml_output_worker(self, fn, fname, maxsentences=0):
+	def xml_output_worker(self, f, fname, maxsentences=0):
 		pid = os.getpid()
 		ns = "{%s}" % schemas['corpus']
 		try:
@@ -247,7 +247,7 @@ class CorpusExtractor(object):
 		except KeyboardInterrupt:
 			pass
 		finally:
-			etree.ElementTree(root).write(fn, encoding="utf-8", xml_declaration=True)
-			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
+			etree.ElementTree(root).write(f.name, encoding="utf-8", xml_declaration=True)
+			sys.stdout.write("\r%d sentences written to %s.\n" % (count, f.name))
 			sys.stdout.flush()
 		
