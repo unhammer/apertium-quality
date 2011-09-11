@@ -1,4 +1,4 @@
-import argparse
+import argparse, gzip, bz2
 from apertium.quality.corpora import CorpusExtractor
 
 class UI(object):
@@ -20,8 +20,15 @@ class UI(object):
         ap.add_argument("outfile", nargs=1, help="Output filename")
         
         self.args = ap.parse_args()
-        self.corpus = CorpusExtractor(self.args.wikidump[0], 
-                self.args.outfile[0], self.args.cores[0], self.args.tokeniser[0],
+		if self.args.wikidump[0].endswith(".gz"):
+			wikidump = gzip.GzipFile(self.args.wikidump[0])
+		elif self.args.wikidump[0].endswith(".bz2"):
+			wikidump = bz2.BZ2File(self.args.wikidump[0])
+		else:
+			wikidump = open(self.args.wikidump[0])
+			
+        self.corpus = CorpusExtractor(wikidump, open(self.args.outfile[0], 'w'), 
+				self.args.cores[0], self.args.tokeniser[0],
                 xml=self.args.xml)
     
     def start(self):

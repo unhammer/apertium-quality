@@ -103,20 +103,20 @@ class CorpusExtractor(object):
 			self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 	
 	def generate(self, max_sentences=0):
-		self._make_processes(self.fin, self.fout, max_sentences)
+		self._make_processes(max_sentences)
 		self.parser.start()
 		self._start_processes()
 
-	def _make_processes(self, fin, fout, max_sentences):
-		self.parser = Process(target=self._parser, args=(fin,))
+	def _make_processes(self, max_sentences):
+		self.parser = Process(target=self._parser, args=(self.fin,))
 		self.parser.daemon = True
 		self.workers = [Process(target=self.worker) for i in range(self.cores or cpu_count())]
 		for w in self.workers:
 			w.daemon = True
 		if self.xml:
-			self.larry = Process(target=self.xml_output_worker, args=(fout, self.fin, max_sentences))
+			self.larry = Process(target=self.xml_output_worker, args=(self.fout, self.fin.name, max_sentences))
 		else:
-			self.larry = Process(target=self.output_worker, args=(fout, max_sentences))
+			self.larry = Process(target=self.output_worker, args=(self.fout, max_sentences))
 		self.larry.daemon = True
 	
 	def _start_processes(self):
@@ -134,6 +134,7 @@ class CorpusExtractor(object):
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(self.Handler(self))
 		f = open(fin)
+		# TODO have fin replaced with a FILE instance, not fn
 		parser.parse(f)
 		f.close()
 		del parser
@@ -181,15 +182,18 @@ class CorpusExtractor(object):
 		except Empty:
 			pass
 	
-	def output_worker(self, fn, maxsentences=0):
+	def output_worker(self, f, maxsentences=0):
 		pid = os.getpid()
 		try:
 			count = 0
-			f = None
+			if isinstance(f, str):
+				f = open(f, 'w')
+			if f.mode != 'w':
+				f = open(f.name, 'w')
+
 			while 1:
 				if maxsentences > 0 and count >= maxsentences: 
 					break
-				f = open(fn, 'a')
 				sentencelist = self.outq.get(block=True, timeout=5)
 				for s in sentencelist:
 					if maxsentences > 0 and count >= maxsentences: 
@@ -200,19 +204,22 @@ class CorpusExtractor(object):
 				f.flush()
 				sys.stdout.write('\r%d' % count)
 				sys.stdout.flush()
+		except Empty:
+			pass
+		except KeyboardInterrupt:
+			pass
+		finally:
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
 			f.close()
-		except Empty:
-			pass
 	
-	def xml_output_worker(self, fn, language, maxsentences=0):
+	def xml_output_worker(self, fn, fname, maxsentences=0):
 		pid = os.getpid()
 		ns = "{%s}" % schemas['corpus']
 		try:
 			count = 0
 			kwargs = {
-				'name': "Generated %s Wikipedia Corpus" % language, 
+				'name': "Generated Wikipedia Corpus from %s" % fname, 
 				'tags': "generator:aq-wikicrp"
 			}
 			
@@ -238,9 +245,12 @@ class CorpusExtractor(object):
 					root.append(el)
 				sys.stdout.write('\r%d' % count)
 				sys.stdout.flush()
+		except Empty:
+			pass
+		except KeyboardInterrupt:
+			pass
+		finally:
 			etree.ElementTree(root).write(fn, encoding="utf-8", xml_declaration=True)
 			sys.stdout.write("\r%d sentences written to %s.\n" % (count, fn))
 			sys.stdout.flush()
-		except Empty:
-			pass
 		
