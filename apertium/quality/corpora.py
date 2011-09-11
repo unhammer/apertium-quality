@@ -178,6 +178,8 @@ class CorpusExtractor(object):
 				del parsed
 		except Empty:
 			pass
+		except KeyboardInterrupt:
+			pass
 	
 	def output_worker(self, f, maxsentences=0):
 		pid = os.getpid()
