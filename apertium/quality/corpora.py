@@ -133,10 +133,7 @@ class CorpusExtractor(object):
 		pid = os.getpid()
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(self.Handler(self))
-		f = open(fin)
-		# TODO have fin replaced with a FILE instance, not fn
-		parser.parse(f)
-		f.close()
+		parser.parse(fin)
 		del parser
 	
 	def heuristics(self, data, minwords=6, maxcomma=2, maxpunc=2, maxdigits=6):
