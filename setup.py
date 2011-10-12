@@ -15,12 +15,24 @@ setup(
 	version = "0.3",
 	packages = find_packages(),
 	install_requires = install_requires,
-
+	url = "https://github.com/bbqsrc/apertium-quality",
+	download_url="https://github.com/bbqsrc/apertium-quality/archives/master",
 	author = "Brendan Molloy",
 	author_email = "brendan@bbqsrc.net",
 	description = "Apertium Quality Control Framework",
 	license = "CC0",
-	keywords = "apertium nlp quality control framework",
+	keywords = ["apertium", "nlp", "quality control", "framework"],
+	classifiers = [
+		"Development Status :: 4 - Beta",
+		"Operating System :: OS Independent",
+		"License :: Public Domain",
+		"Programming Language :: Python :: 3",
+		"Programming Language :: Python :: 3.1",
+		"Programming Language :: Python :: 3.2",
+		"Intended Audience :: Developers",
+		"Topic :: Software Development :: Libraries :: Python Modules",
+		"Topic :: Text Processing :: Linguistic",
+    ],
 	entry_points = """
 	[console_scripts]
 	aq-morftest = apertium.quality.frontend.morph_tester:main

@@ -5,6 +5,7 @@ from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 from hashlib import sha1
 from datetime import datetime
+from subprocess import Popen, PIPE
 import traceback
 import os
 import os.path
@@ -54,6 +55,20 @@ def retxt(data):
 	output = escape.sub(lambda o: o.group(1), data)
 	output = encap.sub(lambda o: o.group(1), output)
 	return output
+
+def process(command, data="", shell=False, stdin=PIPE, stdout=PIPE, 
+		stderr=PIPE, close_fds=True):
+	p = Popen(command, shell=shell, stdin=stdin, stdout=stdout, 
+			stderr=stderr, close_fds=close_fds)
+	
+	out, err = p.communicate(data)
+	out = out.decode('utf-8')
+	err = err.decode('utf-8')
+
+	if p.returncode != 0:
+		raise Exception("Return code: %s\nstderr: %s" % (p.returncode, err))
+	
+	return out, err
 
 
 class DixFile(object):
